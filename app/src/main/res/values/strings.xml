@@ -1,3 +1,8 @@
 <resources>
     <string name="app_name">Keep notes</string>
+    <string name="main_floating_button_desc">Add note or checklist</string>
+    <string name="empty_list_desc">List is empty</string>
+    <string name="notes_you_add_appear_here">Notes you add appear here</string>
+    <string name="search_notes">Search Notes</string>
+    <string name="ticked_items_counter">+ %d ticked item</string>
 </resources>

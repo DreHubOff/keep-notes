@@ -1,4 +1,4 @@
-package com.jksol.keep.notes.ui.screens.main
+package com.jksol.keep.notes.ui.screens.main.model
 
 sealed class MainScreenItem {
 

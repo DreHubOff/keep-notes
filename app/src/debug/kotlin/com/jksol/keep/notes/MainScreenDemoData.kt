@@ -1,6 +1,6 @@
 package com.jksol.keep.notes
 
-import com.jksol.keep.notes.ui.screens.main.MainScreenItem
+import com.jksol.keep.notes.ui.screens.main.model.MainScreenItem
 
 object MainScreenDemoData {
 

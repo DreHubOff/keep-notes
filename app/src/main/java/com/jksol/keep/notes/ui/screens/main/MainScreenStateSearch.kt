@@ -1,0 +1,73 @@
+package com.jksol.keep.notes.ui.screens.main
+
+import androidx.compose.foundation.layout.Arrangement.Absolute.spacedBy
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import com.jksol.keep.notes.MainScreenDemoData
+import com.jksol.keep.notes.R
+import com.jksol.keep.notes.ui.screens.main.model.MainScreenItem
+import com.jksol.keep.notes.ui.screens.main.search.MainSearchBar
+import com.jksol.keep.notes.ui.theme.ApplicationTheme
+
+@Composable
+fun MainScreenStateSearch(
+    modifier: Modifier = Modifier,
+    innerPadding: PaddingValues,
+    listItems: List<MainScreenItem>,
+    onHideSearch: () -> Unit = {},
+    onNewPrompt: (String) -> Unit = {},
+) {
+    Column(modifier = modifier) {
+        MainSearchBar(
+            innerPadding = innerPadding,
+            onHideSearch = onHideSearch,
+            onValueChanged = onNewPrompt,
+        )
+        if (listItems.isEmpty()) {
+            MainScreenEmptyList(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 100.dp)
+                    .weight(1f),
+                message = stringResource(R.string.search_empty_list)
+            )
+        } else {
+            LazyColumn(
+                modifier = modifier.fillMaxSize(),
+                contentPadding = PaddingValues(bottom = 120.dp, top = 16.dp),
+                verticalArrangement = spacedBy(8.dp),
+            ) {
+                items(listItems) { item ->
+                    when (item) {
+                        is MainScreenItem.CheckList ->
+                            MainCheckList(modifier = Modifier.padding(horizontal = 8.dp), item = item)
+
+                        is MainScreenItem.TextNote ->
+                            MainTextNote(modifier = Modifier.padding(horizontal = 8.dp), item = item)
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Preview
+@Composable
+private fun Preview() {
+    ApplicationTheme {
+        MainScreenStateSearch(
+            innerPadding = PaddingValues(20.dp),
+            listItems = MainScreenDemoData.notesList(),
+        )
+    }
+}

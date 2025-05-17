@@ -30,11 +30,12 @@ import com.jksol.keep.notes.ui.theme.ApplicationTheme
 
 @Composable
 fun MainSearchBarEntryPoint(
+    modifier: Modifier = Modifier,
     innerPadding: PaddingValues,
     onClick: () -> Unit = {},
 ) {
     Box(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .wrapContentHeight()
             .padding(top = innerPadding.calculateTopPadding())
@@ -78,6 +79,6 @@ fun MainSearchBarEntryPoint(
 @Composable
 private fun Preview() {
     ApplicationTheme {
-        MainSearchBarEntryPoint(PaddingValues(0.dp))
+        MainSearchBarEntryPoint(innerPadding = PaddingValues(10.dp))
     }
 }

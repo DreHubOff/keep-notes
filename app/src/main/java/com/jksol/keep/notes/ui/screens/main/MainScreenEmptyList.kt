@@ -3,7 +3,6 @@ package com.jksol.keep.notes.ui.screens.main
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -19,9 +18,12 @@ import com.jksol.keep.notes.R
 import com.jksol.keep.notes.ui.theme.ApplicationTheme
 
 @Composable
-fun MainScreenEmptyList() {
+fun MainScreenEmptyList(
+    modifier: Modifier,
+    message: String,
+) {
     Box(
-        modifier = Modifier.fillMaxSize(),
+        modifier = modifier,
         contentAlignment = Alignment.Center
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -32,7 +34,7 @@ fun MainScreenEmptyList() {
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = stringResource(R.string.notes_you_add_appear_here),
+                text = message,
                 color = MaterialTheme.colorScheme.onSurface,
             )
         }
@@ -43,6 +45,9 @@ fun MainScreenEmptyList() {
 @Composable
 private fun Preview() {
     ApplicationTheme {
-        MainScreenEmptyList()
+        MainScreenEmptyList(
+            modifier = Modifier,
+            message = stringResource(R.string.notes_you_add_appear_here)
+        )
     }
 }

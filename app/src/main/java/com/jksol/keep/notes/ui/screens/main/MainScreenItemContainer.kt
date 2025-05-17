@@ -21,6 +21,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.jksol.keep.notes.R
+import com.jksol.keep.notes.ui.screens.main.model.MainScreenItem
 
 @Composable
 fun MainScreenItemContainer(

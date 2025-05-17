@@ -116,7 +116,6 @@ fun MainSearchBar(
                     focusRequester.freeFocus()
                     focusManager.clearFocus()
                     showSearch = false
-                    onHideSearch()
                 },
                 onDoneClick = {
                     keyboardController?.hide()
@@ -128,10 +127,12 @@ fun MainSearchBar(
     }
 
     LaunchedEffect(showSearch) {
+        delay(330)
         if (showSearch) {
-            delay(500)
             focusRequester.requestFocus()
             keyboardController?.show()
+        } else {
+            onHideSearch()
         }
     }
 }

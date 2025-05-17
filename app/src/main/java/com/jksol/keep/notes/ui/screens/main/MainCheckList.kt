@@ -20,6 +20,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.jksol.keep.notes.MainScreenDemoData
 import com.jksol.keep.notes.R
+import com.jksol.keep.notes.ui.screens.main.model.MainScreenItem
 import com.jksol.keep.notes.ui.theme.ApplicationTheme
 
 private const val MAX_LINES_TITLE = 2

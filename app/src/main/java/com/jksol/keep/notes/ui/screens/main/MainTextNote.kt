@@ -1,50 +1,55 @@
 package com.jksol.keep.notes.ui.screens.main
 
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import androidx.compose.ui.tooling.preview.PreviewParameter
+import androidx.compose.ui.tooling.preview.PreviewParameterProvider
+import com.jksol.keep.notes.MainScreenDemoData
+import com.jksol.keep.notes.ui.theme.ApplicationTheme
+
+private const val MAX_LINES_TITLE = 2
+private const val MAX_LINES_CONTENT = 5
 
 @Composable
 fun MainTextNote(textItem: MainScreenItem.TextNote) {
-    OutlinedCard(
-        modifier = Modifier
-            .fillMaxWidth()
-            .wrapContentHeight(),
-    ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Text(
-                text = textItem.title,
-                fontSize = 18.sp,
-                fontWeight = FontWeight.W600,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-            Spacer(modifier = Modifier.padding(top = 8.dp))
-            Text(
-                text = textItem.content,
-                color = MaterialTheme.colorScheme.onSurface,
-            )
-        }
+    MainScreenItemContainer(item = textItem, maxTitleLines = MAX_LINES_TITLE) { modifier ->
+        ContentText(modifier = modifier, textItem = textItem)
     }
+}
+
+@Composable
+private fun ContentText(modifier: Modifier, textItem: MainScreenItem.TextNote) {
+    Text(
+        modifier = modifier,
+        text = textItem.content,
+        color = MaterialTheme.colorScheme.onSurface,
+        maxLines = MAX_LINES_CONTENT,
+        overflow = TextOverflow.Ellipsis,
+    )
 }
 
 @Preview
 @Composable
-private fun Preview() {
-    MainTextNote(
-        MainScreenItem.TextNote(
-            "Welcome to Your Notes! ✨",
-            "This is where you can quickly save notes after calls — whether it’s an address, a follow-up task, or something you don’t want to forget."
+private fun Preview(@PreviewParameter(MainTextNoteStateProvider::class) state: MainScreenItem.TextNote) {
+    ApplicationTheme {
+        MainTextNote(state)
+    }
+}
+
+private class MainTextNoteStateProvider : PreviewParameterProvider<MainScreenItem.TextNote> {
+    override val values: Sequence<MainScreenItem.TextNote>
+        get() = sequenceOf(
+            MainScreenDemoData.TextNotes.welcomeBanner,
+            MainScreenDemoData.TextNotes.reminderPinnedNote,
+            MainScreenDemoData.TextNotes.emptyTitleNote,
+            MainScreenDemoData.TextNotes.reminderPinnedNoteEmptyTitle,
+            MainScreenDemoData.TextNotes.reminderPinnedNoteLongTitle,
+            MainScreenDemoData.TextNotes.reminderPinnedNoteLongTitle,
+            MainScreenDemoData.TextNotes.pinnedOnlyNote,
+            MainScreenDemoData.TextNotes.reminderOnlyNote,
         )
-    )
 }

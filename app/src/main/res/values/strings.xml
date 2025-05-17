@@ -5,4 +5,9 @@
     <string name="notes_you_add_appear_here">Notes you add appear here</string>
     <string name="search_notes">Search Notes</string>
     <string name="ticked_items_counter">+ %d ticked item</string>
+    <string name="fab_add_note">Text</string>
+    <string name="fab_add_text_note_desc">Add text note</string>
+
+    <string name="fab_add_checklist">Checklist</string>
+    <string name="fab_add_checklist_desc">Add checklist</string>
 </resources>

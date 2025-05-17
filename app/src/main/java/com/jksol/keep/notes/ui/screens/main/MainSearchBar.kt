@@ -34,7 +34,7 @@ fun MainSearchBar(innerPadding: PaddingValues) {
             .fillMaxWidth()
             .wrapContentHeight()
             .padding(top = innerPadding.calculateTopPadding())
-            .padding(top = 20.dp, start = 16.dp, end = 16.dp),
+            .padding(top = 4.dp, start = 16.dp, end = 16.dp),
     ) {
         Button(
             modifier = Modifier

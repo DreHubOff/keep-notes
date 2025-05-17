@@ -13,6 +13,7 @@ val Pink40 = Color(0xFF7D5260)
 val VividBlue = Color(0xFF2A71FF)
 val SemiGray = Color(0x99000000)
 val IceBlue = Color(0xFFE7EEF6)
+val LightSkyBlue = Color(0xFFAAC6FF)
 
 
 val Peach = Color(0xFFFDD5B9)

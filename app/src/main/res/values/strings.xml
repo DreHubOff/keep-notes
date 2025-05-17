@@ -10,4 +10,6 @@
 
     <string name="fab_add_checklist">Checklist</string>
     <string name="fab_add_checklist_desc">Add checklist</string>
+    <string name="close_search_bar_desc">Close search bar</string>
+    <string name="clear_search_bar_desc">Clear search bar</string>
 </resources>

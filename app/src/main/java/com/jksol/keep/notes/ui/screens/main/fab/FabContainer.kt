@@ -1,12 +1,8 @@
 package com.jksol.keep.notes.ui.screens.main.fab
 
 import androidx.annotation.StringRes
-import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement.Absolute.spacedBy
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -17,12 +13,8 @@ import androidx.compose.material.icons.rounded.CheckBox
 import androidx.compose.material.icons.sharp.ModeEdit
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.tooling.preview.Preview
@@ -39,18 +31,12 @@ private data class SecondaryFAB(
 )
 
 @Composable
-fun FabContainer(
+fun MainFabContainer(
+    expanded: Boolean,
     onAddTextNoteClick: () -> Unit = {},
     onAddChecklistClick: () -> Unit = {},
+    onMainFabClicked: () -> Unit = {},
 ) {
-    var expanded by remember { mutableStateOf(false) }
-
-    val overlayColor by animateColorAsState(
-        targetValue = if (expanded) Color.Black.copy(alpha = 0.5f) else Color.Transparent,
-        animationSpec = tween(durationMillis = 300),
-        label = "OverlayFade"
-    )
-
     val secondaryFabs = listOf(
         SecondaryFAB(
             icon = Icons.Rounded.CheckBox,
@@ -67,10 +53,6 @@ fun FabContainer(
     )
 
     Box(modifier = Modifier.fillMaxSize()) {
-        if (expanded || overlayColor != Color.Transparent) {
-            Overlay(overlayColor) { expanded = false }
-        }
-
         Column(
             modifier = Modifier
                 .align(Alignment.BottomEnd)
@@ -87,31 +69,16 @@ fun FabContainer(
                     index = index,
                     onClick = {
                         action()
-                        expanded = false
                     }
                 )
             }
 
             MainFab(
                 clicked = expanded,
-                onClick = { expanded = !expanded },
+                onClick = { onMainFabClicked() },
             )
         }
     }
-}
-
-@Composable
-private fun Overlay(overlayColor: Color, onClick: () -> Unit) {
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(overlayColor)
-            .clickable(
-                onClick = onClick,
-                indication = null,
-                interactionSource = remember { MutableInteractionSource() },
-            )
-    )
 }
 
 @Composable
@@ -174,6 +141,6 @@ private fun AnimatedSecondaryFab(
 @Composable
 private fun Preview() {
     ApplicationTheme {
-        FabContainer()
+        MainFabContainer(true)
     }
 }

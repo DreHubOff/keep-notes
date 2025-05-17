@@ -25,9 +25,13 @@ import com.jksol.keep.notes.ui.theme.ApplicationTheme
 private const val MAX_LINES_TITLE = 2
 
 @Composable
-fun MainCheckList(item: MainScreenItem.CheckList) {
-    MainScreenItemContainer(item = item, maxTitleLines = MAX_LINES_TITLE) { modifier ->
-        ChecklistContent(modifier = modifier, item = item)
+fun MainCheckList(modifier: Modifier, item: MainScreenItem.CheckList) {
+    MainScreenItemContainer(
+        modifier = modifier,
+        item = item,
+        maxTitleLines = MAX_LINES_TITLE
+    ) { contentModifier ->
+        ChecklistContent(modifier = contentModifier, item = item)
     }
 }
 
@@ -80,7 +84,7 @@ private fun ChecklistItems(item: MainScreenItem.CheckList) {
 @Composable
 private fun Preview(@PreviewParameter(MainCheckListStateProvider::class) state: MainScreenItem.CheckList) {
     ApplicationTheme {
-        MainCheckList(state)
+        MainCheckList(modifier = Modifier.padding(8.dp), item = state)
     }
 }
 

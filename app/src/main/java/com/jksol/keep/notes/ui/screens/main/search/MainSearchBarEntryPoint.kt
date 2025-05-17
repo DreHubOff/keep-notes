@@ -1,4 +1,4 @@
-package com.jksol.keep.notes.ui.screens.main
+package com.jksol.keep.notes.ui.screens.main.search
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.sharp.Menu
 import androidx.compose.material3.Button
@@ -28,23 +29,34 @@ import com.jksol.keep.notes.R
 import com.jksol.keep.notes.ui.theme.ApplicationTheme
 
 @Composable
-fun MainSearchBar(innerPadding: PaddingValues) {
+fun MainSearchBarEntryPoint(
+    innerPadding: PaddingValues,
+    onClick: () -> Unit = {},
+) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .wrapContentHeight()
             .padding(top = innerPadding.calculateTopPadding())
-            .padding(top = 4.dp, start = 16.dp, end = 16.dp),
+            .padding(
+                top = SearchBarDefaults.searchButtonExtraPaddingTop,
+                start = SearchBarDefaults.searchButtonHorizontalPadding,
+                end = SearchBarDefaults.searchButtonHorizontalPadding,
+            ),
     ) {
         Button(
             modifier = Modifier
                 .height(46.dp)
-                .fillMaxWidth(), onClick = { /*TODO*/ }, elevation = null, colors = ButtonColors(
-                containerColor = MaterialTheme.colorScheme.surfaceVariant,
-                contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                .fillMaxWidth(),
+            onClick = onClick,
+            elevation = null,
+            colors = ButtonColors(
+                containerColor = SearchBarDefaults.searchBackgroundColor(),
+                contentColor = SearchBarDefaults.searchContentColor(),
                 disabledContainerColor = Color.Transparent,
                 disabledContentColor = Color.Transparent,
-            )
+            ),
+            shape = RoundedCornerShape(SearchBarDefaults.searchButtonCornerRadius)
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -66,6 +78,6 @@ fun MainSearchBar(innerPadding: PaddingValues) {
 @Composable
 private fun Preview() {
     ApplicationTheme {
-        MainSearchBar(PaddingValues(0.dp))
+        MainSearchBarEntryPoint(PaddingValues(0.dp))
     }
 }

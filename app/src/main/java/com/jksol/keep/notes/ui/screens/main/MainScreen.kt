@@ -10,13 +10,20 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.FabPosition
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
@@ -26,8 +33,11 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.jksol.keep.notes.MainScreenDemoData.noNotes
 import com.jksol.keep.notes.MainScreenDemoData.notesList
 import com.jksol.keep.notes.MainScreenDemoData.welcomeBanner
-import com.jksol.keep.notes.ui.screens.main.fab.FabContainer
+import com.jksol.keep.notes.ui.screens.main.fab.MainFabContainer
+import com.jksol.keep.notes.ui.screens.main.search.MainSearchBar
+import com.jksol.keep.notes.ui.screens.main.search.MainSearchBarEntryPoint
 import com.jksol.keep.notes.ui.theme.ApplicationTheme
+import kotlinx.coroutines.launch
 
 @Composable
 fun MainScreen() {
@@ -37,51 +47,101 @@ fun MainScreen() {
 }
 
 @Composable
-private fun ScreenContent(listItems: List<MainScreenItem> = emptyList()) {
+private fun ScreenContent(listItems: List<MainScreenItem>) {
+    var addItemMode by remember { mutableStateOf(false) }
     Scaffold(
         modifier = Modifier.fillMaxSize(),
-        floatingActionButtonPosition = FabPosition.EndOverlay,
+        floatingActionButton = {
+            MainFabContainer(
+                expanded = addItemMode,
+                onAddTextNoteClick = {
+                    addItemMode = false
+                },
+                onAddChecklistClick = {
+                    addItemMode = false
+                },
+                onMainFabClicked = {
+                    addItemMode = !addItemMode
+                },
+            )
+        },
+        floatingActionButtonPosition = FabPosition.End,
         contentWindowInsets = WindowInsets.statusBars
     ) { innerPadding ->
         if (listItems.isEmpty()) {
             MainScreenEmptyList()
         } else {
             Box {
-                MainScreenList(innerPadding, listItems)
-                Box(
-                    Modifier
-                        .fillMaxWidth()
-                        .height(innerPadding.calculateTopPadding() + 4.dp)
-                        .background(MaterialTheme.colorScheme.background.copy(alpha = 0.8f))
+                var enableSearch by remember { mutableStateOf(false) }
+                MainScreenList(
+                    enableSearch = enableSearch,
+                    innerPadding = innerPadding,
+                    listItems = listItems,
+                    onToggleSearchVisibility = { enableSearch = !enableSearch }
                 )
+                if (!enableSearch) {
+                    SystemBarBackground(innerPadding)
+                }
+                Overlay(enabled = addItemMode, onClick = { addItemMode = false })
             }
         }
-
-        FabContainer(
-            onAddTextNoteClick = { },
-            onAddChecklistClick = { },
-        )
     }
 }
 
 @Composable
-private fun MainScreenList(innerPadding: PaddingValues, listItems: List<MainScreenItem>) {
+private fun SystemBarBackground(innerPadding: PaddingValues) {
+    Box(
+        Modifier
+            .fillMaxWidth()
+            .height(innerPadding.calculateTopPadding() + 4.dp)
+            .background(MaterialTheme.colorScheme.background.copy(alpha = 0.8f))
+    )
+}
+
+@Composable
+private fun MainScreenList(
+    innerPadding: PaddingValues,
+    enableSearch: Boolean,
+    listItems: List<MainScreenItem>,
+    onToggleSearchVisibility: () -> Unit,
+) {
+    val scrollState = rememberLazyListState()
+    val coroutineScope = rememberCoroutineScope()
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(
-            top = 16.dp, bottom = 120.dp, start = 8.dp, end = 8.dp
-        ),
+        contentPadding = PaddingValues(bottom = 120.dp),
         verticalArrangement = spacedBy(8.dp),
+        state = scrollState,
     ) {
+        if (enableSearch) {
+            stickyHeader {
+                MainSearchBar(
+                    innerPadding = innerPadding,
+                    onHideSearch = onToggleSearchVisibility,
+                )
+            }
+        } else {
+            item {
+                MainSearchBarEntryPoint(innerPadding) onClick@{
+                    coroutineScope.launch {
+                        scrollState.animateScrollToItem(0)
+                        onToggleSearchVisibility()
+                    }
+                }
+            }
+        }
+
         item {
-            MainSearchBar(innerPadding)
             Spacer(modifier = Modifier.height(8.dp))
         }
 
         items(listItems) { item ->
             when (item) {
-                is MainScreenItem.CheckList -> MainCheckList(item)
-                is MainScreenItem.TextNote -> MainTextNote(item)
+                is MainScreenItem.CheckList ->
+                    MainCheckList(modifier = Modifier.padding(horizontal = 8.dp), item = item)
+
+                is MainScreenItem.TextNote ->
+                    MainTextNote(modifier = Modifier.padding(horizontal = 8.dp), item = item)
             }
         }
     }

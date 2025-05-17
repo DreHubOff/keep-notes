@@ -1,5 +1,6 @@
 package com.jksol.keep.notes.ui.screens.main
 
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -8,6 +9,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
+import androidx.compose.ui.unit.dp
 import com.jksol.keep.notes.MainScreenDemoData
 import com.jksol.keep.notes.ui.theme.ApplicationTheme
 
@@ -15,10 +17,15 @@ private const val MAX_LINES_TITLE = 2
 private const val MAX_LINES_CONTENT = 5
 
 @Composable
-fun MainTextNote(textItem: MainScreenItem.TextNote) {
-    MainScreenItemContainer(item = textItem, maxTitleLines = MAX_LINES_TITLE) { modifier ->
-        ContentText(modifier = modifier, textItem = textItem)
-    }
+fun MainTextNote(modifier: Modifier, item: MainScreenItem.TextNote) {
+    MainScreenItemContainer(
+        modifier = modifier,
+        item = item,
+        maxTitleLines = MAX_LINES_TITLE,
+        { contentModifier ->
+            ContentText(modifier = contentModifier, textItem = item)
+        }
+    )
 }
 
 @Composable
@@ -36,7 +43,7 @@ private fun ContentText(modifier: Modifier, textItem: MainScreenItem.TextNote) {
 @Composable
 private fun Preview(@PreviewParameter(MainTextNoteStateProvider::class) state: MainScreenItem.TextNote) {
     ApplicationTheme {
-        MainTextNote(state)
+        MainTextNote(Modifier.padding(8.dp), state)
     }
 }
 

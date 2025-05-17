@@ -24,12 +24,13 @@ import com.jksol.keep.notes.R
 
 @Composable
 fun MainScreenItemContainer(
+    modifier: Modifier,
     item: MainScreenItem,
     maxTitleLines: Int = 2,
     content: @Composable (Modifier) -> Unit,
 ) {
     OutlinedCard(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .wrapContentHeight(),
     ) {

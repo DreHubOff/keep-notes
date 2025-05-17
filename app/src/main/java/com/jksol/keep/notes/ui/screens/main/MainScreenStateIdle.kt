@@ -56,7 +56,7 @@ fun MainScreenStateIdle(
                 }
             }
 
-            items(listItems) { item ->
+            items(listItems, key = { it.id }) { item ->
                 when (item) {
                     is MainScreenItem.CheckList ->
                         MainCheckList(modifier = Modifier.padding(horizontal = 8.dp), item = item)

@@ -1,12 +1,16 @@
 package com.jksol.keep.notes
 
 import com.jksol.keep.notes.ui.screens.main.model.MainScreenItem
+import java.util.concurrent.atomic.AtomicLong
 
 object MainScreenDemoData {
+
+    private val idsGen = AtomicLong(0)
 
     object TextNotes {
         val welcomeBanner
             get() = MainScreenItem.TextNote(
+                id = idsGen.getAndIncrement(),
                 title = "Welcome to Your Notes! ✨",
                 content = "This is where you can quickly save notes after calls — whether it’s an address, a follow-up task, or something you don’t want to forget.",
                 interactive = false,
@@ -14,6 +18,7 @@ object MainScreenDemoData {
 
         val reminderPinnedNote
             get() = MainScreenItem.TextNote(
+                id = idsGen.getAndIncrement(),
                 title = "(R + PINNED) 🎉 Birthday Reminder",
                 content = "Don’t forget Anna’s birthday on June 5th! 🎂 Don’t forget Anna’s birthday on June 5th! \uD83C\uDF82",
                 hasScheduledReminder = true,
@@ -22,6 +27,7 @@ object MainScreenDemoData {
 
         val reminderOnlyNote
             get() = MainScreenItem.TextNote(
+                id = idsGen.getAndIncrement(),
                 title = "(R) 🎉 Birthday Reminder",
                 content = "Don’t forget Anna’s birthday on June 5th! 🎂 Don’t forget Anna’s birthday on June 5th! \uD83C\uDF82",
                 hasScheduledReminder = true,
@@ -29,6 +35,7 @@ object MainScreenDemoData {
 
         val pinnedOnlyNote
             get() = MainScreenItem.TextNote(
+                id = idsGen.getAndIncrement(),
                 title = "(PINNED) 🎉 Birthday Reminder",
                 content = "Don’t forget Anna’s birthday on June 5th! 🎂 Don’t forget Anna’s birthday on June 5th! \uD83C\uDF82",
                 isPinned = true,
@@ -36,6 +43,7 @@ object MainScreenDemoData {
 
         val reminderPinnedNoteEmptyTitle
             get() = MainScreenItem.TextNote(
+                id = idsGen.getAndIncrement(),
                 title = "",
                 content = "(R + PINNED) This is where you can quickly save notes after calls — whether it’s an address, a follow-up task, or something you don’t want to forget.",
                 hasScheduledReminder = true,
@@ -44,6 +52,7 @@ object MainScreenDemoData {
 
         val reminderPinnedNoteLongTitle
             get() = MainScreenItem.TextNote(
+                id = idsGen.getAndIncrement(),
                 title = "(R + PINNED) This is where you can quickly save notes after calls — whether it’s an address, a follow-up task, or something you don’t want to forget.",
                 content = "This is where you can quickly save notes after calls — whether it’s an address, a follow-up task, or something you don’t want to forget.",
                 hasScheduledReminder = true,
@@ -52,6 +61,7 @@ object MainScreenDemoData {
 
         val emptyTitleNote
             get() = MainScreenItem.TextNote(
+                id = idsGen.getAndIncrement(),
                 title = "",
                 content = "Don’t forget Anna’s birthday on June 5th! 🎂 Don’t forget Anna’s birthday on June 5th! \uD83C\uDF82",
                 hasScheduledReminder = true,
@@ -63,6 +73,7 @@ object MainScreenDemoData {
         // 1. (R + PINNED) checklist
         val reminderPinnedChecklist
             get() = MainScreenItem.CheckList(
+                id = idsGen.getAndIncrement(),
                 title = "(R + PINNED) 🛒 Grocery Run",
                 items = listOf(
                     MainScreenItem.CheckList.Item(isChecked = false, text = "Apples 🍎"),
@@ -77,6 +88,7 @@ object MainScreenDemoData {
         // 2. (R) only
         val reminderOnlyChecklist
             get() = MainScreenItem.CheckList(
+                id = idsGen.getAndIncrement(),
                 title = "(R) 📅 Morning Routine",
                 items = listOf(
                     MainScreenItem.CheckList.Item(isChecked = true, text = "Make coffee ☕"),
@@ -90,6 +102,7 @@ object MainScreenDemoData {
         // 3. (PINNED) only
         val pinnedOnlyChecklist
             get() = MainScreenItem.CheckList(
+                id = idsGen.getAndIncrement(),
                 title = "(PINNED) 📚 Reading List",
                 items = listOf(
                     MainScreenItem.CheckList.Item(isChecked = false, text = "Clean Code 📕"),
@@ -103,6 +116,7 @@ object MainScreenDemoData {
         // 4. Empty title
         val emptyTitleChecklist
             get() = MainScreenItem.CheckList(
+                id = idsGen.getAndIncrement(),
                 title = "",
                 items = listOf(
                     MainScreenItem.CheckList.Item(isChecked = false, text = "Task A"),
@@ -114,6 +128,7 @@ object MainScreenDemoData {
         // 5. Long title
         val longTitleChecklist
             get() = MainScreenItem.CheckList(
+                id = idsGen.getAndIncrement(),
                 title = "(R + PINNED) This is a very long checklist title to test wrapping and overflow behavior in previews 📋✨",
                 items = listOf(
                     MainScreenItem.CheckList.Item(isChecked = true, text = "Step 1 ✔️"),

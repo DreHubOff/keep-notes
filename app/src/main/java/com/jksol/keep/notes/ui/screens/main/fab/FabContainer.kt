@@ -6,7 +6,9 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Arrangement.Absolute.spacedBy
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.CheckBox
@@ -58,7 +60,7 @@ fun MainFabContainer(
                 .align(Alignment.BottomEnd)
                 .padding(16.dp),
             horizontalAlignment = Alignment.End,
-            verticalArrangement = spacedBy(16.dp),
+            verticalArrangement = spacedBy(8.dp),
         ) {
             secondaryFabs.forEachIndexed { index, (icon, text, description, action) ->
                 AnimatedSecondaryFab(
@@ -72,6 +74,8 @@ fun MainFabContainer(
                     }
                 )
             }
+
+            Spacer(Modifier.height(4.dp))
 
             MainFab(
                 clicked = expanded,

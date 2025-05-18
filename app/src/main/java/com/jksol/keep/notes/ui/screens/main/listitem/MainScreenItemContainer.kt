@@ -1,4 +1,4 @@
-package com.jksol.keep.notes.ui.screens.main
+package com.jksol.keep.notes.ui.screens.main.listitem
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Arrangement.Absolute.spacedBy
@@ -18,10 +18,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.jksol.keep.notes.MainScreenDemoData
 import com.jksol.keep.notes.R
 import com.jksol.keep.notes.ui.screens.main.model.MainScreenItem
+import com.jksol.keep.notes.ui.theme.ApplicationTheme
 
 @Composable
 fun MainScreenItemContainer(
@@ -112,5 +115,19 @@ private fun StatusIcons(textItem: MainScreenItem) {
                 tint = MaterialTheme.colorScheme.onSurface
             )
         }
+    }
+}
+
+@Preview
+@Composable
+private fun Preview() {
+    ApplicationTheme {
+        val item = MainScreenDemoData.CheckLists.reminderPinnedChecklist
+        MainScreenItemContainer(
+            modifier = Modifier.fillMaxWidth(),
+            item = item,
+            maxTitleLines = 2,
+            content = {
+            })
     }
 }

@@ -1,4 +1,4 @@
-package com.jksol.keep.notes.ui.screens.main
+package com.jksol.keep.notes.ui.screens.main.listitem
 
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme

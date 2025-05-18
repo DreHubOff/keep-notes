@@ -8,8 +8,8 @@ data class TextNote(
     val content: String,
     val creationDate: LocalDateTime,
     val modificationDate: LocalDateTime,
-
-    // TODO: Not yet color resource
-    val displayColorResource: Int,
-) {
-}
+    val displayColorResource: NoteColor,
+    val isPinned: Boolean = false,
+    val isTrashed: Boolean = false,
+    val hasReminder: Boolean = false,
+)

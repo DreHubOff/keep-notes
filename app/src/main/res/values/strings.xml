@@ -14,5 +14,7 @@
     <string name="clear_search_bar_desc">Clear search bar</string>
 
     <string name="search_empty_list">No matching search</string>
+    <string name="title">Title</string>
+    <string name="note">Note</string>
 
 </resources>

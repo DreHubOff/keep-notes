@@ -26,7 +26,7 @@ sealed class MainScreenItem {
         override val title: String,
         val items: List<Item>,
         val tickedItems: Int = 0,
-        val isOverfilled: Boolean = tickedItems > 0,
+        val hasTickedItems: Boolean = tickedItems > 0,
         override val isPinned: Boolean = false,
         override val hasScheduledReminder: Boolean = false,
         override val interactive: Boolean = true,

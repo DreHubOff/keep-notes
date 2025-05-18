@@ -1,4 +1,4 @@
-package com.jksol.keep.notes.ui
+package com.jksol.keep.notes.ui.navigation
 
 import com.jksol.keep.notes.ui.screens.Route
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -9,10 +9,14 @@ import javax.inject.Singleton
 @Singleton
 class NavigationEventsHost @Inject constructor() {
 
-    private val _navigationRoute = MutableSharedFlow<Route>()
+    private val _navigationRoute = MutableSharedFlow<NavigationEvent>()
     val navigationRoute = _navigationRoute.asSharedFlow()
 
     suspend fun navigate(route: Route) {
-        _navigationRoute.emit(route)
+        _navigationRoute.emit(NavigationEvent.NavigateTo(route))
+    }
+
+    suspend fun navigateBack() {
+        _navigationRoute.emit(NavigationEvent.NavigateBack())
     }
 }

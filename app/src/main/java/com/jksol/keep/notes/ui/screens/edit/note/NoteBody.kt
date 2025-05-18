@@ -118,8 +118,6 @@ private fun Content(
                     Text(
                         text = stringResource(R.string.note),
                         color = MaterialTheme.colorScheme.onSurface,
-                        fontWeight = FontWeight.W600,
-                        fontSize = 16.sp
                     )
                 }
                 innerTextField()

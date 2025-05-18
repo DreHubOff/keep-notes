@@ -3,7 +3,7 @@ package com.jksol.keep.notes.ui.screens.main
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.jksol.keep.notes.MainScreenDemoData
-import com.jksol.keep.notes.ui.NavigationEventsHost
+import com.jksol.keep.notes.ui.navigation.NavigationEventsHost
 import com.jksol.keep.notes.ui.screens.Route
 import com.jksol.keep.notes.ui.screens.main.model.MainScreenState
 import com.jksol.keep.notes.ui.screens.main.model.StateWithList

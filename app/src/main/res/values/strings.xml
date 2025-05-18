@@ -16,5 +16,7 @@
     <string name="search_empty_list">No matching search</string>
     <string name="title">Title</string>
     <string name="note">Note</string>
+    <string name="go_back">Go back</string>
+    <string name="pin_this_note">Pin this note</string>
 
 </resources>

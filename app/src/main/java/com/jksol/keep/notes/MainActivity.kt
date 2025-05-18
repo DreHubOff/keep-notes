@@ -10,7 +10,8 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.jksol.keep.notes.ui.NavigationEventsHost
+import com.jksol.keep.notes.ui.navigation.NavigationEvent
+import com.jksol.keep.notes.ui.navigation.NavigationEventsHost
 import com.jksol.keep.notes.ui.screens.Route
 import com.jksol.keep.notes.ui.screens.edit.note.EditNoteScreen
 import com.jksol.keep.notes.ui.screens.main.MainScreen
@@ -47,9 +48,12 @@ class MainActivity : ComponentActivity() {
                     }
                 }
                 LaunchedEffect(navigationEventsHost) {
-                    navigationEventsHost.navigationRoute.collectLatest {
+                    navigationEventsHost.navigationRoute.collectLatest { event ->
                         withContext(Dispatchers.Main) {
-                            navController.navigate(it.route)
+                            when (event) {
+                                is NavigationEvent.NavigateBack -> navController.popBackStack()
+                                is NavigationEvent.NavigateTo -> navController.navigate(event.route.route)
+                            }
                         }
                     }
                 }

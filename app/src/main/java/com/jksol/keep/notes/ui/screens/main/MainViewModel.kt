@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.jksol.keep.notes.MainScreenDemoData
 import com.jksol.keep.notes.ui.navigation.NavigationEventsHost
 import com.jksol.keep.notes.ui.screens.Route
+import com.jksol.keep.notes.ui.screens.main.model.MainScreenItem
 import com.jksol.keep.notes.ui.screens.main.model.MainScreenState
 import com.jksol.keep.notes.ui.screens.main.model.StateWithList
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -36,10 +37,16 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    fun openTextNoteEditor() {
+    fun openTextNoteEditor(note: MainScreenItem.TextNote?) {
         viewModelScope.launch {
             exitAddModeSelection()
-            navigationEventsHost.navigate(Route.EditNoteScreen())
+            navigationEventsHost.navigate(
+                Route.EditNoteScreen(
+                    noteId = note?.id,
+                    noteTitle = note?.title,
+                    noteContent = note?.content
+                )
+            )
         }
     }
 

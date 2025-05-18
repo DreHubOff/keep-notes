@@ -18,12 +18,17 @@ private const val MAX_LINES_TITLE = 2
 private const val MAX_LINES_CONTENT = 5
 
 @Composable
-fun MainTextNote(modifier: Modifier, item: MainScreenItem.TextNote) {
+fun MainTextNote(
+    modifier: Modifier,
+    item: MainScreenItem.TextNote,
+    onClick: (() -> Unit)? = null,
+) {
     MainScreenItemContainer(
         modifier = modifier,
         item = item,
         maxTitleLines = MAX_LINES_TITLE,
-        { contentModifier ->
+        onClick = onClick,
+        content = { contentModifier ->
             ContentText(modifier = contentModifier, textItem = item)
         }
     )

@@ -28,6 +28,7 @@ fun MainScreenStateIdle(
     innerPadding: PaddingValues,
     listItems: List<MainScreenItem>,
     onToggleSearchVisibility: () -> Unit = {},
+    openTextNoteEditor: (MainScreenItem.TextNote?) -> Unit = {},
 ) {
     val scrollState = rememberLazyListState()
     val coroutineScope = rememberCoroutineScope()
@@ -64,7 +65,11 @@ fun MainScreenStateIdle(
                         MainCheckList(modifier = Modifier.padding(horizontal = 8.dp), item = item)
 
                     is MainScreenItem.TextNote ->
-                        MainTextNote(modifier = Modifier.padding(horizontal = 8.dp), item = item)
+                        MainTextNote(
+                            modifier = Modifier.padding(horizontal = 8.dp),
+                            item = item,
+                            onClick = { openTextNoteEditor(item) }
+                        )
                 }
             }
         }

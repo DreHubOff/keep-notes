@@ -36,14 +36,14 @@ class MainActivity : ComponentActivity() {
                 val navController = rememberNavController()
                 NavHost(
                     navController = navController,
-                    startDestination = Route.MainScreen().route,
+                    startDestination = Route.MainScreen,
                     popExitTransition = { fadeOut() },
                     popEnterTransition = { fadeIn() },
                 ) {
-                    composable(Route.MainScreen().route) {
+                    composable<Route.MainScreen> {
                         MainScreen()
                     }
-                    composable(Route.EditNoteScreen().route) {
+                    composable<Route.EditNoteScreen> { backStackEntry ->
                         EditNoteScreen()
                     }
                 }
@@ -52,7 +52,7 @@ class MainActivity : ComponentActivity() {
                         withContext(Dispatchers.Main) {
                             when (event) {
                                 is NavigationEvent.NavigateBack -> navController.popBackStack()
-                                is NavigationEvent.NavigateTo -> navController.navigate(event.route.route)
+                                is NavigationEvent.NavigateTo -> navController.navigate(event.route)
                             }
                         }
                     }

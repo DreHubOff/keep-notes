@@ -25,6 +25,7 @@ import com.jksol.keep.notes.MainScreenDemoData.noNotes
 import com.jksol.keep.notes.MainScreenDemoData.notesList
 import com.jksol.keep.notes.MainScreenDemoData.welcomeBanner
 import com.jksol.keep.notes.ui.screens.main.fab.MainFabContainer
+import com.jksol.keep.notes.ui.screens.main.model.MainScreenItem
 import com.jksol.keep.notes.ui.screens.main.model.MainScreenState
 import com.jksol.keep.notes.ui.theme.ApplicationTheme
 
@@ -45,7 +46,7 @@ fun MainScreen() {
 @Composable
 private fun ScreenContent(
     state: MainScreenState,
-    openTextNoteEditor: () -> Unit = {},
+    openTextNoteEditor: (MainScreenItem.TextNote?) -> Unit = {},
     openCheckListEditor: () -> Unit = {},
     toggleAddModeSelection: () -> Unit = {},
     onToggleSearchVisibility: () -> Unit = {},
@@ -57,7 +58,7 @@ private fun ScreenContent(
         floatingActionButton = {
             MainFabContainer(
                 expanded = showOverlay,
-                onAddTextNoteClick = { openTextNoteEditor() },
+                onAddTextNoteClick = { openTextNoteEditor(null) },
                 onAddChecklistClick = { openCheckListEditor() },
                 onMainFabClicked = { toggleAddModeSelection() },
             )
@@ -72,6 +73,7 @@ private fun ScreenContent(
                 innerPadding = innerPadding,
                 onToggleSearchVisibility = onToggleSearchVisibility,
                 onNewSearchPrompt = onNewSearchPrompt,
+                openTextNoteEditor = openTextNoteEditor,
             )
             Overlay(enabled = showOverlay, onClick = { toggleAddModeSelection() })
         }
@@ -84,13 +86,15 @@ private fun DisplayState(
     innerPadding: PaddingValues,
     onToggleSearchVisibility: () -> Unit,
     onNewSearchPrompt: (String) -> Unit,
+    openTextNoteEditor: (MainScreenItem.TextNote?) -> Unit,
 ) {
     when (state) {
         is MainScreenState.Idle -> {
             MainScreenStateIdle(
                 innerPadding = innerPadding,
                 listItems = state.screenItems,
-                onToggleSearchVisibility = onToggleSearchVisibility
+                onToggleSearchVisibility = onToggleSearchVisibility,
+                openTextNoteEditor = openTextNoteEditor,
             )
             SystemBarBackground(innerPadding)
         }

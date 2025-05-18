@@ -1,8 +1,11 @@
 package com.jksol.keep.notes.ui.screens.edit.note
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.navigation.toRoute
 import com.jksol.keep.notes.ui.navigation.NavigationEventsHost
+import com.jksol.keep.notes.ui.screens.Route
 import com.jksol.keep.notes.ui.screens.edit.note.model.EditNoteScreenState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -16,11 +19,25 @@ import javax.inject.Inject
 
 @HiltViewModel
 class EditNoteViewModel @Inject constructor(
+    savedStateHandle: SavedStateHandle,
     private val navigationEventsHost: NavigationEventsHost,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow<EditNoteScreenState>(EditNoteScreenState.Idle())
     val state: StateFlow<EditNoteScreenState> = _state.asStateFlow()
+
+    init {
+        val currentRoute = savedStateHandle.toRoute<Route.EditNoteScreen>()
+        if (currentRoute.noteId != null) {
+            viewModelScope.launch {
+                val initialState = EditNoteScreenState.Idle(
+                    title = currentRoute.noteTitle.orEmpty(),
+                    content = currentRoute.noteContent.orEmpty(),
+                )
+                _state.emit(initialState)
+            }
+        }
+    }
 
     private var titleModificationJob: Job? = null
     private var contentModificationJob: Job? = null

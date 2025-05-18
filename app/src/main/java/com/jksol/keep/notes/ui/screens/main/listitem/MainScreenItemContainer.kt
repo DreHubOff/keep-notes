@@ -31,12 +31,14 @@ fun MainScreenItemContainer(
     modifier: Modifier,
     item: MainScreenItem,
     maxTitleLines: Int = 2,
+    onClick: (() -> Unit)? = null,
     content: @Composable (Modifier) -> Unit,
 ) {
     OutlinedCard(
         modifier = modifier
             .fillMaxWidth()
             .wrapContentHeight(),
+        onClick = { onClick?.invoke() },
     ) {
         if (item.title.isNotEmpty()) {
             WithTitleNote(

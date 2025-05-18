@@ -8,9 +8,5 @@ sealed class Route {
     data object MainScreen : Route()
 
     @Serializable
-    data class EditNoteScreen(
-        val noteId: Long? = null,
-        val noteTitle: String? = null,
-        val noteContent: String? = null,
-    ) : Route()
+    data class EditNoteScreen(val noteId: Long?) : Route()
 }

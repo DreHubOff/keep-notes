@@ -1,5 +1,8 @@
 package com.jksol.keep.notes.core.model
 
+import androidx.annotation.Keep
+
+@Keep
 enum class NoteColor(val day: Long, val night: Long) {
     Peach(0xFFFDD5B9, 0xFF9A511B),
     Mint(0xFFC1E9D7, 0xFF264D3B),

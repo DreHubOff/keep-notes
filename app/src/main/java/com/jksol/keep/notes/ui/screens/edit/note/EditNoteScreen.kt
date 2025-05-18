@@ -1,5 +1,6 @@
 package com.jksol.keep.notes.ui.screens.edit.note
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -128,7 +129,7 @@ private fun ActionBar(
                 )
             }
             Spacer(modifier = Modifier.weight(1f))
-            var checked by remember { mutableStateOf(pinned) }
+            var checked by remember(pinned) { mutableStateOf(pinned) }
             PinCheckbox(
                 isChecked = checked,
                 onCheckedChange = {
@@ -164,6 +165,8 @@ private fun DisplayState(
                 onContentChanged = onContentChanged,
             )
         }
+
+        EditNoteScreenState.None -> return
     }
 }
 
@@ -179,11 +182,13 @@ private class EditNoteScreenStateProvider : PreviewParameterProvider<EditNoteScr
     override val values: Sequence<EditNoteScreenState>
         get() = sequenceOf(
             EditNoteScreenState.Idle(
+                noteId = 0,
                 title = MainScreenDemoData.TextNotes.welcomeBanner.title,
                 content = MainScreenDemoData.TextNotes.welcomeBanner.content,
                 modificationStatusMessage = "Edited 09:48 am",
             ),
             EditNoteScreenState.Idle(
+                noteId = 1,
                 modificationStatusMessage = "Edited 09:48 am",
             ),
         )

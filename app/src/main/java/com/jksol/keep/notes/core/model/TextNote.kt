@@ -8,8 +8,22 @@ data class TextNote(
     val content: String,
     val creationDate: LocalDateTime,
     val modificationDate: LocalDateTime,
-    val displayColorResource: NoteColor,
-    val isPinned: Boolean = false,
-    val isTrashed: Boolean = false,
-    val hasReminder: Boolean = false,
-)
+    val displayColorResource: NoteColor?,
+    val isPinned: Boolean,
+    val isTrashed: Boolean,
+    val hasReminder: Boolean,
+) {
+    companion object {
+        fun generateEmpty() = TextNote(
+            id = 0,
+            title = "",
+            content = "",
+            creationDate = LocalDateTime.now(),
+            modificationDate = LocalDateTime.now(),
+            displayColorResource = null,
+            isPinned = false,
+            isTrashed = false,
+            hasReminder = false
+        )
+    }
+}

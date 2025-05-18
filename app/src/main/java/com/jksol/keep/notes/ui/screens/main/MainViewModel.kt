@@ -3,6 +3,8 @@ package com.jksol.keep.notes.ui.screens.main
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.jksol.keep.notes.MainScreenDemoData
+import com.jksol.keep.notes.ui.NavigationEventsHost
+import com.jksol.keep.notes.ui.screens.Route
 import com.jksol.keep.notes.ui.screens.main.model.MainScreenState
 import com.jksol.keep.notes.ui.screens.main.model.StateWithList
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -15,7 +17,9 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class MainViewModel @Inject constructor() : ViewModel() {
+class MainViewModel @Inject constructor(
+    private val navigationEventsHost: NavigationEventsHost,
+) : ViewModel() {
 
     private val _uiState = MutableStateFlow<MainScreenState>(MainScreenState.Idle(emptyList()))
     val uiState: StateFlow<MainScreenState> = _uiState.asStateFlow()
@@ -35,6 +39,7 @@ class MainViewModel @Inject constructor() : ViewModel() {
     fun openTextNoteEditor() {
         viewModelScope.launch {
             exitAddModeSelection()
+            navigationEventsHost.navigate(Route.EditNoteScreen())
         }
     }
 

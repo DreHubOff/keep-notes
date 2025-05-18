@@ -19,7 +19,7 @@ import androidx.compose.ui.unit.sp
 import com.jksol.keep.notes.ui.theme.ApplicationTheme
 
 @Composable
-fun ModificationStatusOverlay(
+fun ModificationDateOverlay(
     navigationBarPadding: Dp,
     message: String,
 ) {
@@ -46,6 +46,6 @@ fun ModificationStatusOverlay(
 @Composable
 private fun Preview() {
     ApplicationTheme {
-        ModificationStatusOverlay(navigationBarPadding = 10.dp, message = "This is a preview")
+        ModificationDateOverlay(navigationBarPadding = 10.dp, message = "This is a preview")
     }
 }

@@ -32,18 +32,15 @@ import com.jksol.keep.notes.ui.theme.ApplicationTheme
 @Composable
 fun MainScreen() {
     val viewModel = hiltViewModel<MainViewModel>()
-    val state by viewModel.uiState.collectAsState(null)
-    val stateCache = state
-    if (stateCache != null) {
-        ScreenContent(
-            stateCache,
-            openTextNoteEditor = viewModel::openTextNoteEditor,
-            openCheckListEditor = viewModel::openCheckListEditor,
-            toggleAddModeSelection = viewModel::toggleAddModeSelection,
-            onToggleSearchVisibility = viewModel::onToggleSearchVisibility,
-            onNewSearchPrompt = viewModel::onNewSearchPrompt,
-        )
-    }
+    val state by viewModel.uiState.collectAsState(MainScreenState.None)
+    ScreenContent(
+        state,
+        openTextNoteEditor = viewModel::openTextNoteEditor,
+        openCheckListEditor = viewModel::openCheckListEditor,
+        toggleAddModeSelection = viewModel::toggleAddModeSelection,
+        onToggleSearchVisibility = viewModel::onToggleSearchVisibility,
+        onNewSearchPrompt = viewModel::onNewSearchPrompt,
+    )
 }
 
 @Composable
@@ -111,7 +108,7 @@ private fun DisplayState(
             )
         }
 
-        else -> throw IllegalArgumentException("Unknown state: $state")
+        else -> return
     }
 }
 

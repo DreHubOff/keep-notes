@@ -6,6 +6,8 @@ interface StateWithList {
 
 sealed class MainScreenState {
 
+    data object None : MainScreenState()
+
     data class Idle(override val screenItems: List<MainScreenItem>) : MainScreenState(), StateWithList
 
     data class Search(override val screenItems: List<MainScreenItem>) : MainScreenState(), StateWithList

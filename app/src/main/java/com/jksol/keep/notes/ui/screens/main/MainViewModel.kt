@@ -26,10 +26,10 @@ class MainViewModel @Inject constructor(
     private val textNotesRepository: TextNotesRepository,
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow<MainScreenState>(MainScreenState.Idle(emptyList()))
-    val uiState: Flow<MainScreenState> = _uiState.asStateFlow().onStart {
-        loadIdleState()
-    }
+    private val _uiState = MutableStateFlow<MainScreenState>(MainScreenState.None)
+    val uiState: Flow<MainScreenState> = _uiState
+        .asStateFlow()
+        .onStart { loadIdleState() }
 
     private var searchJob: Job? = null
 

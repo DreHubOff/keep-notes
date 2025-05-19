@@ -1,6 +1,7 @@
 package com.jksol.keep.notes.ui.screens.main
 
 import androidx.compose.foundation.layout.Arrangement.Absolute.spacedBy
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -33,6 +34,23 @@ fun MainScreenStateIdle(
     val scrollState = rememberLazyListState()
     val coroutineScope = rememberCoroutineScope()
 
+    if (listItems.isEmpty()) {
+        Column {
+            MainSearchBarEntryPoint(innerPadding = innerPadding) onClick@{
+                coroutineScope.launch {
+                    onToggleSearchVisibility()
+                }
+            }
+            MainScreenEmptyList(
+                modifier = Modifier
+                    .padding(bottom = 100.dp)
+                    .fillMaxSize(),
+                message = stringResource(R.string.notes_you_add_appear_here),
+            )
+        }
+        return
+    }
+
     LazyColumn(
         modifier = modifier.fillMaxSize(),
         contentPadding = PaddingValues(bottom = 120.dp),
@@ -50,28 +68,18 @@ fun MainScreenStateIdle(
                 }
             }
         }
-        if (listItems.isEmpty()) {
-            item {
-                MainScreenEmptyList(
-                    modifier = Modifier
-                        .padding(bottom = 100.dp)
-                        .fillMaxSize(),
-                    message = stringResource(R.string.notes_you_add_appear_here),
-                )
-            }
-        } else {
-            items(listItems, key = { it.id }) { item ->
-                when (item) {
-                    is MainScreenItem.CheckList ->
-                        MainCheckList(modifier = Modifier.padding(horizontal = 8.dp), item = item)
 
-                    is MainScreenItem.TextNote ->
-                        MainTextNote(
-                            modifier = Modifier.padding(horizontal = 8.dp),
-                            item = item,
-                            onClick = { openTextNoteEditor(item) }
-                        )
-                }
+        items(listItems, key = { it.id }) { item ->
+            when (item) {
+                is MainScreenItem.CheckList ->
+                    MainCheckList(modifier = Modifier.padding(horizontal = 8.dp), item = item)
+
+                is MainScreenItem.TextNote ->
+                    MainTextNote(
+                        modifier = Modifier.padding(horizontal = 8.dp),
+                        item = item,
+                        onClick = { openTextNoteEditor(item) }
+                    )
             }
         }
     }

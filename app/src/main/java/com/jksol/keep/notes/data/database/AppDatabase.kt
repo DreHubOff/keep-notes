@@ -7,8 +7,7 @@ import com.jksol.keep.notes.data.database.converter.Converters
 import com.jksol.keep.notes.data.database.dao.TextNoteDao
 import com.jksol.keep.notes.data.database.table.TextNoteEntity
 
-
-@Database(entities = [TextNoteEntity::class], version = 1)
+@Database(entities = [TextNoteEntity::class], version = 1, exportSchema = false)
 @TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
 

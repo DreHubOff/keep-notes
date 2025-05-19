@@ -6,6 +6,7 @@ import androidx.room.Insert
 import androidx.room.Query
 import com.jksol.keep.notes.data.database.table.TEXT_NOTE_TABLE_NAME
 import com.jksol.keep.notes.data.database.table.TextNoteEntity
+import java.time.OffsetDateTime
 
 @Dao
 interface TextNoteDao {
@@ -27,6 +28,27 @@ interface TextNoteDao {
 
     @Query("UPDATE $TEXT_NOTE_TABLE_NAME SET pinned = :pinned WHERE id = :id")
     suspend fun updatePennedStateById(id: Long, pinned: Int)
+
+    @Query("UPDATE $TEXT_NOTE_TABLE_NAME SET modification_date = :date WHERE id = :id")
+    suspend fun updateModificationDateById(id: Long, date: OffsetDateTime)
+
+    @Query(
+        """
+        UPDATE $TEXT_NOTE_TABLE_NAME 
+        SET modification_date = :updateTime,
+            title = :title,
+            content = :content,
+            pinned = :isPinned 
+        WHERE id = :id
+        """
+    )
+    suspend fun updateNoteContent(
+        id: Long,
+        updateTime: OffsetDateTime,
+        title: String,
+        content: String,
+        isPinned: Boolean,
+    )
 
     @Insert
     suspend fun insertTextNote(textNote: TextNoteEntity): Long

@@ -2,21 +2,25 @@ package com.jksol.keep.notes.data.database.converter
 
 import androidx.room.TypeConverter
 import com.jksol.keep.notes.core.model.NoteColor
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
+import java.time.Instant
+import java.time.OffsetDateTime
+import java.time.ZoneId
 
 class Converters {
 
-    private val formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME
-
     @TypeConverter
-    fun fromLocalDateTime(value: LocalDateTime?): String? {
-        return value?.format(formatter)
+    fun fromLocalDateTime(value: OffsetDateTime?): Long? {
+        return value?.toEpochSecond()
     }
 
     @TypeConverter
-    fun toLocalDateTime(value: String?): LocalDateTime? {
-        return value?.let { LocalDateTime.parse(it, formatter) }
+    fun toLocalDateTime(value: Long?): OffsetDateTime? {
+        return value?.let {
+            OffsetDateTime.ofInstant(
+                Instant.ofEpochSecond(it),
+                ZoneId.systemDefault()
+            )
+        }
     }
 
     @TypeConverter

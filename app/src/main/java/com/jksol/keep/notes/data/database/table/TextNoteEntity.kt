@@ -4,7 +4,7 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.jksol.keep.notes.core.model.NoteColor
-import java.time.LocalDateTime
+import java.time.OffsetDateTime
 
 const val TEXT_NOTE_TABLE_NAME = "text_note"
 
@@ -20,11 +20,11 @@ data class TextNoteEntity(
     @ColumnInfo(name = "content")
     val content: String,
 
-    @ColumnInfo(name = "creation_date")
-    val creationDate: LocalDateTime,
+    @ColumnInfo(name = "creation_date", typeAffinity = ColumnInfo.INTEGER)
+    val creationDate: OffsetDateTime,
 
-    @ColumnInfo(name = "modification_date")
-    val modificationDate: LocalDateTime,
+    @ColumnInfo(name = "modification_date", typeAffinity = ColumnInfo.INTEGER)
+    val modificationDate: OffsetDateTime,
 
     @ColumnInfo(name = "display_color_resource")
     val displayColorResource: NoteColor?,

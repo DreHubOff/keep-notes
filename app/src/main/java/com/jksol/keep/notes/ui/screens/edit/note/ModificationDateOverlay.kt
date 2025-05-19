@@ -34,7 +34,7 @@ fun ModificationDateOverlay(
             modifier = Modifier
                 .fillMaxWidth()
                 .background(MaterialTheme.colorScheme.background.copy(alpha = 0.8f))
-                .padding(top = 4.dp, bottom = navigationBarPadding + 4.dp, start = 8.dp, end = 8.dp),
+                .padding(top = 4.dp, bottom = navigationBarPadding, start = 8.dp, end = 8.dp),
             textAlign = TextAlign.Center,
             color = MaterialTheme.colorScheme.onSurface,
             fontSize = 12.sp
@@ -46,6 +46,9 @@ fun ModificationDateOverlay(
 @Composable
 private fun Preview() {
     ApplicationTheme {
-        ModificationDateOverlay(navigationBarPadding = 10.dp, message = "This is a preview")
+        ModificationDateOverlay(
+            navigationBarPadding = 10.dp,
+            message = "This is a preview",
+        )
     }
 }

@@ -5,6 +5,7 @@ import com.jksol.keep.notes.data.database.dao.TextNoteDao
 import com.jksol.keep.notes.data.database.table.TextNoteEntity
 import com.jksol.keep.notes.data.mapper.toDomain
 import com.jksol.keep.notes.data.mapper.toEntity
+import java.time.OffsetDateTime
 import javax.inject.Inject
 
 class TextNotesRepository @Inject constructor(
@@ -36,5 +37,19 @@ class TextNotesRepository @Inject constructor(
 
     suspend fun delete(textNote: TextNote) {
         textNoteDao.delete(textNote.toEntity())
+    }
+
+    suspend fun updateModificationDate(noteId: Long, date: OffsetDateTime) {
+        textNoteDao.updateModificationDateById(id = noteId, date = date)
+    }
+
+    suspend fun updateNoteContent(
+        noteId: Long,
+        updateTime: OffsetDateTime,
+        title: String,
+        content: String,
+        isPinned: Boolean,
+    ) {
+        textNoteDao.updateNoteContent(id = noteId, updateTime = updateTime, title = title, content = content, isPinned = isPinned)
     }
 }

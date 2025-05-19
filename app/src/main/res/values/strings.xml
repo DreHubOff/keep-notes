@@ -21,5 +21,7 @@
     <string name="empty_notes_discarded">Empty notes discarded</string>
     <string name="welcome_banner_title">"Welcome to Your Notes! ✨ "</string>
     <string name="welcome_banner_content">This is where you can quickly save notes after calls — whether it’s an address, a follow-up task, or something you don’t want to forget.</string>
+    <string name="edited_just_now">Edited just now</string>
+    <string name="edited_pattern">Edited %s</string>
 
 </resources>

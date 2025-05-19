@@ -16,7 +16,7 @@ class NavigationEventsHost @Inject constructor() {
         _navigationRoute.emit(NavigationEvent.NavigateTo(route))
     }
 
-    suspend fun navigateBack() {
-        _navigationRoute.emit(NavigationEvent.NavigateBack())
+    suspend fun navigateBack(result: Pair<String, Any>? = null) {
+        _navigationRoute.emit(NavigationEvent.NavigateBack(result = result))
     }
 }

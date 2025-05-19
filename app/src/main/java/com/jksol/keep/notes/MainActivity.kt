@@ -40,10 +40,13 @@ class MainActivity : ComponentActivity() {
                     popExitTransition = { fadeOut() },
                     popEnterTransition = { fadeIn() },
                 ) {
-                    composable<Route.MainScreen> {
-                        MainScreen()
+                    composable<Route.MainScreen> { backStackEntry ->
+                        val noteEditingResult = backStackEntry
+                            .savedStateHandle
+                            .get<Route.EditNoteScreen.Result>(Route.EditNoteScreen.Result.KEY)
+                        MainScreen(noteEditingResult)
                     }
-                    composable<Route.EditNoteScreen> { backStackEntry ->
+                    composable<Route.EditNoteScreen> {
                         EditNoteScreen()
                     }
                 }
@@ -51,7 +54,16 @@ class MainActivity : ComponentActivity() {
                     navigationEventsHost.navigationRoute.collectLatest { event ->
                         withContext(Dispatchers.Main) {
                             when (event) {
-                                is NavigationEvent.NavigateBack -> navController.popBackStack()
+                                is NavigationEvent.NavigateBack -> {
+                                    event.result?.let { (key, result) ->
+                                        navController
+                                            .previousBackStackEntry
+                                            ?.savedStateHandle
+                                            ?.set(key, result)
+                                    }
+                                    navController.popBackStack()
+                                }
+
                                 is NavigationEvent.NavigateTo -> navController.navigate(event.route)
                             }
                         }

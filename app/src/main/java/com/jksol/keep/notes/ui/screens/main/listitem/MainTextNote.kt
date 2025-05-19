@@ -29,7 +29,9 @@ fun MainTextNote(
         maxTitleLines = MAX_LINES_TITLE,
         onClick = onClick,
         content = { contentModifier ->
-            ContentText(modifier = contentModifier, textItem = item)
+            if (item.content.isNotEmpty()) {
+                ContentText(modifier = contentModifier, textItem = item)
+            }
         }
     )
 }
@@ -64,5 +66,6 @@ private class MainTextNoteStateProvider : PreviewParameterProvider<MainScreenIte
             MainScreenDemoData.TextNotes.reminderPinnedNoteLongTitle,
             MainScreenDemoData.TextNotes.pinnedOnlyNote,
             MainScreenDemoData.TextNotes.reminderOnlyNote,
+            MainScreenDemoData.TextNotes.emptyContentNote,
         )
 }

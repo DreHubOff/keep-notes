@@ -33,32 +33,33 @@ fun MainScreenStateIdle(
     val scrollState = rememberLazyListState()
     val coroutineScope = rememberCoroutineScope()
 
-    if (listItems.isEmpty()) {
-        MainScreenEmptyList(
-            modifier = Modifier
-                .padding(bottom = 100.dp)
-                .fillMaxSize(),
-            message = stringResource(R.string.notes_you_add_appear_here),
-        )
-    } else {
-        LazyColumn(
-            modifier = modifier.fillMaxSize(),
-            contentPadding = PaddingValues(bottom = 120.dp),
-            verticalArrangement = spacedBy(8.dp),
-            state = scrollState,
-        ) {
-            item {
-                MainSearchBarEntryPoint(
-                    innerPadding = innerPadding,
-                    modifier = Modifier.padding(bottom = 8.dp),
-                ) onClick@{
-                    coroutineScope.launch {
-                        scrollState.animateScrollToItem(0)
-                        onToggleSearchVisibility()
-                    }
+    LazyColumn(
+        modifier = modifier.fillMaxSize(),
+        contentPadding = PaddingValues(bottom = 120.dp),
+        verticalArrangement = spacedBy(8.dp),
+        state = scrollState,
+    ) {
+        item {
+            MainSearchBarEntryPoint(
+                innerPadding = innerPadding,
+                modifier = Modifier.padding(bottom = 8.dp),
+            ) onClick@{
+                coroutineScope.launch {
+                    scrollState.animateScrollToItem(0)
+                    onToggleSearchVisibility()
                 }
             }
-
+        }
+        if (listItems.isEmpty()) {
+            item {
+                MainScreenEmptyList(
+                    modifier = Modifier
+                        .padding(bottom = 100.dp)
+                        .fillMaxSize(),
+                    message = stringResource(R.string.notes_you_add_appear_here),
+                )
+            }
+        } else {
             items(listItems, key = { it.id }) { item ->
                 when (item) {
                     is MainScreenItem.CheckList ->

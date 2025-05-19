@@ -1,16 +1,53 @@
 package com.jksol.keep.notes.ui.screens.main.model
 
+import com.jksol.keep.notes.ui.shared.SnackbarEvent
+
 interface StateWithList {
     val screenItems: List<MainScreenItem>
 }
 
-sealed class MainScreenState {
+interface SnackbarEventDelivery {
+    val snackbarEvent: SnackbarEvent?
+    fun withSnackbarEvent(snackbarEvent: SnackbarEvent?): MainScreenState
+}
 
-    data object None : MainScreenState()
+sealed class MainScreenState : SnackbarEventDelivery {
 
-    data class Idle(override val screenItems: List<MainScreenItem>) : MainScreenState(), StateWithList
+    data class None(override val snackbarEvent: SnackbarEvent? = null) : MainScreenState() {
+        override fun withSnackbarEvent(snackbarEvent: SnackbarEvent?): MainScreenState = copy(snackbarEvent = snackbarEvent)
+    }
 
-    data class Search(override val screenItems: List<MainScreenItem>) : MainScreenState(), StateWithList
+    data class Idle(
+        override val screenItems: List<MainScreenItem>,
+        override val snackbarEvent: SnackbarEvent? = null,
+    ) : MainScreenState(), StateWithList {
 
-    data class AddModeSelection(val previousState: MainScreenState) : MainScreenState()
+        override fun withSnackbarEvent(snackbarEvent: SnackbarEvent?): MainScreenState =
+            copy(snackbarEvent = snackbarEvent)
+    }
+
+    data class Search(
+        override val screenItems: List<MainScreenItem>,
+        override val snackbarEvent: SnackbarEvent? = null,
+    ) : MainScreenState(), StateWithList {
+
+        override fun withSnackbarEvent(snackbarEvent: SnackbarEvent?): MainScreenState =
+            copy(snackbarEvent = snackbarEvent)
+    }
+
+    data class AddModeSelection(
+        val previousState: MainScreenState,
+        override val snackbarEvent: SnackbarEvent? = null,
+    ) : MainScreenState() {
+        override fun withSnackbarEvent(snackbarEvent: SnackbarEvent?): MainScreenState =
+            copy(snackbarEvent = snackbarEvent)
+    }
+
+    data class WelcomeBanner(
+        val textNote: MainScreenItem.TextNote,
+        override val snackbarEvent: SnackbarEvent? = null,
+    ) : MainScreenState() {
+        override fun withSnackbarEvent(snackbarEvent: SnackbarEvent?): MainScreenState =
+            copy(snackbarEvent = snackbarEvent)
+    }
 }

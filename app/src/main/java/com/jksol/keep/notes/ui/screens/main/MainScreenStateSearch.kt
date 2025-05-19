@@ -40,7 +40,9 @@ fun MainScreenStateSearch(
             innerPadding = innerPadding,
             onHideSearch = {
                 coroutineScope.launch {
-                    scrollState.animateScrollToItem(0)
+                    if (listItems.isNotEmpty()) {
+                        scrollState.animateScrollToItem(0)
+                    }
                     onHideSearch()
                 }
             },

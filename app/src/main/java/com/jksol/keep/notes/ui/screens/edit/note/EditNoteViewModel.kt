@@ -64,8 +64,14 @@ class EditNoteViewModel @Inject constructor(
     }
 
     fun onBackClicked() {
-        viewModelScope.launch {
-            navigationEventsHost.navigateBack()
+        viewModelScope.launch(Dispatchers.Default) {
+            contentModificationJob?.join()
+            titleModificationJob?.join()
+            val currentState = _state.value
+            if (currentState !is EditNoteScreenState.Idle) return@launch
+            navigationEventsHost.navigateBack(
+                Route.EditNoteScreen.Result.KEY to Route.EditNoteScreen.Result(currentState.noteId)
+            )
         }
     }
 

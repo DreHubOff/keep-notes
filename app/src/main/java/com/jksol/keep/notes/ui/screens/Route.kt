@@ -1,5 +1,7 @@
 package com.jksol.keep.notes.ui.screens
 
+import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Serializable
 
 sealed class Route {
@@ -8,5 +10,13 @@ sealed class Route {
     data object MainScreen : Route()
 
     @Serializable
-    data class EditNoteScreen(val noteId: Long?) : Route()
+    data class EditNoteScreen(val noteId: Long?) : Route() {
+
+        @Parcelize
+        class Result(val noteId: Long) : Parcelable {
+            companion object {
+                val KEY = Result::class.java.name
+            }
+        }
+    }
 }

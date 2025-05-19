@@ -67,6 +67,14 @@ object MainScreenDemoData {
                 hasScheduledReminder = true,
                 isPinned = true,
             )
+        val emptyContentNote
+            get() = MainScreenItem.TextNote(
+                id = idsGen.getAndIncrement(),
+                title = "(R) \uD83C\uDF89 Birthday Reminder",
+                content = "",
+                hasScheduledReminder = true,
+                isPinned = true,
+            )
     }
 
     object CheckLists {

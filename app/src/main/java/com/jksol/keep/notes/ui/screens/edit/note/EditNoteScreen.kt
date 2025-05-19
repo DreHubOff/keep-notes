@@ -1,5 +1,6 @@
 package com.jksol.keep.notes.ui.screens.edit.note
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -47,6 +48,11 @@ import com.jksol.keep.notes.ui.theme.ApplicationTheme
 fun EditNoteScreen() {
     val viewModel: EditNoteViewModel = hiltViewModel()
     val state = viewModel.state.collectAsState(EditNoteScreenState.None)
+
+    BackHandler {
+        viewModel.onBackClicked()
+    }
+
     ScreenContent(
         state = state.value,
         onTitleChanged = viewModel::onTitleChanged,

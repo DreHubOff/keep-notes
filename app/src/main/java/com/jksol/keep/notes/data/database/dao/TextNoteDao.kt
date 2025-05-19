@@ -1,6 +1,7 @@
 package com.jksol.keep.notes.data.database.dao
 
 import androidx.room.Dao
+import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.Query
 import com.jksol.keep.notes.data.database.table.TEXT_NOTE_TABLE_NAME
@@ -29,4 +30,7 @@ interface TextNoteDao {
 
     @Insert
     suspend fun insertTextNote(textNote: TextNoteEntity): Long
+
+    @Delete
+    suspend fun delete(textNote: TextNoteEntity)
 }

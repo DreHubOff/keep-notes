@@ -12,9 +12,13 @@ import androidx.compose.foundation.layout.statusBars
 import androidx.compose.material3.FabPosition
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
@@ -24,15 +28,20 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.jksol.keep.notes.MainScreenDemoData.noNotes
 import com.jksol.keep.notes.MainScreenDemoData.notesList
 import com.jksol.keep.notes.MainScreenDemoData.welcomeBanner
+import com.jksol.keep.notes.ui.screens.Route
 import com.jksol.keep.notes.ui.screens.main.fab.MainFabContainer
 import com.jksol.keep.notes.ui.screens.main.model.MainScreenItem
 import com.jksol.keep.notes.ui.screens.main.model.MainScreenState
+import com.jksol.keep.notes.ui.screens.main.model.SnackbarEventDelivery
 import com.jksol.keep.notes.ui.theme.ApplicationTheme
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 
 @Composable
-fun MainScreen() {
+fun MainScreen(noteEditingResult: Route.EditNoteScreen.Result?) {
     val viewModel = hiltViewModel<MainViewModel>()
-    val state by viewModel.uiState.collectAsState(MainScreenState.None)
+    viewModel.saveNoteEditingResult(noteEditingResult)
+    val state by viewModel.uiState.collectAsState(MainScreenState.None())
     ScreenContent(
         state,
         openTextNoteEditor = viewModel::openTextNoteEditor,
@@ -53,6 +62,9 @@ private fun ScreenContent(
     onNewSearchPrompt: (String) -> Unit = {},
 ) {
     val showOverlay = state is MainScreenState.AddModeSelection
+    val coroutineScope = rememberCoroutineScope()
+    val snackbarHostState = remember { SnackbarHostState() }
+    handleSnackbarState(coroutineScope, snackbarHostState, state)
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         floatingActionButton = {
@@ -60,11 +72,15 @@ private fun ScreenContent(
                 expanded = showOverlay,
                 onAddTextNoteClick = { openTextNoteEditor(null) },
                 onAddChecklistClick = { openCheckListEditor() },
-                onMainFabClicked = { toggleAddModeSelection() },
+                onMainFabClicked = {
+                    snackbarHostState.currentSnackbarData?.dismiss()
+                    toggleAddModeSelection()
+                },
             )
         },
         floatingActionButtonPosition = FabPosition.End,
-        contentWindowInsets = WindowInsets.statusBars
+        contentWindowInsets = WindowInsets.statusBars,
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
     ) { innerPadding ->
         Box {
             val unpackedState = (state as? MainScreenState.AddModeSelection)?.previousState ?: state
@@ -105,6 +121,14 @@ private fun DisplayState(
                 listItems = state.screenItems,
                 onHideSearch = onToggleSearchVisibility,
                 onNewPrompt = onNewSearchPrompt,
+            )
+        }
+
+        is MainScreenState.WelcomeBanner -> {
+            MainScreenWelcomeBanner(
+                innerPadding = innerPadding,
+                banner = state.textNote,
+                onToggleSearchVisibility = onToggleSearchVisibility,
             )
         }
 
@@ -153,4 +177,17 @@ private class PreviewBinder : PreviewParameterProvider<MainScreenState> {
             MainScreenState.Search(notesList()),
             MainScreenState.AddModeSelection(MainScreenState.Idle(welcomeBanner())),
         )
+}
+
+private fun handleSnackbarState(
+    coroutineScope: CoroutineScope,
+    snackbarHostState: SnackbarHostState,
+    state: MainScreenState,
+) {
+    val snackbarEvent = (state as? SnackbarEventDelivery)?.snackbarEvent ?: return
+    snackbarEvent.consume()?.let { message ->
+        coroutineScope.launch {
+            snackbarHostState.showSnackbar(message)
+        }
+    }
 }

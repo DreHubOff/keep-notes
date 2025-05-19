@@ -33,4 +33,8 @@ class TextNotesRepository @Inject constructor(
     suspend fun updatePinnedState(noteId: Long, isPinned: Boolean) {
         textNoteDao.updatePennedStateById(id = noteId, pinned = if (isPinned) 1 else 0)
     }
+
+    suspend fun delete(textNote: TextNote) {
+        textNoteDao.delete(textNote.toEntity())
+    }
 }

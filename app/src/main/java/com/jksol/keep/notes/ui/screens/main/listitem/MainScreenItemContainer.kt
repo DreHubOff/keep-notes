@@ -38,6 +38,7 @@ fun MainScreenItemContainer(
         modifier = modifier
             .fillMaxWidth()
             .wrapContentHeight(),
+        enabled = item.interactive,
         onClick = { onClick?.invoke() },
     ) {
         if (item.title.isNotEmpty()) {

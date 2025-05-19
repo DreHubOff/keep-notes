@@ -1,7 +1,10 @@
 package com.jksol.keep.notes.core.model
 
+import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
 import java.time.LocalDateTime
 
+@Parcelize
 data class TextNote(
     val id: Long,
     val title: String,
@@ -12,7 +15,7 @@ data class TextNote(
     val isPinned: Boolean,
     val isTrashed: Boolean,
     val hasReminder: Boolean,
-) {
+) : Parcelable {
     companion object {
         fun generateEmpty() = TextNote(
             id = 0,

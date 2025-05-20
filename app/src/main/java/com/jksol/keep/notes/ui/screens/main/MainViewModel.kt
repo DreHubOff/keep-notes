@@ -80,6 +80,9 @@ class MainViewModel @Inject constructor(
     fun openCheckListEditor() {
         viewModelScope.launch {
             exitAddModeSelection()
+            navigationEventsHost.navigate(
+                Route.EditChecklistScreen(checklistId = null)
+            )
         }
     }
 

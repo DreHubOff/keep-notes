@@ -6,13 +6,18 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.repeatOnLifecycle
+import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.jksol.keep.notes.ui.navigation.NavigationEvent
 import com.jksol.keep.notes.ui.navigation.NavigationEventsHost
 import com.jksol.keep.notes.ui.screens.Route
+import com.jksol.keep.notes.ui.screens.edit.checklist.EditCheckListScreen
 import com.jksol.keep.notes.ui.screens.edit.note.EditNoteScreen
 import com.jksol.keep.notes.ui.screens.main.MainScreen
 import com.jksol.keep.notes.ui.theme.ApplicationTheme
@@ -49,23 +54,33 @@ class MainActivity : ComponentActivity() {
                     composable<Route.EditNoteScreen> {
                         EditNoteScreen()
                     }
+                    composable<Route.EditChecklistScreen> {
+                        EditCheckListScreen()
+                    }
                 }
-                LaunchedEffect(navigationEventsHost) {
-                    navigationEventsHost.navigationRoute.collectLatest { event ->
-                        withContext(Dispatchers.Main) {
-                            when (event) {
-                                is NavigationEvent.NavigateBack -> {
-                                    event.result?.let { (key, result) ->
-                                        navController
-                                            .previousBackStackEntry
-                                            ?.savedStateHandle
-                                            ?.set(key, result)
-                                    }
-                                    navController.popBackStack()
-                                }
+                ObserveNavigationEvents(navController)
+            }
+        }
+    }
 
-                                is NavigationEvent.NavigateTo -> navController.navigate(event.route)
+    @Composable
+    private fun ObserveNavigationEvents(navController: NavHostController) {
+        LaunchedEffect(navigationEventsHost, lifecycle) {
+            repeatOnLifecycle(Lifecycle.State.CREATED) {
+                navigationEventsHost.navigationRoute.collectLatest { event ->
+                    withContext(Dispatchers.Main) {
+                        when (event) {
+                            is NavigationEvent.NavigateBack -> {
+                                event.result?.let { (key, result) ->
+                                    navController
+                                        .previousBackStackEntry
+                                        ?.savedStateHandle
+                                        ?.set(key, result)
+                                }
+                                navController.popBackStack()
                             }
+
+                            is NavigationEvent.NavigateTo -> navController.navigate(event.route)
                         }
                     }
                 }

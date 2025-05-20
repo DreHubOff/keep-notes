@@ -23,24 +23,8 @@ class TextNotesRepository @Inject constructor(
         return textNote.copy(id = id)
     }
 
-    suspend fun updateTitle(noteId: Long, title: String) {
-        textNoteDao.updateTitleById(id = noteId, newTitle = title)
-    }
-
-    suspend fun updateContent(noteId: Long, content: String) {
-        textNoteDao.updateContentById(id = noteId, newContent = content)
-    }
-
-    suspend fun updatePinnedState(noteId: Long, isPinned: Boolean) {
-        textNoteDao.updatePennedStateById(id = noteId, pinned = if (isPinned) 1 else 0)
-    }
-
     suspend fun delete(textNote: TextNote) {
         textNoteDao.delete(textNote.toEntity())
-    }
-
-    suspend fun updateModificationDate(noteId: Long, date: OffsetDateTime) {
-        textNoteDao.updateModificationDateById(id = noteId, date = date)
     }
 
     suspend fun updateNoteContent(

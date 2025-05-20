@@ -23,5 +23,8 @@
     <string name="welcome_banner_content">This is where you can quickly save notes after calls — whether it’s an address, a follow-up task, or something you don’t want to forget.</string>
     <string name="edited_just_now">Edited just now</string>
     <string name="edited_pattern">Edited %s</string>
+    <string name="drag_current_item">Drag current item</string>
+    <string name="add_item">Add item</string>
+    <string name="checked_item_count_pattern">%d checked item</string>
 
 </resources>

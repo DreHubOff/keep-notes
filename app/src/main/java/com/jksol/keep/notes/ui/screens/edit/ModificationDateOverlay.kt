@@ -1,4 +1,4 @@
-package com.jksol.keep.notes.ui.screens.edit.note
+package com.jksol.keep.notes.ui.screens.edit
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box

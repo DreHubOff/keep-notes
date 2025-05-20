@@ -15,7 +15,18 @@ sealed class Route {
         @Parcelize
         class Result(val noteId: Long) : Parcelable {
             companion object {
-                val KEY = Result::class.java.name
+                val KEY: String = Result::class.java.name
+            }
+        }
+    }
+
+    @Serializable
+    data class EditChecklistScreen(val checklistId: Long?) : Route() {
+
+        @Parcelize
+        class Result(val checklistId: Long) : Parcelable {
+            companion object {
+                val KEY: String = Result::class.java.name
             }
         }
     }

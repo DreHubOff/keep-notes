@@ -4,7 +4,10 @@ import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.jksol.keep.notes.R
+import com.jksol.keep.notes.core.model.Checklist
+import com.jksol.keep.notes.core.model.SortableListItem
 import com.jksol.keep.notes.core.model.TextNote
+import com.jksol.keep.notes.data.ChecklistRepository
 import com.jksol.keep.notes.data.TextNotesRepository
 import com.jksol.keep.notes.data.preferences.UserPreferences
 import com.jksol.keep.notes.ui.mapper.toMainScreenItem
@@ -32,6 +35,7 @@ class MainViewModel @Inject constructor(
     private val context: Context,
     private val navigationEventsHost: NavigationEventsHost,
     private val textNotesRepository: TextNotesRepository,
+    private val checklistRepository: ChecklistRepository,
     private val userPreferences: UserPreferences,
 ) : ViewModel() {
 
@@ -77,11 +81,11 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    fun openCheckListEditor() {
+    fun openCheckListEditor(checklist: MainScreenItem.Checklist?) {
         viewModelScope.launch {
             exitAddModeSelection()
             navigationEventsHost.navigate(
-                Route.EditChecklistScreen(checklistId = null)
+                Route.EditChecklistScreen(checklistId = checklist?.id)
             )
         }
     }
@@ -143,6 +147,25 @@ class MainViewModel @Inject constructor(
         _uiState.emit(state.previousState)
     }
 
-    private suspend fun loadNotes(): List<MainScreenItem> =
-        textNotesRepository.getNotTrashedNotes().map(TextNote::toMainScreenItem)
+    private suspend fun loadNotes(): List<MainScreenItem> {
+        return textNotesRepository
+            .getNotTrashedNotes()
+            .asSequence()
+            .plus(checklistRepository.getChecklists())
+            .sortedByPinnedAndModificationDate()
+            .map { item ->
+                when (item) {
+                    is TextNote -> item.toMainScreenItem()
+                    is Checklist -> item.toMainScreenItem()
+                    else -> throw IllegalStateException("Unknown item type: $item")
+                }
+            }.toList()
+    }
+
+    private fun <T : SortableListItem> Sequence<T>.sortedByPinnedAndModificationDate(): Sequence<T> {
+        return this.sortedWith(
+            compareByDescending<T> { it.isPinned }
+                .thenByDescending { it.creationDate }
+        )
+    }
 }

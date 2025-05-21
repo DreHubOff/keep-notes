@@ -56,7 +56,7 @@ fun MainScreen(noteEditingResult: Route.EditNoteScreen.Result?) {
 private fun ScreenContent(
     state: MainScreenState,
     openTextNoteEditor: (MainScreenItem.TextNote?) -> Unit = {},
-    openCheckListEditor: () -> Unit = {},
+    openCheckListEditor: (MainScreenItem.Checklist?) -> Unit = {},
     toggleAddModeSelection: () -> Unit = {},
     onToggleSearchVisibility: () -> Unit = {},
     onNewSearchPrompt: (String) -> Unit = {},
@@ -71,7 +71,7 @@ private fun ScreenContent(
             MainFabContainer(
                 expanded = showOverlay,
                 onAddTextNoteClick = { openTextNoteEditor(null) },
-                onAddChecklistClick = { openCheckListEditor() },
+                onAddChecklistClick = { openCheckListEditor(null) },
                 onMainFabClicked = {
                     snackbarHostState.currentSnackbarData?.dismiss()
                     toggleAddModeSelection()
@@ -90,6 +90,7 @@ private fun ScreenContent(
                 onToggleSearchVisibility = onToggleSearchVisibility,
                 onNewSearchPrompt = onNewSearchPrompt,
                 openTextNoteEditor = openTextNoteEditor,
+                openCheckListEditor = openCheckListEditor,
             )
             Overlay(enabled = showOverlay, onClick = { toggleAddModeSelection() })
         }
@@ -103,6 +104,7 @@ private fun DisplayState(
     onToggleSearchVisibility: () -> Unit,
     onNewSearchPrompt: (String) -> Unit,
     openTextNoteEditor: (MainScreenItem.TextNote?) -> Unit,
+    openCheckListEditor: (MainScreenItem.Checklist?) -> Unit,
 ) {
     when (state) {
         is MainScreenState.Idle -> {
@@ -111,6 +113,7 @@ private fun DisplayState(
                 listItems = state.screenItems,
                 onToggleSearchVisibility = onToggleSearchVisibility,
                 openTextNoteEditor = openTextNoteEditor,
+                openCheckListEditor = openCheckListEditor,
             )
             SystemBarBackground(innerPadding)
         }
@@ -121,6 +124,8 @@ private fun DisplayState(
                 listItems = state.screenItems,
                 onHideSearch = onToggleSearchVisibility,
                 onNewPrompt = onNewSearchPrompt,
+                openTextNoteEditor = openTextNoteEditor,
+                openCheckListEditor = openCheckListEditor,
             )
         }
 

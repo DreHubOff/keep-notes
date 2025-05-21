@@ -20,26 +20,37 @@ import com.jksol.keep.notes.ui.screens.main.model.MainScreenItem
 import com.jksol.keep.notes.ui.shared.ChecklistCheckbox
 import com.jksol.keep.notes.ui.theme.ApplicationTheme
 
-private const val MAX_LINES_TITLE = 2
+private const val MAX_LINES_TITLE = 5
 
 @Composable
-fun MainCheckList(modifier: Modifier, item: MainScreenItem.CheckList) {
+fun MainCheckList(
+    modifier: Modifier,
+    item: MainScreenItem.Checklist,
+    onClick: () -> Unit = {},
+) {
     MainScreenItemContainer(
         modifier = modifier,
         item = item,
-        maxTitleLines = MAX_LINES_TITLE
+        maxTitleLines = MAX_LINES_TITLE,
+        onClick = onClick,
     ) { contentModifier ->
-        ChecklistContent(modifier = contentModifier, item = item)
+        if (item.items.isNotEmpty()) {
+            ChecklistContent(modifier = contentModifier, item = item, onItemClicked = onClick)
+        }
     }
 }
 
 @Composable
-private fun ChecklistContent(modifier: Modifier, item: MainScreenItem.CheckList) {
+private fun ChecklistContent(
+    modifier: Modifier,
+    item: MainScreenItem.Checklist,
+    onItemClicked: () -> Unit,
+) {
     Column(
         modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(2.dp),
     ) {
-        ChecklistItems(item)
+        ChecklistItems(item, onItemClicked)
         if (item.hasTickedItems) {
             Text(
                 modifier = Modifier.padding(horizontal = 6.dp),
@@ -52,7 +63,10 @@ private fun ChecklistContent(modifier: Modifier, item: MainScreenItem.CheckList)
 }
 
 @Composable
-private fun ChecklistItems(item: MainScreenItem.CheckList) {
+private fun ChecklistItems(
+    item: MainScreenItem.Checklist,
+    onItemClicked: () -> Unit = {},
+) {
     Column(
         modifier = Modifier,
     ) {
@@ -61,6 +75,8 @@ private fun ChecklistItems(item: MainScreenItem.CheckList) {
                 modifier = Modifier.fillMaxWidth(),
                 text = checkListItem.text,
                 checked = checkListItem.isChecked,
+                enabled = true,
+                onClick = onItemClicked,
             )
         }
     }
@@ -68,19 +84,20 @@ private fun ChecklistItems(item: MainScreenItem.CheckList) {
 
 @Preview
 @Composable
-private fun Preview(@PreviewParameter(MainCheckListStateProvider::class) state: MainScreenItem.CheckList) {
+private fun Preview(@PreviewParameter(MainCheckListStateProvider::class) state: MainScreenItem.Checklist) {
     ApplicationTheme {
         MainCheckList(modifier = Modifier.padding(8.dp), item = state)
     }
 }
 
-private class MainCheckListStateProvider : PreviewParameterProvider<MainScreenItem.CheckList> {
-    override val values: Sequence<MainScreenItem.CheckList>
+private class MainCheckListStateProvider : PreviewParameterProvider<MainScreenItem.Checklist> {
+    override val values: Sequence<MainScreenItem.Checklist>
         get() = sequenceOf(
             MainScreenDemoData.CheckLists.reminderPinnedChecklist,
             MainScreenDemoData.CheckLists.reminderOnlyChecklist,
             MainScreenDemoData.CheckLists.pinnedOnlyChecklist,
             MainScreenDemoData.CheckLists.emptyTitleChecklist,
+            MainScreenDemoData.CheckLists.emptyContentChecklist,
             MainScreenDemoData.CheckLists.longTitleChecklist,
         )
 }

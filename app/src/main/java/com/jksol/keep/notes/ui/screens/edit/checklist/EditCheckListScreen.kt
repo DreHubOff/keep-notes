@@ -8,35 +8,56 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.jksol.keep.notes.EditChecklistDemoData
 import com.jksol.keep.notes.ui.screens.edit.EditActionBar
 import com.jksol.keep.notes.ui.screens.edit.ModificationDateOverlay
+import com.jksol.keep.notes.ui.screens.edit.checklist.model.CheckedListItemUi
 import com.jksol.keep.notes.ui.screens.edit.checklist.model.EditChecklistScreenState
+import com.jksol.keep.notes.ui.screens.edit.checklist.model.UncheckedListItemUi
 import com.jksol.keep.notes.ui.theme.ApplicationTheme
 
 @Composable
 fun EditCheckListScreen() {
-
+    val viewModel = hiltViewModel<EditChecklistViewModel>()
+    val state by viewModel.state.collectAsStateWithLifecycle(EditChecklistScreenState())
     ScreenContent(
-        state = EditChecklistScreenState(
-            isPinned = true,
-            uncheckedItems = EditChecklistDemoData.uncheckedChecklistItems,
-        ),
+        state = state,
+        onTitleChanged = { viewModel.onTitleChanged(it) },
+        onBackClick = { viewModel.onBackClick() },
+        onPinCheckedChange = { viewModel.onPinCheckedChange(it) },
+        onAddChecklistItemClick = { viewModel.onAddChecklistItemClick() },
+        toggleCheckedItemsVisibility = { viewModel.toggleCheckedItemsVisibility() },
+        onItemUnchecked = { viewModel.onItemUnchecked(it) },
+        onItemChecked = { viewModel.onItemChecked(it) },
+        onItemTextChanged = { text, item -> viewModel.onItemTextChanged(text, item) },
+        onDoneClicked = { viewModel.onDoneClicked() },
+        onFocusStateChanged = { isFocused, item -> viewModel.onFocusStateChanged(isFocused, item) },
+        onDeleteClick = { viewModel.onDeleteClick(it) },
     )
 }
 
 @Composable
 fun ScreenContent(
     state: EditChecklistScreenState,
-    onTitleChanged: (String) -> Unit = {},
-    onContentChanged: (String) -> Unit = {},
-    onBackClick: () -> Unit = {},
-    onPinCheckedChange: (Boolean) -> Unit = {},
+    onTitleChanged: (String) -> Unit,
+    onBackClick: () -> Unit,
+    onPinCheckedChange: (Boolean) -> Unit,
+    onAddChecklistItemClick: () -> Unit,
+    toggleCheckedItemsVisibility: () -> Unit,
+    onItemUnchecked: (CheckedListItemUi) -> Unit,
+    onItemChecked: (UncheckedListItemUi) -> Unit,
+    onItemTextChanged: (String, UncheckedListItemUi) -> Unit,
+    onDoneClicked: (UncheckedListItemUi) -> Unit,
+    onFocusStateChanged: (Boolean, UncheckedListItemUi) -> Unit,
+    onDeleteClick: (UncheckedListItemUi) -> Unit,
 ) {
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -56,7 +77,14 @@ fun ScreenContent(
                 DisplayState(
                     state = state,
                     onTitleChanged = onTitleChanged,
-                    onContentChanged = onContentChanged,
+                    onAddChecklistItemClick = onAddChecklistItemClick,
+                    toggleCheckedItemsVisibility = toggleCheckedItemsVisibility,
+                    onItemUnchecked = onItemUnchecked,
+                    onItemChecked = onItemChecked,
+                    onItemTextChanged = onItemTextChanged,
+                    onDoneClicked = onDoneClicked,
+                    onFocusStateChanged = onFocusStateChanged,
+                    onDeleteClick = onDeleteClick,
                 )
                 ModificationDateOverlay(
                     navigationBarPadding = innerPadding.calculateBottomPadding(),
@@ -70,8 +98,15 @@ fun ScreenContent(
 @Composable
 private fun DisplayState(
     state: EditChecklistScreenState,
-    onTitleChanged: (String) -> Unit = {},
-    onContentChanged: (String) -> Unit = {},
+    onTitleChanged: (String) -> Unit,
+    onAddChecklistItemClick: () -> Unit,
+    toggleCheckedItemsVisibility: () -> Unit,
+    onItemUnchecked: (CheckedListItemUi) -> Unit,
+    onItemChecked: (UncheckedListItemUi) -> Unit,
+    onItemTextChanged: (String, UncheckedListItemUi) -> Unit,
+    onDoneClicked: (UncheckedListItemUi) -> Unit,
+    onFocusStateChanged: (Boolean, UncheckedListItemUi) -> Unit,
+    onDeleteClick: (UncheckedListItemUi) -> Unit,
 ) {
     ChecklistBody(
         modifier = Modifier
@@ -82,6 +117,14 @@ private fun DisplayState(
         uncheckedItems = state.uncheckedItems,
         onTitleChanged = onTitleChanged,
         showCheckedItems = state.showCheckedItems,
+        onAddChecklistItemClick = onAddChecklistItemClick,
+        toggleCheckedItemsVisibility = toggleCheckedItemsVisibility,
+        onItemUnchecked = onItemUnchecked,
+        onItemChecked = onItemChecked,
+        onItemTextChanged = onItemTextChanged,
+        onDoneClicked = onDoneClicked,
+        onFocusStateChanged = onFocusStateChanged,
+        onDeleteClick = onDeleteClick,
     )
 }
 
@@ -90,7 +133,18 @@ private fun DisplayState(
 private fun Preview(@PreviewParameter(EditChecklistScreenStateProvider::class) state: EditChecklistScreenState) {
     ApplicationTheme {
         ScreenContent(
-            state = state
+            state = state,
+            onTitleChanged = {},
+            onBackClick = {},
+            onPinCheckedChange = {},
+            onAddChecklistItemClick = {},
+            toggleCheckedItemsVisibility = {},
+            onItemUnchecked = {},
+            onItemChecked = {},
+            onItemTextChanged = { _, _ -> },
+            onDoneClicked = {},
+            onFocusStateChanged = { _, _ -> },
+            onDeleteClick = {}
         )
     }
 }

@@ -30,6 +30,7 @@ fun MainScreenStateIdle(
     listItems: List<MainScreenItem>,
     onToggleSearchVisibility: () -> Unit = {},
     openTextNoteEditor: (MainScreenItem.TextNote?) -> Unit = {},
+    openCheckListEditor: (MainScreenItem.Checklist?) -> Unit,
 ) {
     val scrollState = rememberLazyListState()
     val coroutineScope = rememberCoroutineScope()
@@ -69,10 +70,14 @@ fun MainScreenStateIdle(
             }
         }
 
-        items(listItems, key = { it.id }) { item ->
+        items(listItems, key = { it.compositeKey }) { item ->
             when (item) {
-                is MainScreenItem.CheckList ->
-                    MainCheckList(modifier = Modifier.padding(horizontal = 8.dp), item = item)
+                is MainScreenItem.Checklist ->
+                    MainCheckList(
+                        modifier = Modifier.padding(horizontal = 8.dp),
+                        item = item,
+                        onClick = { openCheckListEditor(item) }
+                    )
 
                 is MainScreenItem.TextNote ->
                     MainTextNote(
@@ -92,6 +97,8 @@ private fun Preview() {
         MainScreenStateIdle(
             innerPadding = PaddingValues(20.dp),
             listItems = MainScreenDemoData.notesList(),
+            openTextNoteEditor = {},
+            openCheckListEditor = {},
         )
     }
 }

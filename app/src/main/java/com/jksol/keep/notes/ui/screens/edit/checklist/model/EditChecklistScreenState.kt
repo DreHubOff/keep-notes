@@ -1,7 +1,6 @@
 package com.jksol.keep.notes.ui.screens.edit.checklist.model
 
 import androidx.compose.runtime.Stable
-import com.jksol.keep.notes.core.model.ChecklistItem
 
 @Stable
 data class EditChecklistScreenState(
@@ -9,7 +8,7 @@ data class EditChecklistScreenState(
     val title: String = "",
     val modificationStatusMessage: String = "",
     val isPinned: Boolean = false,
-    val uncheckedItems: List<ChecklistItem> = emptyList(),
-    val checkedItems: List<ChecklistItem> = emptyList(),
+    val uncheckedItems: List<UncheckedListItemUi> = emptyList(),
+    val checkedItems: List<CheckedListItemUi> = emptyList(),
     val showCheckedItems: Boolean = false,
 )

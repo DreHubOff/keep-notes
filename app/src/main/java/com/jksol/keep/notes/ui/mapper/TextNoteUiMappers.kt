@@ -1,5 +1,6 @@
 package com.jksol.keep.notes.ui.mapper
 
+import com.jksol.keep.notes.core.model.Checklist
 import com.jksol.keep.notes.core.model.TextNote
 import com.jksol.keep.notes.ui.screens.main.model.MainScreenItem
 
@@ -11,5 +12,19 @@ fun TextNote.toMainScreenItem(): MainScreenItem.TextNote {
         isPinned = this.isPinned,
         hasScheduledReminder = this.hasReminder,
         interactive = true
+    )
+}
+
+fun Checklist.toMainScreenItem(): MainScreenItem.Checklist {
+    val tickedItems = items.filter { it.isChecked }
+    return MainScreenItem.Checklist(
+        id = this.id,
+        title = this.title,
+        isPinned = this.isPinned,
+        hasTickedItems = tickedItems.isNotEmpty(),
+        items = items.map { MainScreenItem.Checklist.Item(it.isChecked, it.title) },
+        hasScheduledReminder = false,
+        interactive = true,
+        tickedItems = tickedItems.size,
     )
 }

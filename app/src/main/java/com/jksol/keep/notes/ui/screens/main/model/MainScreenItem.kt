@@ -10,6 +10,8 @@ sealed class MainScreenItem {
     abstract val title: String
     abstract val interactive: Boolean
 
+    val compositeKey: String by lazy { this::class.simpleName + id }
+
     @Stable
     data class TextNote(
         override val id: Long,
@@ -21,7 +23,7 @@ sealed class MainScreenItem {
     ) : MainScreenItem()
 
     @Stable
-    data class CheckList(
+    data class Checklist(
         override val id: Long,
         override val title: String,
         val items: List<Item>,

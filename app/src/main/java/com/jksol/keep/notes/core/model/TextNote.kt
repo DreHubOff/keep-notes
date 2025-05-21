@@ -9,13 +9,13 @@ data class TextNote(
     val id: Long,
     val title: String,
     val content: String,
-    val creationDate: OffsetDateTime,
+    override val creationDate: OffsetDateTime,
     val modificationDate: OffsetDateTime,
     val displayColorResource: NoteColor?,
-    val isPinned: Boolean,
+    override val isPinned: Boolean,
     val isTrashed: Boolean,
     val hasReminder: Boolean,
-) : Parcelable {
+) : Parcelable, SortableListItem {
     companion object {
         fun generateEmpty() = TextNote(
             id = 0,

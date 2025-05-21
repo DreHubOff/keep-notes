@@ -31,6 +31,8 @@ fun MainScreenStateSearch(
     listItems: List<MainScreenItem>,
     onHideSearch: () -> Unit = {},
     onNewPrompt: (String) -> Unit = {},
+    openTextNoteEditor: (MainScreenItem.TextNote?) -> Unit,
+    openCheckListEditor: (MainScreenItem.Checklist?) -> Unit,
 ) {
     val scrollState = rememberLazyListState()
     val coroutineScope = rememberCoroutineScope()
@@ -63,13 +65,21 @@ fun MainScreenStateSearch(
                 verticalArrangement = spacedBy(8.dp),
                 state = scrollState,
             ) {
-                items(listItems, key = { it.id }) { item ->
+                items(listItems, key = { it.compositeKey }) { item ->
                     when (item) {
-                        is MainScreenItem.CheckList ->
-                            MainCheckList(modifier = Modifier.padding(horizontal = 8.dp), item = item)
+                        is MainScreenItem.Checklist ->
+                            MainCheckList(
+                                modifier = Modifier.padding(horizontal = 8.dp),
+                                item = item,
+                                onClick = { openCheckListEditor(item) }
+                            )
 
                         is MainScreenItem.TextNote ->
-                            MainTextNote(modifier = Modifier.padding(horizontal = 8.dp), item = item)
+                            MainTextNote(
+                                modifier = Modifier.padding(horizontal = 8.dp),
+                                item = item,
+                                onClick = { openTextNoteEditor(item) }
+                            )
                     }
                 }
             }
@@ -84,6 +94,10 @@ private fun Preview() {
         MainScreenStateSearch(
             innerPadding = PaddingValues(20.dp),
             listItems = MainScreenDemoData.notesList(),
+            onHideSearch = {},
+            onNewPrompt = {},
+            openTextNoteEditor = {},
+            openCheckListEditor = {},
         )
     }
 }

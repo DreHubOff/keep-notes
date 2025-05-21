@@ -42,8 +42,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.jksol.keep.notes.EditChecklistDemoData
 import com.jksol.keep.notes.R
-import com.jksol.keep.notes.core.model.ChecklistItem
-import com.jksol.keep.notes.ui.shared.ChecklistCheckbox
+import com.jksol.keep.notes.ui.screens.edit.checklist.model.CheckedListItemUi
+import com.jksol.keep.notes.ui.screens.edit.checklist.model.UncheckedListItemUi
 import com.jksol.keep.notes.ui.theme.ApplicationTheme
 import sh.calvin.reorderable.ReorderableColumn
 
@@ -51,14 +51,20 @@ import sh.calvin.reorderable.ReorderableColumn
 fun ChecklistBody(
     modifier: Modifier,
     title: String,
-    checkedItems: List<ChecklistItem> = emptyList(),
-    uncheckedItems: List<ChecklistItem> = emptyList(),
+    checkedItems: List<CheckedListItemUi> = emptyList(),
+    uncheckedItems: List<UncheckedListItemUi> = emptyList(),
     showCheckedItems: Boolean = false,
     onTitleChanged: (String) -> Unit = {},
-    onAddChecklistClick: () -> Unit = {},
+    onAddChecklistItemClick: () -> Unit = {},
     toggleCheckedItemsVisibility: () -> Unit = {},
+    onItemUnchecked: (CheckedListItemUi) -> Unit = {},
+    onItemChecked: (UncheckedListItemUi) -> Unit = {},
+    onItemTextChanged: (String, UncheckedListItemUi) -> Unit = { _, _ -> },
+    onDoneClicked: (UncheckedListItemUi) -> Unit = {},
+    onFocusStateChanged: (Boolean, UncheckedListItemUi) -> Unit = { _, _ -> },
+    onDeleteClick: (UncheckedListItemUi) -> Unit = {},
 ) {
-    var titleCache by remember { mutableStateOf(title) }
+    var titleCache by remember(title) { mutableStateOf(title) }
     Column(
         modifier = modifier,
     ) {
@@ -74,10 +80,17 @@ fun ChecklistBody(
         Spacer(modifier = Modifier.height(12.dp))
 
         if (uncheckedItems.isNotEmpty()) {
-            UncheckedItems(uncheckedItems)
+            UncheckedItems(
+                items = uncheckedItems,
+                onItemChecked = onItemChecked,
+                onTextChanged = onItemTextChanged,
+                onDoneClicked = onDoneClicked,
+                onFocusStateChanged = onFocusStateChanged,
+                onDeleteClick = onDeleteClick,
+            )
         }
 
-        AddItemButton(onAddClick = onAddChecklistClick)
+        AddItemButton(onAddClick = onAddChecklistItemClick)
 
         if (checkedItems.isNotEmpty()) {
             HideCheckedItemsButton(
@@ -86,14 +99,20 @@ fun ChecklistBody(
                 toggleCheckedItemsVisibility = toggleCheckedItemsVisibility,
             )
             if (showCheckedItems) {
-                CheckedItems(checkedItems)
+                CheckedItems(
+                    checkedItems = checkedItems,
+                    onItemUnchecked = onItemUnchecked,
+                )
             }
         }
     }
 }
 
 @Composable
-private fun CheckedItems(checkedItems: List<ChecklistItem>) {
+private fun CheckedItems(
+    checkedItems: List<CheckedListItemUi>,
+    onItemUnchecked: (CheckedListItemUi) -> Unit,
+) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -102,12 +121,14 @@ private fun CheckedItems(checkedItems: List<ChecklistItem>) {
         verticalArrangement = spacedBy(4.dp),
     ) {
         checkedItems.forEach { item ->
-            ChecklistCheckbox(
-                modifier = Modifier.fillMaxWidth(),
-                text = item.title,
-                checked = true,
-                enabled = false,
-            )
+            key(item.id) {
+                EditableChecklistCheckbox(
+                    modifier = Modifier.fillMaxWidth(),
+                    text = item.text,
+                    checked = true,
+                    onCheckedChange = { onItemUnchecked(item) },
+                )
+            }
         }
     }
 }
@@ -187,7 +208,14 @@ private fun AddItemButton(onAddClick: () -> Unit) {
 }
 
 @Composable
-private fun UncheckedItems(items: List<ChecklistItem>) {
+private fun UncheckedItems(
+    items: List<UncheckedListItemUi>,
+    onItemChecked: (UncheckedListItemUi) -> Unit,
+    onTextChanged: (String, UncheckedListItemUi) -> Unit,
+    onDoneClicked: (UncheckedListItemUi) -> Unit,
+    onFocusStateChanged: (Boolean, UncheckedListItemUi) -> Unit,
+    onDeleteClick: (UncheckedListItemUi) -> Unit,
+) {
     ReorderableColumn(
         list = items,
         onSettle = { fromIndex, toIndex ->
@@ -200,8 +228,14 @@ private fun UncheckedItems(items: List<ChecklistItem>) {
                 modifier = Modifier
                     .fillMaxWidth()
                     .draggableHandle(),
-                title = item.title,
+                title = item.text,
                 checked = false,
+                isFocused = item.isFocused,
+                onCheckedChange = { onItemChecked(item) },
+                onTextChanged = { onTextChanged(it, item) },
+                onDoneClicked = { onDoneClicked(item) },
+                onFocusStateChanged = { onFocusStateChanged(it, item) },
+                onDeleteClick = { onDeleteClick(item) },
             )
         }
     }

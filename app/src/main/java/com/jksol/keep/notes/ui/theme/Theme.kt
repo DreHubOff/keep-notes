@@ -1,6 +1,7 @@
 package com.jksol.keep.notes.ui.theme
 
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.material3.CheckboxColors
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
@@ -14,7 +15,7 @@ private val DarkColorScheme = darkColorScheme(
 )
 
 private val LightColorScheme = lightColorScheme(
-    primary = Purple40,
+    primary = VividBlue,
     secondary = PurpleGrey40,
     tertiary = Pink40,
     primaryContainer = VividBlue,
@@ -23,6 +24,26 @@ private val LightColorScheme = lightColorScheme(
     surfaceVariant = IceBlue,
     onSurfaceVariant = Color.Black,
 )
+
+@Composable
+fun themedCheckboxColors(): CheckboxColors {
+    return with(MaterialTheme.colorScheme) {
+        CheckboxColors(
+            checkedCheckmarkColor = background,
+            uncheckedCheckmarkColor = Color.Transparent,
+            checkedBoxColor = onSurface,
+            uncheckedBoxColor = Color.Transparent,
+            disabledCheckedBoxColor = onSurface,
+            disabledUncheckedBoxColor = Color.Transparent,
+            disabledIndeterminateBoxColor = Color.Transparent,
+            checkedBorderColor = onSurface,
+            uncheckedBorderColor = onSurface,
+            disabledBorderColor = onSurface,
+            disabledUncheckedBorderColor = onSurface,
+            disabledIndeterminateBorderColor = onSurface,
+        )
+    }
+}
 
 @Composable
 fun ApplicationTheme(

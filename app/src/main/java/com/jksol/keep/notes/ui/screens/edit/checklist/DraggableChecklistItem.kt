@@ -13,7 +13,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.jksol.keep.notes.R
-import com.jksol.keep.notes.ui.shared.ChecklistCheckbox
 import com.jksol.keep.notes.ui.theme.ApplicationTheme
 
 @Composable
@@ -21,6 +20,12 @@ fun DraggableChecklistItem(
     modifier: Modifier = Modifier,
     title: String,
     checked: Boolean = true,
+    isFocused: Boolean = false,
+    onCheckedChange: (Boolean) -> Unit = {},
+    onTextChanged: (String) -> Unit = {},
+    onDoneClicked: () -> Unit = {},
+    onFocusStateChanged: (Boolean) -> Unit = {},
+    onDeleteClick: () -> Unit = {},
 ) {
     Row(
         modifier = modifier,
@@ -32,11 +37,16 @@ fun DraggableChecklistItem(
             tint = MaterialTheme.colorScheme.onSurface,
             contentDescription = stringResource(R.string.drag_current_item)
         )
-        ChecklistCheckbox(
+        EditableChecklistCheckbox(
             modifier = Modifier,
             text = title,
             checked = checked,
-            enabled = false,
+            isFocused = isFocused,
+            onCheckedChange = onCheckedChange,
+            onTextChanged = onTextChanged,
+            onDoneClicked = onDoneClicked,
+            onFocusStateChanged = onFocusStateChanged,
+            onDeleteClick = onDeleteClick,
         )
     }
 }
@@ -47,7 +57,7 @@ private fun Preview() {
     ApplicationTheme {
         DraggableChecklistItem(
             title = "This is a title",
-            checked = true,
+            checked = false,
         )
     }
 }

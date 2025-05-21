@@ -14,6 +14,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.jksol.keep.notes.ui.theme.ApplicationTheme
+import com.jksol.keep.notes.ui.theme.themedCheckboxColors
 
 @Composable
 fun ChecklistCheckbox(
@@ -21,10 +22,12 @@ fun ChecklistCheckbox(
     text: String,
     checked: Boolean,
     enabled: Boolean = false,
-    onCheckedChange: (Boolean) -> Unit = {},
+    onClick: () -> Unit = {},
 ) {
+
     Row(
-        modifier = modifier,
+        modifier = modifier
+            .clickable(enabled = true, onClick = onClick),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         val translationX = -40.dp.value
@@ -32,14 +35,15 @@ fun ChecklistCheckbox(
             modifier = Modifier
                 .scale(0.7f)
                 .height(28.dp)
-                .graphicsLayer { this.translationX = translationX },
+                .graphicsLayer { this.translationX = translationX }
+                .clickable(enabled = true, onClick = onClick),
             checked = checked,
-            onCheckedChange = { onCheckedChange(it) },
+            onCheckedChange = { onClick() },
             enabled = enabled,
+            colors = themedCheckboxColors(),
         )
         Text(
             modifier = Modifier
-                .clickable(enabled = enabled) { onCheckedChange(!checked) }
                 .graphicsLayer { this.translationX = translationX },
             text = text,
             color = MaterialTheme.colorScheme.onSurface,

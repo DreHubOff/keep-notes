@@ -78,70 +78,72 @@ object MainScreenDemoData {
     }
 
     object CheckLists {
-        // 1. (R + PINNED) checklist
         val reminderPinnedChecklist
-            get() = MainScreenItem.CheckList(
+            get() = MainScreenItem.Checklist(
                 id = idsGen.getAndIncrement(),
                 title = "(R + PINNED) 🛒 Grocery Run",
                 items = listOf(
-                    MainScreenItem.CheckList.Item(isChecked = false, text = "Apples 🍎"),
-                    MainScreenItem.CheckList.Item(isChecked = true, text = "Chicken 🐔"),
-                    MainScreenItem.CheckList.Item(isChecked = false, text = "Spinach 🥬")
+                    MainScreenItem.Checklist.Item(isChecked = false, text = "Apples 🍎"),
+                    MainScreenItem.Checklist.Item(isChecked = true, text = "Chicken 🐔"),
+                    MainScreenItem.Checklist.Item(isChecked = false, text = "Spinach 🥬")
                 ),
                 tickedItems = 1,
                 hasScheduledReminder = true,
                 isPinned = true
             )
 
-        // 2. (R) only
         val reminderOnlyChecklist
-            get() = MainScreenItem.CheckList(
+            get() = MainScreenItem.Checklist(
                 id = idsGen.getAndIncrement(),
                 title = "(R) 📅 Morning Routine",
                 items = listOf(
-                    MainScreenItem.CheckList.Item(isChecked = true, text = "Make coffee ☕"),
-                    MainScreenItem.CheckList.Item(isChecked = false, text = "Stretch 🤸‍♀️"),
-                    MainScreenItem.CheckList.Item(isChecked = false, text = "Check emails 📧")
+                    MainScreenItem.Checklist.Item(isChecked = true, text = "Make coffee ☕"),
+                    MainScreenItem.Checklist.Item(isChecked = false, text = "Stretch 🤸‍♀️"),
+                    MainScreenItem.Checklist.Item(isChecked = false, text = "Check emails 📧")
                 ),
                 tickedItems = 1,
                 hasScheduledReminder = true
             )
 
-        // 3. (PINNED) only
         val pinnedOnlyChecklist
-            get() = MainScreenItem.CheckList(
+            get() = MainScreenItem.Checklist(
                 id = idsGen.getAndIncrement(),
                 title = "(PINNED) 📚 Reading List",
                 items = listOf(
-                    MainScreenItem.CheckList.Item(isChecked = false, text = "Clean Code 📕"),
-                    MainScreenItem.CheckList.Item(isChecked = true, text = "Effective Java 📒"),
-                    MainScreenItem.CheckList.Item(isChecked = false, text = "Kotlin in Action 📗")
+                    MainScreenItem.Checklist.Item(isChecked = false, text = "Clean Code 📕"),
+                    MainScreenItem.Checklist.Item(isChecked = true, text = "Effective Java 📒"),
+                    MainScreenItem.Checklist.Item(isChecked = false, text = "Kotlin in Action 📗")
                 ),
                 tickedItems = 1,
                 isPinned = true
             )
 
-        // 4. Empty title
         val emptyTitleChecklist
-            get() = MainScreenItem.CheckList(
+            get() = MainScreenItem.Checklist(
                 id = idsGen.getAndIncrement(),
                 title = "",
                 items = listOf(
-                    MainScreenItem.CheckList.Item(isChecked = false, text = "Task A"),
-                    MainScreenItem.CheckList.Item(isChecked = false, text = "Task B"),
-                    MainScreenItem.CheckList.Item(isChecked = false, text = "Task C")
+                    MainScreenItem.Checklist.Item(isChecked = false, text = "Task A"),
+                    MainScreenItem.Checklist.Item(isChecked = false, text = "Task B"),
+                    MainScreenItem.Checklist.Item(isChecked = false, text = "Task C")
                 )
             )
 
-        // 5. Long title
+        val emptyContentChecklist
+            get() = MainScreenItem.Checklist(
+                id = idsGen.getAndIncrement(),
+                title = "(R + PINNED) This is a checklist",
+                items = listOf()
+            )
+
         val longTitleChecklist
-            get() = MainScreenItem.CheckList(
+            get() = MainScreenItem.Checklist(
                 id = idsGen.getAndIncrement(),
                 title = "(R + PINNED) This is a very long checklist title to test wrapping and overflow behavior in previews 📋✨",
                 items = listOf(
-                    MainScreenItem.CheckList.Item(isChecked = true, text = "Step 1 ✔️"),
-                    MainScreenItem.CheckList.Item(isChecked = false, text = "Step 2 ➡️"),
-                    MainScreenItem.CheckList.Item(isChecked = true, text = "Step 3 ✔️")
+                    MainScreenItem.Checklist.Item(isChecked = true, text = "Step 1 ✔️"),
+                    MainScreenItem.Checklist.Item(isChecked = false, text = "Step 2 ➡️"),
+                    MainScreenItem.Checklist.Item(isChecked = true, text = "Step 3 ✔️")
                 ),
                 tickedItems = 2,
                 hasScheduledReminder = true,

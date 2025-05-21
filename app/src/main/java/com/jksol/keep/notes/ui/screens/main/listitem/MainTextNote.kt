@@ -14,8 +14,8 @@ import com.jksol.keep.notes.MainScreenDemoData
 import com.jksol.keep.notes.ui.screens.main.model.MainScreenItem
 import com.jksol.keep.notes.ui.theme.ApplicationTheme
 
-private const val MAX_LINES_TITLE = 2
-private const val MAX_LINES_CONTENT = 5
+private const val MAX_LINES_TITLE = 5
+private const val MAX_LINES_CONTENT = 10
 
 @Composable
 fun MainTextNote(

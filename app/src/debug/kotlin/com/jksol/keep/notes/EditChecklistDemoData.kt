@@ -1,43 +1,58 @@
 package com.jksol.keep.notes
 
-import com.jksol.keep.notes.core.model.ChecklistItem
+import com.jksol.keep.notes.ui.screens.edit.checklist.model.CheckedListItemUi
+import com.jksol.keep.notes.ui.screens.edit.checklist.model.UncheckedListItemUi
 
 object EditChecklistDemoData {
 
     val uncheckedChecklistItems = listOf(
-        ChecklistItem(
+        UncheckedListItemUi(
             id = 1,
-            title = "🛒 Buy groceries for the week",
-            isChecked = false,
-            listPosition = 0
+            text = "🛒 Buy groceries for the week",
+            isFocused = false
         ),
-        ChecklistItem(
+        UncheckedListItemUi(
             id = 2,
-            title = "📞 Call Mom and check in",
-            isChecked = false,
-            listPosition = 1
+            text = "📞 Call Mom and check in",
+            isFocused = true,
         ),
-        ChecklistItem(
+        UncheckedListItemUi(
             id = 3,
-            title = "📚 Read 20 pages of a book",
-            isChecked = false,
-            listPosition = 2
+            text = "📚 Read 20 pages of a book",
+            isFocused = false,
         ),
-        ChecklistItem(
+        UncheckedListItemUi(
             id = 4,
-            title = "🏃 Go for a 30-minute jog",
-            isChecked = false,
-            listPosition = 3
+            text = "🏃 Go for a 30-minute jog",
+            isFocused = false,
         ),
-        ChecklistItem(
+        UncheckedListItemUi(
             id = 5,
-            title = "💻 Finish coding the checklist feature",
-            isChecked = false,
-            listPosition = 4
+            text = "💻 Finish coding the checklist feature",
+            isFocused = false,
         )
     )
 
-    val checkedChecklistItems = uncheckedChecklistItems.map {
-        it.copy(isChecked = true)
-    }
+    val checkedChecklistItems = listOf(
+        CheckedListItemUi(
+            id = 1,
+            text = "🛒 Buy groceries for the week",
+        ),
+        CheckedListItemUi(
+            id = 2,
+            text = "📞 Call Mom and check in",
+        ),
+        CheckedListItemUi(
+            id = 3,
+            text = "📚 Read 20 pages of a book",
+        ),
+        CheckedListItemUi(
+            id = 4,
+            text = "🏃 Go for a 30-minute jog",
+        ),
+        CheckedListItemUi(
+            id = 5,
+            text = "💻 Finish coding the checklist feature",
+        )
+    )
 }

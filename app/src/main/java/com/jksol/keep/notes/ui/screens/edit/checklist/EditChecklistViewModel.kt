@@ -16,6 +16,7 @@ import com.jksol.keep.notes.ui.screens.edit.checklist.model.UncheckedListItemUi
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -24,8 +25,6 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.OffsetDateTime
 import javax.inject.Inject
-
-private val TAG = EditChecklistViewModel::class.simpleName
 
 @HiltViewModel
 class EditChecklistViewModel @Inject constructor(
@@ -82,7 +81,6 @@ class EditChecklistViewModel @Inject constructor(
 
     fun onAddChecklistItemClick() {
         addNewItem = viewModelScope.launch {
-            addNewItem?.join()
             val currentState = _state.value
             val currentList = currentState.uncheckedItems
             val bankItem = ChecklistItem.EMPTY.copy(listPosition = currentList.lastIndex + 1)
@@ -120,15 +118,21 @@ class EditChecklistViewModel @Inject constructor(
     fun onItemChecked(item: UncheckedListItemUi) {
         itemCheckedJob = viewModelScope.launch(Dispatchers.Default) {
             val currentState = _state.value
-            checklistRepository.updateChecklistItemCheckedState(
-                isChecked = true,
-                itemId = item.id,
-                checklistId = currentState.checklistId
-            )
-            notifyChecklistModified(
-                checkedItems = currentState.checkedItems + item.toCheckedListItemUi(),
-                uncheckedItems = currentState.uncheckedItems - item
-            )
+            coroutineScope {
+                launch {
+                    checklistRepository.updateChecklistItemCheckedState(
+                        isChecked = true,
+                        itemId = item.id,
+                        checklistId = currentState.checklistId
+                    )
+                }
+                launch {
+                    notifyChecklistModified(
+                        checkedItems = currentState.checkedItems + item.toCheckedListItemUi(),
+                        uncheckedItems = currentState.uncheckedItems - item
+                    )
+                }
+            }
         }
     }
 

@@ -1,6 +1,7 @@
 package com.jksol.keep.notes.ui.screens.edit.checklist
 
 import android.util.Log
+import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.layout.Arrangement.Absolute.spacedBy
 import androidx.compose.foundation.layout.Box
@@ -38,6 +39,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.jksol.keep.notes.EditChecklistDemoData
@@ -51,6 +53,7 @@ import sh.calvin.reorderable.ReorderableColumn
 fun ChecklistBody(
     modifier: Modifier,
     title: String,
+    contentPaddingBottom: Dp = 0.dp,
     checkedItems: List<CheckedListItemUi> = emptyList(),
     uncheckedItems: List<UncheckedListItemUi> = emptyList(),
     showCheckedItems: Boolean = false,
@@ -105,6 +108,8 @@ fun ChecklistBody(
                 )
             }
         }
+
+        Spacer(modifier = Modifier.height(contentPaddingBottom))
     }
 }
 
@@ -117,13 +122,15 @@ private fun CheckedItems(
         modifier = Modifier
             .fillMaxWidth()
             .wrapContentHeight()
-            .padding(start = 24.dp),
+            .padding(start = 24.dp)
+            .animateContentSize(),
         verticalArrangement = spacedBy(4.dp),
     ) {
         checkedItems.forEach { item ->
             key(item.id) {
                 EditableChecklistCheckbox(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth(),
                     text = item.text,
                     checked = true,
                     onCheckedChange = { onItemUnchecked(item) },
@@ -217,6 +224,10 @@ private fun UncheckedItems(
     onDeleteClick: (UncheckedListItemUi) -> Unit,
 ) {
     ReorderableColumn(
+        modifier = Modifier
+            .fillMaxWidth()
+            .wrapContentHeight()
+            .animateContentSize(),
         list = items,
         onSettle = { fromIndex, toIndex ->
             Log.d("ChecklistBody", "onSettle: $fromIndex -> $toIndex")
@@ -295,8 +306,8 @@ private fun PreviewList() {
         ChecklistBody(
             modifier = Modifier.fillMaxWidth(),
             title = "This is a title",
-            uncheckedItems = EditChecklistDemoData.uncheckedChecklistItems,
             checkedItems = EditChecklistDemoData.checkedChecklistItems,
+            uncheckedItems = EditChecklistDemoData.uncheckedChecklistItems,
             showCheckedItems = true,
         )
     }

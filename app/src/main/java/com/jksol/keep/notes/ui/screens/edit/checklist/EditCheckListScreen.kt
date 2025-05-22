@@ -1,14 +1,18 @@
 package com.jksol.keep.notes.ui.screens.edit.checklist
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
@@ -27,6 +31,9 @@ import com.jksol.keep.notes.ui.theme.ApplicationTheme
 @Composable
 fun EditCheckListScreen() {
     val viewModel = hiltViewModel<EditChecklistViewModel>()
+
+    BackHandler { viewModel.onBackClick() }
+
     val state by viewModel.state.collectAsStateWithLifecycle(EditChecklistScreenState())
     ScreenContent(
         state = state,
@@ -74,9 +81,23 @@ fun ScreenContent(
                 onPinCheckedChange = onPinCheckedChange
             )
             Box {
-                DisplayState(
-                    state = state,
+                val scrollState = rememberScrollState()
+                val paddingBottom = remember(innerPadding) { innerPadding.calculateBottomPadding() + 40.dp }
+                ChecklistBody(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(
+                            start = 16.dp,
+                            end = 16.dp,
+                            top = 16.dp,
+                        )
+                        .verticalScroll(scrollState),
+                    contentPaddingBottom = paddingBottom,
+                    title = state.title,
+                    checkedItems = state.checkedItems,
+                    uncheckedItems = state.uncheckedItems,
                     onTitleChanged = onTitleChanged,
+                    showCheckedItems = state.showCheckedItems,
                     onAddChecklistItemClick = onAddChecklistItemClick,
                     toggleCheckedItemsVisibility = toggleCheckedItemsVisibility,
                     onItemUnchecked = onItemUnchecked,
@@ -93,39 +114,6 @@ fun ScreenContent(
             }
         }
     }
-}
-
-@Composable
-private fun DisplayState(
-    state: EditChecklistScreenState,
-    onTitleChanged: (String) -> Unit,
-    onAddChecklistItemClick: () -> Unit,
-    toggleCheckedItemsVisibility: () -> Unit,
-    onItemUnchecked: (CheckedListItemUi) -> Unit,
-    onItemChecked: (UncheckedListItemUi) -> Unit,
-    onItemTextChanged: (String, UncheckedListItemUi) -> Unit,
-    onDoneClicked: (UncheckedListItemUi) -> Unit,
-    onFocusStateChanged: (Boolean, UncheckedListItemUi) -> Unit,
-    onDeleteClick: (UncheckedListItemUi) -> Unit,
-) {
-    ChecklistBody(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(start = 16.dp, end = 16.dp, top = 16.dp),
-        title = state.title,
-        checkedItems = state.checkedItems,
-        uncheckedItems = state.uncheckedItems,
-        onTitleChanged = onTitleChanged,
-        showCheckedItems = state.showCheckedItems,
-        onAddChecklistItemClick = onAddChecklistItemClick,
-        toggleCheckedItemsVisibility = toggleCheckedItemsVisibility,
-        onItemUnchecked = onItemUnchecked,
-        onItemChecked = onItemChecked,
-        onItemTextChanged = onItemTextChanged,
-        onDoneClicked = onDoneClicked,
-        onFocusStateChanged = onFocusStateChanged,
-        onDeleteClick = onDeleteClick,
-    )
 }
 
 @Preview

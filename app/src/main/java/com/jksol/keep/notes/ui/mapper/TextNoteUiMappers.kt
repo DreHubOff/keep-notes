@@ -15,14 +15,17 @@ fun TextNote.toMainScreenItem(): MainScreenItem.TextNote {
     )
 }
 
-fun Checklist.toMainScreenItem(): MainScreenItem.Checklist {
+fun Checklist.toMainScreenItem(checklistItemsMaxCount: Int = 10): MainScreenItem.Checklist {
     val tickedItems = items.filter { it.isChecked }
+    val noTickedItems = items.filter { !it.isChecked }
     return MainScreenItem.Checklist(
         id = this.id,
         title = this.title,
         isPinned = this.isPinned,
         hasTickedItems = tickedItems.isNotEmpty(),
-        items = items.map { MainScreenItem.Checklist.Item(it.isChecked, it.title) },
+        items = noTickedItems.take(checklistItemsMaxCount).map {
+            MainScreenItem.Checklist.Item(isChecked = false, text = it.title)
+        },
         hasScheduledReminder = false,
         interactive = true,
         tickedItems = tickedItems.size,

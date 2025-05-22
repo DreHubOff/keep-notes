@@ -1,9 +1,13 @@
 package com.jksol.keep.notes.ui.screens.edit.checklist
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateContentSize
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.text.BasicTextField
@@ -50,31 +54,31 @@ fun EditableChecklistCheckbox(
     onDeleteClick: () -> Unit = {},
 ) {
     Row(
-        modifier = modifier,
+        modifier = modifier
+            .clickable(enabled = checked) { onCheckedChange(!checked) }
+            .animateContentSize(),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        val translationX = -40.dp.value
         val focusRequester = remember { FocusRequester() }
-        var checkedState by remember { mutableStateOf(checked) }
-        var isFocusedLocal by remember(isFocused) { mutableStateOf(isFocused) }
+
+        LaunchedEffect(isFocused) {
+            if (isFocused) {
+                focusRequester.requestFocus()
+            } else {
+                focusRequester.freeFocus()
+            }
+        }
+
+        val translationX = -40.dp.value
         Checkbox(
             modifier = Modifier
                 .scale(0.7f)
-                .height(28.dp)
+                .height(32.dp)
                 .graphicsLayer { this.translationX = translationX },
-            checked = checkedState,
-            onCheckedChange = {
-                onCheckedChange(it)
-                checkedState = it
-            },
+            checked = checked,
+            onCheckedChange = onCheckedChange,
             colors = themedCheckboxColors()
         )
-
-        LaunchedEffect(focusRequester) {
-            if (isFocusedLocal) {
-                focusRequester.requestFocus()
-            }
-        }
 
         val textColor = MaterialTheme.colorScheme.run { if (checked) onSurface else onSurfaceVariant }
         var textCache by remember(text) { mutableStateOf(text) }
@@ -84,15 +88,14 @@ fun EditableChecklistCheckbox(
                 textCache = it
                 onTextChanged(it)
             },
-            modifier = modifier
+            modifier = Modifier
                 .weight(1f)
                 .wrapContentHeight()
                 .graphicsLayer { this.translationX = translationX }
+                .focusRequester(focusRequester)
                 .onFocusChanged {
-                    isFocusedLocal = it.isFocused
                     onFocusStateChanged(it.isFocused)
-                }
-                .focusRequester(focusRequester),
+                },
             textStyle = TextStyle(
                 color = textColor,
                 fontWeight = FontWeight.Normal,
@@ -102,12 +105,16 @@ fun EditableChecklistCheckbox(
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
             keyboardActions = KeyboardActions(onDone = { onDoneClicked() }),
             decorationBox = { innerTextField ->
-                Box(Modifier.fillMaxWidth()) {
+                Box(
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 2.dp)
+                ) {
                     innerTextField()
                 }
             }
         )
-        if (isFocusedLocal) {
+        AnimatedVisibility(visible = isFocused) {
             IconButton(
                 modifier = Modifier.size(32.dp),
                 onClick = onDeleteClick

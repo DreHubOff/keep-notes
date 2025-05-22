@@ -38,9 +38,13 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
 @Composable
-fun MainScreen(noteEditingResult: Route.EditNoteScreen.Result?) {
+fun MainScreen(
+    noteEditingResult: Route.EditNoteScreen.Result?,
+    checklistEditingResult: Route.EditChecklistScreen.Result?,
+) {
     val viewModel = hiltViewModel<MainViewModel>()
     viewModel.saveNoteEditingResult(noteEditingResult)
+    viewModel.saveChecklistEditingResult(checklistEditingResult)
     val state by viewModel.uiState.collectAsState(MainScreenState.None())
     ScreenContent(
         state,

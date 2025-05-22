@@ -1,6 +1,7 @@
 package com.jksol.keep.notes.data.database.dao
 
 import androidx.room.Dao
+import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
@@ -45,4 +46,7 @@ interface ChecklistDao {
 
     @Query("UPDATE $CHECKLIST_TABLE_NAME SET pinned = :isPinned WHERE id = :id")
     suspend fun updatePinnedStateById(id: Long, isPinned: Boolean)
+
+    @Delete
+    suspend fun deleteChecklist(entity: ChecklistEntity)
 }

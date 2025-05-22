@@ -34,7 +34,7 @@ fun MainCheckList(
         maxTitleLines = MAX_LINES_TITLE,
         onClick = onClick,
     ) { contentModifier ->
-        if (item.items.isNotEmpty()) {
+        if (item.items.isNotEmpty() || item.hasTickedItems) {
             ChecklistContent(modifier = contentModifier, item = item, onItemClicked = onClick)
         }
     }

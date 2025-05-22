@@ -45,9 +45,10 @@ fun EditCheckListScreen() {
         onItemUnchecked = { viewModel.onItemUnchecked(it) },
         onItemChecked = { viewModel.onItemChecked(it) },
         onItemTextChanged = { text, item -> viewModel.onItemTextChanged(text, item) },
-        onDoneClicked = { viewModel.onDoneClicked() },
+        onDoneClicked = { item -> viewModel.onDoneClicked(item) },
         onFocusStateChanged = { isFocused, item -> viewModel.onFocusStateChanged(isFocused, item) },
         onDeleteClick = { viewModel.onDeleteClick(it) },
+        onMoveItems = { fromIndex, toIndex -> viewModel.onMoveItems(fromIndex, toIndex) },
     )
 }
 
@@ -65,6 +66,7 @@ fun ScreenContent(
     onDoneClicked: (UncheckedListItemUi) -> Unit,
     onFocusStateChanged: (Boolean, UncheckedListItemUi) -> Unit,
     onDeleteClick: (UncheckedListItemUi) -> Unit,
+    onMoveItems: (fromIndex: Int, toIndex: Int) -> Unit,
 ) {
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -106,6 +108,7 @@ fun ScreenContent(
                     onDoneClicked = onDoneClicked,
                     onFocusStateChanged = onFocusStateChanged,
                     onDeleteClick = onDeleteClick,
+                    onMoveItems = onMoveItems,
                 )
                 ModificationDateOverlay(
                     navigationBarPadding = innerPadding.calculateBottomPadding(),
@@ -132,7 +135,8 @@ private fun Preview(@PreviewParameter(EditChecklistScreenStateProvider::class) s
             onItemTextChanged = { _, _ -> },
             onDoneClicked = {},
             onFocusStateChanged = { _, _ -> },
-            onDeleteClick = {}
+            onDeleteClick = {},
+            onMoveItems = { _, _ -> }
         )
     }
 }

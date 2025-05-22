@@ -14,9 +14,11 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.jksol.keep.notes.R
 import com.jksol.keep.notes.ui.theme.ApplicationTheme
+import sh.calvin.reorderable.ReorderableColumn
+import sh.calvin.reorderable.ReorderableScope
 
 @Composable
-fun DraggableChecklistItem(
+fun ReorderableScope.DraggableChecklistItem(
     modifier: Modifier = Modifier,
     title: String,
     checked: Boolean = true,
@@ -33,6 +35,8 @@ fun DraggableChecklistItem(
         horizontalArrangement = spacedBy(8.dp),
     ) {
         Icon(
+            modifier = Modifier
+                .longPressDraggableHandle(),
             imageVector = Icons.Sharp.DragIndicator,
             tint = MaterialTheme.colorScheme.onSurface,
             contentDescription = stringResource(R.string.drag_current_item)
@@ -55,9 +59,11 @@ fun DraggableChecklistItem(
 @Composable
 private fun Preview() {
     ApplicationTheme {
-        DraggableChecklistItem(
-            title = "This is a title",
-            checked = false,
-        )
+        ReorderableColumn(listOf(0), onSettle = { _, _ -> }) { _, _, _ ->
+            DraggableChecklistItem(
+                title = "This is a title",
+                checked = false,
+            )
+        }
     }
 }

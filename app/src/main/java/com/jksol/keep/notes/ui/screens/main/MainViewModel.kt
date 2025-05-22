@@ -40,6 +40,7 @@ class MainViewModel @Inject constructor(
 ) : ViewModel() {
 
     private var noteEditingResult: Route.EditNoteScreen.Result? = null
+    private var checklistEditingResult: Route.EditChecklistScreen.Result? = null
 
     private val _uiState = MutableStateFlow<MainScreenState>(MainScreenState.None())
     val uiState: Flow<MainScreenState> = _uiState
@@ -50,7 +51,7 @@ class MainViewModel @Inject constructor(
 
     private fun loadIdleState() {
         viewModelScope.launch(Dispatchers.Default) {
-            val snackbarEvent = validateNoteEditingResult()
+            val snackbarEvent = validateNoteEditingResult() ?: validateChecklistEditingResult()
             val isSavedAnyNoteDeferred = async { userPreferences.isSavedAnyNote() }
             val notesDeferred = async { loadNotes() }
             val isSavedAnyNote = isSavedAnyNoteDeferred.await()
@@ -131,6 +132,10 @@ class MainViewModel @Inject constructor(
         noteEditingResult = result
     }
 
+    fun saveChecklistEditingResult(result: Route.EditChecklistScreen.Result?) {
+        checklistEditingResult = result
+    }
+
     private suspend fun validateNoteEditingResult(): SnackbarEvent? {
         val result = noteEditingResult ?: return null
         val createdNote = textNotesRepository.getNoteById(result.noteId) ?: return null
@@ -138,6 +143,19 @@ class MainViewModel @Inject constructor(
         if (noteIsEmpty) {
             textNotesRepository.delete(createdNote)
             return SnackbarEvent(context.getString(R.string.empty_notes_discarded))
+        }
+        return null
+    }
+
+    private suspend fun validateChecklistEditingResult(): SnackbarEvent? {
+        val result = checklistEditingResult ?: return null
+        val createdChecklist = checklistRepository.getChecklistById(result.checklistId) ?: return null
+        val checklistIsEmpty =
+            (createdChecklist.title.isEmpty() && createdChecklist.items.isEmpty()) ||
+                    (createdChecklist.title.isEmpty() && createdChecklist.items.sumOf { it.title.trim().length } == 0)
+        if (checklistIsEmpty) {
+            checklistRepository.delete(createdChecklist)
+            return SnackbarEvent(context.getString(R.string.empty_checklist_discarded))
         }
         return null
     }

@@ -10,7 +10,7 @@ fun ChecklistWithItems.toDomain(): Checklist {
     return Checklist(
         id = checklist.id,
         title = checklist.title,
-        items = items.map { it.toDomain() },
+        items = items.sortedBy { it.listPosition }.map { it.toDomain() },
         creationDate = checklist.creationDate,
         modificationDate = checklist.modificationDate,
         isPinned = checklist.isPinned,

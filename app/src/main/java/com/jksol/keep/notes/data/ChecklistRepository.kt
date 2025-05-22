@@ -34,6 +34,9 @@ class ChecklistRepository @Inject constructor(
     suspend fun getChecklists(): List<Checklist> =
         checklistDao.getAllChecklistsWithItems().map { it.toDomain() }
 
+    suspend fun getItemsForChecklist(checklistId: Long): List<ChecklistItem> =
+        checklistItemDao.getItemsForChecklist(checklistId = checklistId).map { it.toDomain() }
+
     suspend fun updateChecklistTitle(checklistId: Long, title: String) {
         checklistDao.updateChecklistTitleById(checklistId, title)
     }
@@ -52,10 +55,37 @@ class ChecklistRepository @Inject constructor(
         return item.copy(id = insertedItemId)
     }
 
+    suspend fun saveChecklistItemAsLast(checklistId: Long, item: ChecklistItem): ChecklistItem {
+        val newPosition = checklistItemDao.getLastListPosition(checklistId) + 1
+        val itemToSave = item.copy(listPosition = newPosition).toEntity(parentChecklistId = checklistId)
+        val insertedItemId = checklistItemDao.insertChecklistItem(itemToSave)
+        return item.copy(id = insertedItemId, listPosition = newPosition)
+    }
+
     suspend fun updateChecklistItemCheckedState(isChecked: Boolean, itemId: Long, checklistId: Long) {
         checklistItemDao.updateCheckedStateByIds(checked = isChecked, checklistId = checklistId, itemId = itemId)
     }
 
     suspend fun getUncheckedItemsForChecklist(checklistId: Long): List<ChecklistItem> =
-        checklistItemDao.getUncheckedItemsForChecklist(checklistId).map { it.toDomain() }
+        checklistItemDao
+            .getUncheckedItemsForChecklist(checklistId)
+            .map { it.toDomain() }
+
+    suspend fun getCheckedItemsForChecklist(checklistId: Long): List<ChecklistItem> =
+        checklistItemDao
+            .getCheckedItemsForChecklist(checklistId)
+            .map { it.toDomain() }
+
+    suspend fun updateChecklistItemTitle(itemId: Long, checklistId: Long, title: String) {
+        checklistItemDao.updateTitleByIds(itemId = itemId, checklistId = checklistId, title = title)
+    }
+
+    suspend fun deleteChecklistItem(itemId: Long, checklistId: Long) {
+        checklistItemDao.deleteItem(itemId = itemId, checklistId = checklistId)
+    }
+
+    suspend fun delete(checklist: Checklist) {
+        checklistDao.deleteChecklist(checklist.toEntity())
+        checklistItemDao.deleteItems(checklist.items.map { it.toEntity(checklist.id) })
+    }
 }

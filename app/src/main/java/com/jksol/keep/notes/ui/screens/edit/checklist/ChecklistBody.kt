@@ -1,6 +1,5 @@
 package com.jksol.keep.notes.ui.screens.edit.checklist
 
-import android.util.Log
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.layout.Arrangement.Absolute.spacedBy
@@ -66,6 +65,7 @@ fun ChecklistBody(
     onDoneClicked: (UncheckedListItemUi) -> Unit = {},
     onFocusStateChanged: (Boolean, UncheckedListItemUi) -> Unit = { _, _ -> },
     onDeleteClick: (UncheckedListItemUi) -> Unit = {},
+    onMoveItems: (fromIndex: Int, toIndex: Int) -> Unit = { _, _ -> },
 ) {
     var titleCache by remember(title) { mutableStateOf(title) }
     Column(
@@ -90,6 +90,7 @@ fun ChecklistBody(
                 onDoneClicked = onDoneClicked,
                 onFocusStateChanged = onFocusStateChanged,
                 onDeleteClick = onDeleteClick,
+                onMoveItems = onMoveItems,
             )
         }
 
@@ -222,6 +223,7 @@ private fun UncheckedItems(
     onDoneClicked: (UncheckedListItemUi) -> Unit,
     onFocusStateChanged: (Boolean, UncheckedListItemUi) -> Unit,
     onDeleteClick: (UncheckedListItemUi) -> Unit,
+    onMoveItems: (fromIndex: Int, toIndex: Int) -> Unit,
 ) {
     ReorderableColumn(
         modifier = Modifier
@@ -229,16 +231,13 @@ private fun UncheckedItems(
             .wrapContentHeight()
             .animateContentSize(),
         list = items,
-        onSettle = { fromIndex, toIndex ->
-            Log.d("ChecklistBody", "onSettle: $fromIndex -> $toIndex")
-        },
+        onSettle = onMoveItems,
         verticalArrangement = spacedBy(4.dp),
     ) { _, item, _ ->
         key(item.id) {
             DraggableChecklistItem(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .draggableHandle(),
+                    .fillMaxWidth(),
                 title = item.text,
                 checked = false,
                 isFocused = item.isFocused,
@@ -246,7 +245,7 @@ private fun UncheckedItems(
                 onTextChanged = { onTextChanged(it, item) },
                 onDoneClicked = { onDoneClicked(item) },
                 onFocusStateChanged = { onFocusStateChanged(it, item) },
-                onDeleteClick = { onDeleteClick(item) },
+                onDeleteClick = { onDeleteClick(item) }
             )
         }
     }

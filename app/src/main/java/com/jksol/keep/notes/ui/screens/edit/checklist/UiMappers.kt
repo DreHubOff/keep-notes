@@ -16,19 +16,8 @@ fun Checklist.toEditChecklistScreenState(
         title = title,
         isPinned = isPinned,
         modificationStatusMessage = modificationStatusMessage,
-        uncheckedItems = items
-            .filter { !it.isChecked }
-            .sortedBy { it.listPosition }
-            .map { it.toUncheckedListItemUi(isFocused = it.id == focusedItemId) },
-        checkedItems = items
-            .filter { it.isChecked }
-            .sortedBy { it.listPosition }
-            .map {
-                CheckedListItemUi(
-                    id = it.id,
-                    text = it.title
-                )
-            },
+        uncheckedItems = items.toUncheckedListItemsUi(focusedItemId = focusedItemId),
+        checkedItems = items.toCheckedListItemsUi(),
         showCheckedItems = showCheckedItems
     )
 }
@@ -41,17 +30,21 @@ fun ChecklistItem.toUncheckedListItemUi(isFocused: Boolean = false): UncheckedLi
     )
 }
 
-fun CheckedListItemUi.toUncheckedListItemUi(): UncheckedListItemUi {
-    return UncheckedListItemUi(
-        id = id,
-        text = text,
-        isFocused = false,
-    )
+fun ChecklistItem.toCheckedListItemUi(): CheckedListItemUi = CheckedListItemUi(id = id, text = title)
+
+fun List<ChecklistItem>.toCheckedListItemsUi(): List<CheckedListItemUi> {
+    return filter { it.isChecked }
+        .sortedBy { it.listPosition }
+        .map {
+            CheckedListItemUi(
+                id = it.id,
+                text = it.title
+            )
+        }
 }
 
-fun UncheckedListItemUi.toCheckedListItemUi(): CheckedListItemUi {
-    return CheckedListItemUi(
-        id = id,
-        text = text,
-    )
+fun List<ChecklistItem>.toUncheckedListItemsUi(focusedItemId: Long?): List<UncheckedListItemUi> {
+    return filter { !it.isChecked }
+        .sortedBy { it.listPosition }
+        .map { it.toUncheckedListItemUi(isFocused = it.id == focusedItemId) }
 }

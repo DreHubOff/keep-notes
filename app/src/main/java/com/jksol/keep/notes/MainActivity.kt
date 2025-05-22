@@ -49,7 +49,10 @@ class MainActivity : ComponentActivity() {
                         val noteEditingResult = backStackEntry
                             .savedStateHandle
                             .get<Route.EditNoteScreen.Result>(Route.EditNoteScreen.Result.KEY)
-                        MainScreen(noteEditingResult)
+                        val checklistEditingResult = backStackEntry
+                            .savedStateHandle
+                            .get<Route.EditChecklistScreen.Result>(Route.EditChecklistScreen.Result.KEY)
+                        MainScreen(noteEditingResult, checklistEditingResult)
                     }
                     composable<Route.EditNoteScreen> {
                         EditNoteScreen()

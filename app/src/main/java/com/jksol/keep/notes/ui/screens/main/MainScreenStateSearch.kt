@@ -28,6 +28,7 @@ import kotlinx.coroutines.launch
 fun MainScreenStateSearch(
     modifier: Modifier = Modifier,
     innerPadding: PaddingValues,
+    searchPrompt: String?,
     listItems: List<MainScreenItem>,
     onHideSearch: () -> Unit = {},
     onNewPrompt: (String) -> Unit = {},
@@ -40,6 +41,7 @@ fun MainScreenStateSearch(
     Column(modifier = modifier) {
         MainSearchBar(
             innerPadding = innerPadding,
+            searchPrompt = searchPrompt,
             onHideSearch = {
                 coroutineScope.launch {
                     if (listItems.isNotEmpty()) {
@@ -94,7 +96,7 @@ private fun Preview() {
         MainScreenStateSearch(
             innerPadding = PaddingValues(20.dp),
             listItems = MainScreenDemoData.notesList(),
-            onHideSearch = {},
+            searchPrompt = "Search...",
             onNewPrompt = {},
             openTextNoteEditor = {},
             openCheckListEditor = {},

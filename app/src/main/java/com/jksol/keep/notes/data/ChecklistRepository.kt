@@ -32,7 +32,6 @@ class ChecklistRepository @Inject constructor(
             .observeChecklistWithItemsById(id)
             .filter { it.isNotEmpty() }
             .map { it.first().toDomain() }
-
     }
 
     suspend fun insertChecklist(checklist: Checklist): Checklist {
@@ -48,8 +47,8 @@ class ChecklistRepository @Inject constructor(
         return checkNotNull(result) { "New checklist was not inserted" }
     }
 
-    suspend fun getChecklists(): List<Checklist> =
-        checklistDao.getAllChecklistsWithItems().map { it.toDomain() }
+    fun observeNotTrashedChecklists(): Flow<List<Checklist>> =
+        checklistDao.observeNotTrashed().map { list -> list.map { checklist -> checklist.toDomain() } }
 
     suspend fun updateChecklistTitle(checklistId: Long, title: String) {
         withContext(NonCancellable) {

@@ -29,6 +29,9 @@ data class ChecklistEntity(
 
     @ColumnInfo("background_color")
     val backgroundColor: NoteColor?,
+
+    @ColumnInfo("is_trashed")
+    val isTrashed: Boolean,
 ) {
 
     companion object {

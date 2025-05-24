@@ -1,7 +1,10 @@
 package com.jksol.keep.notes.ui.screens.main.listitem
 
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Arrangement.Absolute.spacedBy
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -13,10 +16,10 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Text
+import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.pointer.changedToUpIgnoreConsumed
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -39,31 +42,32 @@ fun MainScreenItemContainer(
     OutlinedCard(
         modifier = modifier
             .fillMaxWidth()
-            .wrapContentHeight()
-            .pointerInput(Unit) {
-                awaitPointerEventScope {
-                    while (true) {
-                        val event = awaitPointerEvent()
-                        if (event.changes.any { it.changedToUpIgnoreConsumed() }) {
-                            onClick?.invoke()
-                        }
-                    }
-                }
-            },
+            .wrapContentHeight(),
         enabled = item.interactive,
         onClick = { onClick?.invoke() },
     ) {
-        if (item.title.isNotEmpty()) {
-            WithTitleNote(
-                textItem = item,
-                content = content,
-                maxTitleLines = maxTitleLines,
-            )
-        } else {
-            WithoutTitleNote(
-                textItem = item,
-                content = content,
-            )
+        Box {
+            if (item.title.isNotEmpty()) {
+                WithTitleNote(
+                    textItem = item,
+                    content = content,
+                    maxTitleLines = maxTitleLines,
+                )
+            } else {
+                WithoutTitleNote(
+                    textItem = item,
+                    content = content,
+                )
+            }
+            Box(modifier = Modifier
+                .matchParentSize()
+                .clickable(
+                    interactionSource = remember { MutableInteractionSource() },
+                    indication = ripple(),
+                    enabled = onClick != null) {
+                    onClick?.invoke()
+                }) {
+            }
         }
     }
 }

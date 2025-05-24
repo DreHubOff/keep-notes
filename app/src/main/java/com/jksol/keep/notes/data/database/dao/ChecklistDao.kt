@@ -16,8 +16,8 @@ import java.time.OffsetDateTime
 interface ChecklistDao {
 
     @Transaction
-    @Query("SELECT * FROM $CHECKLIST_TABLE_NAME")
-    suspend fun getAllChecklistsWithItems(): List<ChecklistWithItems>
+    @Query("SELECT * FROM $CHECKLIST_TABLE_NAME WHERE is_trashed = 0")
+    fun observeNotTrashed(): Flow<List<ChecklistWithItems>>
 
     @Transaction
     @Query("SELECT * FROM $CHECKLIST_TABLE_NAME WHERE id = :id")

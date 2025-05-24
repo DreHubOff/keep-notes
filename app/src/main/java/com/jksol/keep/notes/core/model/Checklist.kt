@@ -6,14 +6,18 @@ import java.time.OffsetDateTime
 
 @Parcelize
 data class Checklist(
-    val id: Long,
-    val title: String,
+    override val id: Long,
+    override val title: String,
     val items: List<ChecklistItem>,
     override val creationDate: OffsetDateTime,
-    val modificationDate: OffsetDateTime,
+    override val modificationDate: OffsetDateTime,
     override val isPinned: Boolean,
-    val backgroundColor: NoteColor?,
-) : Parcelable, SortableListItem {
+    override val backgroundColor: NoteColor?,
+    override val isTrashed: Boolean,
+
+    // TODO: Not yet implemented
+    override val hasReminder: Boolean = false,
+) : Parcelable, ApplicationMainDataType {
 
     companion object {
         fun generateEmpty() = Checklist(
@@ -24,6 +28,7 @@ data class Checklist(
             modificationDate = OffsetDateTime.now(),
             isPinned = false,
             backgroundColor = null,
+            isTrashed = false,
         )
     }
 }

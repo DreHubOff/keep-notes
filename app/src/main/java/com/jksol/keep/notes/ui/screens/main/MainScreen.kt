@@ -1,6 +1,8 @@
 package com.jksol.keep.notes.ui.screens.main
 
 import android.content.res.Configuration
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
@@ -25,14 +27,12 @@ import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.jksol.keep.notes.MainScreenDemoData.noNotes
 import com.jksol.keep.notes.MainScreenDemoData.notesList
 import com.jksol.keep.notes.MainScreenDemoData.welcomeBanner
 import com.jksol.keep.notes.ui.screens.Route
 import com.jksol.keep.notes.ui.screens.main.fab.MainFabContainer
 import com.jksol.keep.notes.ui.screens.main.model.MainScreenItem
 import com.jksol.keep.notes.ui.screens.main.model.MainScreenState
-import com.jksol.keep.notes.ui.screens.main.model.SnackbarEventDelivery
 import com.jksol.keep.notes.ui.theme.ApplicationTheme
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -42,10 +42,10 @@ fun MainScreen(
     noteEditingResult: Route.EditNoteScreen.Result?,
     checklistEditingResult: Route.EditChecklistScreen.Result?,
 ) {
-    val viewModel = hiltViewModel<MainViewModel>()
-    viewModel.saveNoteEditingResult(noteEditingResult)
-    viewModel.saveChecklistEditingResult(checklistEditingResult)
-    val state by viewModel.uiState.collectAsState(MainScreenState.None())
+    val viewModel = hiltViewModel<MainViewModel>(LocalActivity.current as ComponentActivity)
+    viewModel.processNoteEditingResult(noteEditingResult)
+    viewModel.processChecklistEditingResult(checklistEditingResult)
+    val state by viewModel.uiState.collectAsState(MainScreenState.EMPTY)
     ScreenContent(
         state,
         openTextNoteEditor = viewModel::openTextNoteEditor,
@@ -65,7 +65,7 @@ private fun ScreenContent(
     onToggleSearchVisibility: () -> Unit = {},
     onNewSearchPrompt: (String) -> Unit = {},
 ) {
-    val showOverlay = state is MainScreenState.AddModeSelection
+    val showOverlay = state.addItemsMode
     val coroutineScope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
     handleSnackbarState(coroutineScope, snackbarHostState, state)
@@ -87,9 +87,8 @@ private fun ScreenContent(
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
     ) { innerPadding ->
         Box {
-            val unpackedState = (state as? MainScreenState.AddModeSelection)?.previousState ?: state
             DisplayState(
-                state = unpackedState,
+                state = state,
                 innerPadding = innerPadding,
                 onToggleSearchVisibility = onToggleSearchVisibility,
                 onNewSearchPrompt = onNewSearchPrompt,
@@ -110,8 +109,28 @@ private fun DisplayState(
     openTextNoteEditor: (MainScreenItem.TextNote?) -> Unit,
     openCheckListEditor: (MainScreenItem.Checklist?) -> Unit,
 ) {
-    when (state) {
-        is MainScreenState.Idle -> {
+    when {
+        state.searchEnabled -> {
+            MainScreenStateSearch(
+                innerPadding = innerPadding,
+                searchPrompt = state.searchPrompt,
+                listItems = state.screenItems,
+                onHideSearch = onToggleSearchVisibility,
+                onNewPrompt = onNewSearchPrompt,
+                openTextNoteEditor = openTextNoteEditor,
+                openCheckListEditor = openCheckListEditor,
+            )
+        }
+
+        state.isWelcomeBanner -> {
+            MainScreenWelcomeBanner(
+                innerPadding = innerPadding,
+                banner = state.screenItems.first() as MainScreenItem.TextNote,
+                onToggleSearchVisibility = onToggleSearchVisibility,
+            )
+        }
+
+        else -> {
             MainScreenStateIdle(
                 innerPadding = innerPadding,
                 listItems = state.screenItems,
@@ -121,27 +140,6 @@ private fun DisplayState(
             )
             SystemBarBackground(innerPadding)
         }
-
-        is MainScreenState.Search -> {
-            MainScreenStateSearch(
-                innerPadding = innerPadding,
-                listItems = state.screenItems,
-                onHideSearch = onToggleSearchVisibility,
-                onNewPrompt = onNewSearchPrompt,
-                openTextNoteEditor = openTextNoteEditor,
-                openCheckListEditor = openCheckListEditor,
-            )
-        }
-
-        is MainScreenState.WelcomeBanner -> {
-            MainScreenWelcomeBanner(
-                innerPadding = innerPadding,
-                banner = state.textNote,
-                onToggleSearchVisibility = onToggleSearchVisibility,
-            )
-        }
-
-        else -> return
     }
 }
 
@@ -153,6 +151,19 @@ private fun SystemBarBackground(innerPadding: PaddingValues) {
             .height(innerPadding.calculateTopPadding() + 4.dp)
             .background(MaterialTheme.colorScheme.background.copy(alpha = 0.8f))
     )
+}
+
+private fun handleSnackbarState(
+    coroutineScope: CoroutineScope,
+    snackbarHostState: SnackbarHostState,
+    state: MainScreenState,
+) {
+    val snackbarEvent = state.snackbarEvent ?: return
+    snackbarEvent.consume()?.let { message ->
+        coroutineScope.launch {
+            snackbarHostState.showSnackbar(message)
+        }
+    }
 }
 
 @Preview(
@@ -179,24 +190,11 @@ private fun MainScreenPreview(@PreviewParameter(PreviewBinder::class) state: Mai
 private class PreviewBinder : PreviewParameterProvider<MainScreenState> {
     override val values: Sequence<MainScreenState>
         get() = sequenceOf(
-            MainScreenState.Idle(noNotes()),
-            MainScreenState.Idle(notesList()),
-            MainScreenState.Idle(welcomeBanner()),
-            MainScreenState.Search(noNotes()),
-            MainScreenState.Search(notesList()),
-            MainScreenState.AddModeSelection(MainScreenState.Idle(welcomeBanner())),
+            MainScreenState.EMPTY,
+            MainScreenState.EMPTY.copy(screenItems = notesList()),
+            MainScreenState.EMPTY.copy(screenItems = welcomeBanner(), isWelcomeBanner = true),
+            MainScreenState.EMPTY.copy(searchEnabled = true, searchPrompt = "Search..."),
+            MainScreenState.EMPTY.copy(screenItems = notesList(), searchEnabled = true, searchPrompt = "Search..."),
+            MainScreenState.EMPTY.copy(screenItems = notesList(), addItemsMode = true),
         )
-}
-
-private fun handleSnackbarState(
-    coroutineScope: CoroutineScope,
-    snackbarHostState: SnackbarHostState,
-    state: MainScreenState,
-) {
-    val snackbarEvent = (state as? SnackbarEventDelivery)?.snackbarEvent ?: return
-    snackbarEvent.consume()?.let { message ->
-        coroutineScope.launch {
-            snackbarHostState.showSnackbar(message)
-        }
-    }
 }

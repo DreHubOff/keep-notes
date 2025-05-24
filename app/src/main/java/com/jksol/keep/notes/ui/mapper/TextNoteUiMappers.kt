@@ -1,5 +1,6 @@
 package com.jksol.keep.notes.ui.mapper
 
+import com.jksol.keep.notes.core.model.ApplicationMainDataType
 import com.jksol.keep.notes.core.model.Checklist
 import com.jksol.keep.notes.core.model.TextNote
 import com.jksol.keep.notes.ui.screens.main.model.MainScreenItem
@@ -30,4 +31,11 @@ fun Checklist.toMainScreenItem(checklistItemsMaxCount: Int = 10): MainScreenItem
         interactive = true,
         tickedItems = tickedItems.size,
     )
+}
+
+fun ApplicationMainDataType.toMainScreenItem(checklistItemsMaxCount: Int = 10): MainScreenItem {
+    return when (this) {
+        is TextNote -> this.toMainScreenItem()
+        is Checklist -> this.toMainScreenItem(checklistItemsMaxCount)
+    }
 }

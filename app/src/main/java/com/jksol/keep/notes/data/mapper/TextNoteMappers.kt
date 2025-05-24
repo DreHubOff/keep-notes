@@ -10,7 +10,7 @@ fun TextNoteEntity.toDomain(): TextNote {
         content = content,
         creationDate = creationDate,
         modificationDate = modificationDate,
-        displayColorResource = displayColorResource,
+        backgroundColor = displayColorResource,
         isPinned = isPinned,
         isTrashed = isTrashed,
         hasReminder = hasReminder
@@ -24,7 +24,7 @@ fun TextNote.toEntity(): TextNoteEntity {
         content = content,
         creationDate = creationDate,
         modificationDate = modificationDate,
-        displayColorResource = displayColorResource,
+        displayColorResource = backgroundColor,
         isPinned = isPinned,
         isTrashed = isTrashed,
         hasReminder = hasReminder

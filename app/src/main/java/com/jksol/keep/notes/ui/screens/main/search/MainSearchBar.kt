@@ -45,6 +45,7 @@ import kotlinx.coroutines.delay
 @Composable
 fun MainSearchBar(
     innerPadding: PaddingValues,
+    searchPrompt: String?,
     onHideSearch: () -> Unit = {},
     onValueChanged: (String) -> Unit = {},
 ) {
@@ -97,19 +98,19 @@ fun MainSearchBar(
                 )
         )
         AnimatedVisibility(visible = showSearch) {
-            var searchPrompt by remember { mutableStateOf("") }
+            var searchPromptLocal by remember(searchPrompt) { mutableStateOf(searchPrompt ?: "") }
             SearchBarContent(
-                value = searchPrompt,
+                value = searchPromptLocal,
                 modifier = Modifier
                     .padding(horizontalPad)
                     .focusRequester(focusRequester),
                 onValueChange = {
                     onValueChanged(it)
-                    searchPrompt = it
+                    searchPromptLocal = it
                 },
                 onClearClick = {
                     onValueChanged("")
-                    searchPrompt = ""
+                    searchPromptLocal = ""
                 },
                 onCancelClick = {
                     keyboardController?.hide()
@@ -193,6 +194,7 @@ private fun Preview() {
     ApplicationTheme {
         MainSearchBar(
             innerPadding = PaddingValues(10.dp),
+            searchPrompt = "Search",
         )
     }
 }

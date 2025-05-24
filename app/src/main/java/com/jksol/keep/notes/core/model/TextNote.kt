@@ -6,16 +6,16 @@ import java.time.OffsetDateTime
 
 @Parcelize
 data class TextNote(
-    val id: Long,
-    val title: String,
+    override val id: Long,
+    override val title: String,
     val content: String,
     override val creationDate: OffsetDateTime,
-    val modificationDate: OffsetDateTime,
-    val displayColorResource: NoteColor?,
+    override val modificationDate: OffsetDateTime,
+    override val backgroundColor: NoteColor?,
     override val isPinned: Boolean,
-    val isTrashed: Boolean,
-    val hasReminder: Boolean,
-) : Parcelable, SortableListItem {
+    override val isTrashed: Boolean,
+    override val hasReminder: Boolean,
+) : Parcelable, ApplicationMainDataType {
     companion object {
         fun generateEmpty() = TextNote(
             id = 0,
@@ -23,10 +23,10 @@ data class TextNote(
             content = "",
             creationDate = OffsetDateTime.now(),
             modificationDate = OffsetDateTime.now(),
-            displayColorResource = null,
+            backgroundColor = null,
             isPinned = false,
             isTrashed = false,
-            hasReminder = false
+            hasReminder = false,
         )
     }
 }

@@ -1,5 +1,6 @@
 package com.jksol.keep.notes
 
+import com.jksol.keep.notes.ui.focus.ElementFocusRequest
 import com.jksol.keep.notes.ui.screens.edit.checklist.model.CheckedListItemUi
 import com.jksol.keep.notes.ui.screens.edit.checklist.model.UncheckedListItemUi
 
@@ -9,27 +10,27 @@ object EditChecklistDemoData {
         UncheckedListItemUi(
             id = 1,
             text = "🛒 Buy groceries for the week",
-            isFocused = false
+            focusRequest = null
         ),
         UncheckedListItemUi(
             id = 2,
             text = "📞 Call Mom and check in",
-            isFocused = true,
+            focusRequest = ElementFocusRequest(),
         ),
         UncheckedListItemUi(
             id = 3,
             text = "📚 Read 20 pages of a book",
-            isFocused = false,
+            focusRequest = null,
         ),
         UncheckedListItemUi(
             id = 4,
             text = "🏃 Go for a 30-minute jog",
-            isFocused = false,
+            focusRequest = null,
         ),
         UncheckedListItemUi(
             id = 5,
             text = "💻 Finish coding the checklist feature",
-            isFocused = false,
+            focusRequest = null,
         )
     )
 

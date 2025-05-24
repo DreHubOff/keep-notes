@@ -9,6 +9,7 @@ import androidx.room.Transaction
 import com.jksol.keep.notes.data.database.table.CHECKLIST_TABLE_NAME
 import com.jksol.keep.notes.data.database.table.ChecklistEntity
 import com.jksol.keep.notes.data.database.table.ChecklistWithItems
+import kotlinx.coroutines.flow.Flow
 import java.time.OffsetDateTime
 
 @Dao
@@ -17,6 +18,10 @@ interface ChecklistDao {
     @Transaction
     @Query("SELECT * FROM $CHECKLIST_TABLE_NAME")
     suspend fun getAllChecklistsWithItems(): List<ChecklistWithItems>
+
+    @Transaction
+    @Query("SELECT * FROM $CHECKLIST_TABLE_NAME WHERE id = :id")
+    fun observeChecklistWithItemsById(id: Long): Flow<List<ChecklistWithItems>>
 
     @Transaction
     @Query("SELECT * FROM $CHECKLIST_TABLE_NAME WHERE id = :id LIMIT 1")
@@ -40,6 +45,12 @@ interface ChecklistDao {
 
     @Query("UPDATE $CHECKLIST_TABLE_NAME SET title = :title WHERE id = :id")
     suspend fun updateChecklistTitleById(id: Long, title: String)
+
+    @Transaction
+    suspend fun updateChecklistTitleById(id: Long, title: String, modificationDate: OffsetDateTime) {
+        updateChecklistTitleById(id, title)
+        updateChecklistModifiedDateById(id, modificationDate)
+    }
 
     @Query("UPDATE $CHECKLIST_TABLE_NAME SET modification_date = :date WHERE id = :id")
     suspend fun updateChecklistModifiedDateById(id: Long, date: OffsetDateTime)

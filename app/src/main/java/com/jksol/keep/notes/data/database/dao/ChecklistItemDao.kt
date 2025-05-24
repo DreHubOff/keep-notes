@@ -35,8 +35,8 @@ interface ChecklistItemDao {
     @Query("DELETE FROM $CHECKLIST_ITEMS_TABLE_NAME WHERE checklist_id = :checklistId AND id = :itemId")
     suspend fun deleteItem(itemId: Long, checklistId: Long)
 
-    @Query("SELECT MAX(list_position) FROM checklist_items WHERE checklist_id = :checklistId")
-    suspend fun getLastListPosition(checklistId: Long): Int
+    @Query("SELECT MAX(list_position) FROM $CHECKLIST_ITEMS_TABLE_NAME WHERE checklist_id = :checklistId")
+    suspend fun getLastListPosition(checklistId: Long): Int?
 
     @Delete
     suspend fun deleteItems(items: List<ChecklistItemEntity>)

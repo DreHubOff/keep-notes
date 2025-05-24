@@ -1,4 +1,4 @@
-package com.jksol.keep.notes.ui.shared
+package com.jksol.keep.notes.ui.screens.main
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Row
@@ -26,14 +26,13 @@ fun ChecklistCheckbox(
 ) {
 
     Row(
-        modifier = modifier
-            .clickable(enabled = true, onClick = onClick),
+        modifier = modifier,
         verticalAlignment = Alignment.CenterVertically,
     ) {
         val translationX = -40.dp.value
         Checkbox(
             modifier = Modifier
-                .scale(0.7f)
+                .scale(0.8f)
                 .height(28.dp)
                 .graphicsLayer { this.translationX = translationX }
                 .clickable(enabled = true, onClick = onClick),

@@ -2,21 +2,22 @@ package com.jksol.keep.notes.ui.screens.edit.checklist
 
 import com.jksol.keep.notes.core.model.Checklist
 import com.jksol.keep.notes.core.model.ChecklistItem
+import com.jksol.keep.notes.ui.focus.ElementFocusRequest
 import com.jksol.keep.notes.ui.screens.edit.checklist.model.CheckedListItemUi
 import com.jksol.keep.notes.ui.screens.edit.checklist.model.EditChecklistScreenState
 import com.jksol.keep.notes.ui.screens.edit.checklist.model.UncheckedListItemUi
 
 fun Checklist.toEditChecklistScreenState(
-    focusedItemId: Long? = null,
-    showCheckedItems: Boolean = false,
-    modificationStatusMessage: String = "",
+    focusedItemIndex: Int?,
+    showCheckedItems: Boolean,
+    modificationStatusMessage: String,
 ): EditChecklistScreenState {
     return EditChecklistScreenState(
         checklistId = id,
         title = title,
         isPinned = isPinned,
         modificationStatusMessage = modificationStatusMessage,
-        uncheckedItems = items.toUncheckedListItemsUi(focusedItemId = focusedItemId),
+        uncheckedItems = items.toUncheckedListItemsUi(focusedItemIndex = focusedItemIndex),
         checkedItems = items.toCheckedListItemsUi(),
         showCheckedItems = showCheckedItems
     )
@@ -26,11 +27,9 @@ fun ChecklistItem.toUncheckedListItemUi(isFocused: Boolean = false): UncheckedLi
     return UncheckedListItemUi(
         id = id,
         text = title,
-        isFocused = isFocused,
+        focusRequest = if (isFocused) ElementFocusRequest() else null,
     )
 }
-
-fun ChecklistItem.toCheckedListItemUi(): CheckedListItemUi = CheckedListItemUi(id = id, text = title)
 
 fun List<ChecklistItem>.toCheckedListItemsUi(): List<CheckedListItemUi> {
     return filter { it.isChecked }
@@ -43,8 +42,10 @@ fun List<ChecklistItem>.toCheckedListItemsUi(): List<CheckedListItemUi> {
         }
 }
 
-fun List<ChecklistItem>.toUncheckedListItemsUi(focusedItemId: Long?): List<UncheckedListItemUi> {
-    return filter { !it.isChecked }
+fun List<ChecklistItem>.toUncheckedListItemsUi(focusedItemIndex: Int?): List<UncheckedListItemUi> {
+    return asSequence()
+        .filter { !it.isChecked }
         .sortedBy { it.listPosition }
-        .map { it.toUncheckedListItemUi(isFocused = it.id == focusedItemId) }
+        .mapIndexed { index, item -> item.toUncheckedListItemUi(isFocused = index == focusedItemIndex) }
+        .toList()
 }

@@ -9,10 +9,13 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.jksol.keep.notes.R
+import com.jksol.keep.notes.ui.focus.ElementFocusRequest
 import com.jksol.keep.notes.ui.theme.ApplicationTheme
 import sh.calvin.reorderable.ReorderableColumn
 import sh.calvin.reorderable.ReorderableScope
@@ -22,7 +25,7 @@ fun ReorderableScope.DraggableChecklistItem(
     modifier: Modifier = Modifier,
     title: String,
     checked: Boolean = true,
-    isFocused: Boolean = false,
+    focusRequest: ElementFocusRequest? = null,
     onCheckedChange: (Boolean) -> Unit = {},
     onTextChanged: (String) -> Unit = {},
     onDoneClicked: () -> Unit = {},
@@ -34,9 +37,14 @@ fun ReorderableScope.DraggableChecklistItem(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = spacedBy(8.dp),
     ) {
+        val haptic = LocalHapticFeedback.current
         Icon(
             modifier = Modifier
-                .longPressDraggableHandle(),
+                .longPressDraggableHandle(
+                    onDragStarted = {
+                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                    }
+                ),
             imageVector = Icons.Sharp.DragIndicator,
             tint = MaterialTheme.colorScheme.onSurface,
             contentDescription = stringResource(R.string.drag_current_item)
@@ -45,7 +53,7 @@ fun ReorderableScope.DraggableChecklistItem(
             modifier = Modifier,
             text = title,
             checked = checked,
-            isFocused = isFocused,
+            focusRequest = focusRequest,
             onCheckedChange = onCheckedChange,
             onTextChanged = onTextChanged,
             onDoneClicked = onDoneClicked,

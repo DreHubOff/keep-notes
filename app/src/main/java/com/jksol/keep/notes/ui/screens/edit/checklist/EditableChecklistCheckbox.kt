@@ -38,6 +38,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.jksol.keep.notes.ui.focus.ElementFocusRequest
 import com.jksol.keep.notes.ui.theme.ApplicationTheme
 import com.jksol.keep.notes.ui.theme.themedCheckboxColors
 
@@ -46,13 +47,15 @@ fun EditableChecklistCheckbox(
     modifier: Modifier = Modifier,
     text: String,
     checked: Boolean,
-    isFocused: Boolean = false,
+    focusRequest: ElementFocusRequest? = null,
     onCheckedChange: (Boolean) -> Unit = {},
     onTextChanged: (String) -> Unit = {},
     onDoneClicked: () -> Unit = {},
     onFocusStateChanged: (Boolean) -> Unit = {},
     onDeleteClick: () -> Unit = {},
 ) {
+    var isFocused by remember { mutableStateOf(false) }
+
     Row(
         modifier = modifier
             .clickable(enabled = checked) { onCheckedChange(!checked) }
@@ -61,19 +64,18 @@ fun EditableChecklistCheckbox(
     ) {
         val focusRequester = remember { FocusRequester() }
 
-        LaunchedEffect(isFocused) {
-            if (isFocused) {
+        LaunchedEffect(focusRequest) {
+            if (focusRequest?.isHandled() == false) {
                 focusRequester.requestFocus()
-            } else {
-                focusRequester.freeFocus()
+                focusRequest.confirmProcessing()
             }
         }
 
         val translationX = -40.dp.value
         Checkbox(
             modifier = Modifier
-                .scale(0.7f)
-                .height(32.dp)
+                .scale(0.8f)
+                .height(36.dp)
                 .graphicsLayer { this.translationX = translationX },
             checked = checked,
             onCheckedChange = onCheckedChange,
@@ -94,6 +96,7 @@ fun EditableChecklistCheckbox(
                 .graphicsLayer { this.translationX = translationX }
                 .focusRequester(focusRequester)
                 .onFocusChanged {
+                    isFocused = it.isFocused
                     onFocusStateChanged(it.isFocused)
                 },
             textStyle = TextStyle(
@@ -169,7 +172,7 @@ private fun PreviewNotCheckedLongFocused() {
         EditableChecklistCheckbox(
             text = "\uD83D\uDCBB Finish coding the checklist feature, \uD83D\uDCBB Finish coding the checklist feature",
             checked = false,
-            isFocused = true,
+            focusRequest = ElementFocusRequest(),
         )
     }
 }

@@ -32,9 +32,11 @@ import com.jksol.keep.notes.ui.theme.ApplicationTheme
 fun EditCheckListScreen() {
     val viewModel = hiltViewModel<EditChecklistViewModel>()
 
-    BackHandler { viewModel.onBackClick() }
+    BackHandler {
+        viewModel.onBackClick()
+    }
 
-    val state by viewModel.state.collectAsStateWithLifecycle(EditChecklistScreenState())
+    val state by viewModel.state.collectAsStateWithLifecycle(EditChecklistScreenState.EMPTY)
     ScreenContent(
         state = state,
         onTitleChanged = { viewModel.onTitleChanged(it) },

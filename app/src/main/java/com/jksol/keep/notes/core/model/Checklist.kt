@@ -16,7 +16,7 @@ data class Checklist(
 ) : Parcelable, SortableListItem {
 
     companion object {
-        val EMPTY = Checklist(
+        fun generateEmpty() = Checklist(
             id = 0L,
             title = "",
             items = emptyList(),

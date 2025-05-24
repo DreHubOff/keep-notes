@@ -193,7 +193,7 @@ private fun AddItemButton(onAddClick: () -> Unit) {
     TextButton(
         modifier = Modifier,
         onClick = onAddClick,
-        contentPadding = PaddingValues(start = 36.dp, end = 36.dp),
+        contentPadding = PaddingValues(start = 34.dp, end = 34.dp),
         border = null,
     ) {
         Row(
@@ -240,7 +240,7 @@ private fun UncheckedItems(
                     .fillMaxWidth(),
                 title = item.text,
                 checked = false,
-                isFocused = item.isFocused,
+                focusRequest = item.focusRequest,
                 onCheckedChange = { onItemChecked(item) },
                 onTextChanged = { onTextChanged(it, item) },
                 onDoneClicked = { onDoneClicked(item) },

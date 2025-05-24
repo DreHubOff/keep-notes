@@ -13,17 +13,21 @@ import com.jksol.keep.notes.ui.screens.Route
 import com.jksol.keep.notes.ui.screens.edit.checklist.model.CheckedListItemUi
 import com.jksol.keep.notes.ui.screens.edit.checklist.model.EditChecklistScreenState
 import com.jksol.keep.notes.ui.screens.edit.checklist.model.UncheckedListItemUi
+import com.jksol.keep.notes.util.moveItem
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.emitAll
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import java.time.OffsetDateTime
+import java.util.concurrent.atomic.AtomicInteger
 import javax.inject.Inject
 
 @HiltViewModel
@@ -36,30 +40,24 @@ class EditChecklistViewModel @Inject constructor(
 
     private val initialChecklistId: Long? = navigationStateHandle.toRoute<Route.EditChecklistScreen>().checklistId
 
-    private val _state = MutableStateFlow(EditChecklistScreenState())
-    val state: Flow<EditChecklistScreenState> = _state.onStart {
-        loadInitialState()
-    }
+    private val _state = MutableStateFlow(EditChecklistScreenState.EMPTY)
+    val state: Flow<EditChecklistScreenState> = _state
+        .filter { it !== EditChecklistScreenState.EMPTY }
+        .onStart {
+            val initialState = loadInitialState()
+            emit(initialState)
+            observeDatabaseChanges(checklistId = initialState.checklistId)
+        }
+        .distinctUntilChanged()
+
+    private var focusedItemIndex = AtomicInteger(-1)
 
     private var changeTitleJob: Job? = null
     private var pinnedStateSaveJob: Job? = null
-    private var addNewItemJob: Job? = null
-    private var itemUncheckedJob: Job? = null
-    private var itemCheckedJob: Job? = null
     private var itemTitleUpdateJob: Job? = null
-    private var deleteItemJob: Job? = null
-    private var moveItemsJob: Job? = null
 
     fun onBackClick() {
         viewModelScope.launch(Dispatchers.Default) {
-            changeTitleJob?.join()
-            pinnedStateSaveJob?.join()
-            addNewItemJob?.join()
-            itemUncheckedJob?.join()
-            itemCheckedJob?.join()
-            itemTitleUpdateJob?.join()
-            deleteItemJob?.join()
-            moveItemsJob?.join()
             val checklistId = _state.value.checklistId
             navigationEventsHost.navigateBack(
                 result = Route.EditChecklistScreen.Result.KEY to
@@ -71,8 +69,8 @@ class EditChecklistViewModel @Inject constructor(
     fun onTitleChanged(newTitle: String) {
         changeTitleJob?.cancel()
         changeTitleJob = viewModelScope.launch(Dispatchers.Default) {
+            _state.update { it.copy(title = newTitle) }
             delay(600)
-            notifyChecklistModified(title = newTitle)
             checklistRepository.updateChecklistTitle(checklistId = _state.value.checklistId, title = newTitle)
         }
     }
@@ -80,23 +78,24 @@ class EditChecklistViewModel @Inject constructor(
     fun onPinCheckedChange(pinned: Boolean) {
         pinnedStateSaveJob?.cancel()
         pinnedStateSaveJob = viewModelScope.launch(Dispatchers.Default) {
-            notifyChecklistModified(isPinned = pinned)
+            _state.update { it.copy(isPinned = pinned) }
             checklistRepository.updatePinnedState(checklistId = _state.value.checklistId, isPinned = pinned)
         }
     }
 
     fun onAddChecklistItemClick() {
-        addNewItemJob = viewModelScope.launch {
+        viewModelScope.launch {
             val currentState = _state.value
-            val currentList = currentState.uncheckedItems
-            val blankItem = ChecklistItem.EMPTY
-            val savedItem = checklistRepository.saveChecklistItemAsLast(
+            val currentList = currentState.uncheckedItems.map { it.copy(focusRequest = null) }
+            val blankItem = ChecklistItem.generateEmpty()
+            _state.update {
+                focusedItemIndex.set(currentList.size)
+                it.copy(uncheckedItems = currentList + blankItem.toUncheckedListItemUi())
+            }
+            checklistRepository.saveChecklistItemAsLast(
                 checklistId = currentState.checklistId,
                 item = blankItem,
             )
-            val uiItem = savedItem.toUncheckedListItemUi()
-            notifyChecklistModified(uncheckedItems = currentList + uiItem)
-            onFocusStateChanged(isFocused = true, item = uiItem)
         }
     }
 
@@ -107,34 +106,25 @@ class EditChecklistViewModel @Inject constructor(
     }
 
     fun onItemUnchecked(item: CheckedListItemUi) {
-        itemUncheckedJob = viewModelScope.launch(Dispatchers.Default) {
+        viewModelScope.launch(Dispatchers.Default) {
             val currentState = _state.value
+            _state.update { currentState.copy(checkedItems = currentState.checkedItems - item) }
             checklistRepository.updateChecklistItemCheckedState(
                 isChecked = false,
                 itemId = item.id,
-                checklistId = currentState.checklistId
-            )
-            val uncheckedItems = checklistRepository.getUncheckedItemsForChecklist(checklistId = currentState.checklistId)
-            val checkedItems = checklistRepository.getCheckedItemsForChecklist(checklistId = currentState.checklistId)
-            notifyChecklistModified(
-                checkedItems = checkedItems.map { it.toCheckedListItemUi() },
-                uncheckedItems = uncheckedItems.map { it.toUncheckedListItemUi() }
+                checklistId = currentState.checklistId,
             )
         }
     }
 
     fun onItemChecked(item: UncheckedListItemUi) {
-        itemCheckedJob = viewModelScope.launch(Dispatchers.Default) {
+        viewModelScope.launch(Dispatchers.Default) {
             val currentState = _state.value
+            _state.update { currentState.copy(uncheckedItems = currentState.uncheckedItems - item) }
             checklistRepository.updateChecklistItemCheckedState(
                 isChecked = true,
                 itemId = item.id,
-                checklistId = currentState.checklistId
-            )
-            val checkedItems = checklistRepository.getCheckedItemsForChecklist(checklistId = currentState.checklistId)
-            notifyChecklistModified(
-                checkedItems = checkedItems.map { it.toCheckedListItemUi() },
-                uncheckedItems = currentState.uncheckedItems - item
+                checklistId = currentState.checklistId,
             )
         }
     }
@@ -143,161 +133,142 @@ class EditChecklistViewModel @Inject constructor(
         itemTitleUpdateJob?.cancel()
         itemTitleUpdateJob = viewModelScope.launch(Dispatchers.Default) {
             delay(600)
+            _state.update { updateItemText(state = it, itemId = item.id, text = text) }
             val currentState = _state.value
-            coroutineScope {
-                launch {
-                    checklistRepository.updateChecklistItemTitle(
-                        itemId = item.id,
-                        checklistId = currentState.checklistId,
-                        title = text,
-                    )
-                }
-                launch {
-                    val updateList = currentState.uncheckedItems.map { updateItem ->
-                        if (updateItem.id == item.id) updateItem.copy(text = text) else updateItem
-                    }
-                    notifyChecklistModified(uncheckedItems = updateList)
-                }
-            }
+            checklistRepository.updateChecklistItemTitle(
+                itemId = item.id,
+                checklistId = currentState.checklistId,
+                title = text,
+            )
         }
     }
 
     fun onDoneClicked(item: UncheckedListItemUi) {
-        addNewItemJob = viewModelScope.launch(Dispatchers.Default) {
+        viewModelScope.launch(Dispatchers.Default) {
+            _state.update { insertItemAfterFocused(state = it, focusedItem = item) }
             val currentState = _state.value
-            val allItems = checklistRepository.getItemsForChecklist(currentState.checklistId)
-            val doneItemIndex = allItems.indexOfFirst { it.id == item.id }
-            val stableItems = allItems.subList(0, doneItemIndex + 1)
-            var newItem = ChecklistItem.EMPTY.copy(listPosition = allItems[doneItemIndex].listPosition + 1)
-            val itemsToUpdate: List<ChecklistItem> = if (doneItemIndex == allItems.lastIndex) {
-                emptyList()
-            } else {
-                allItems
-                    .subList(doneItemIndex + 1, allItems.size)
-                    .map { it.copy(listPosition = it.listPosition + 2) }
-            }
-            coroutineScope {
-                itemsToUpdate.forEach {
-                    launch {
-                        checklistRepository.saveChecklistItem(checklistId = currentState.checklistId, it)
-                    }
-                }
-                launch {
-                    newItem = checklistRepository.saveChecklistItem(checklistId = currentState.checklistId, item = newItem)
-                    val fullList: List<ChecklistItem> = stableItems + newItem + itemsToUpdate
-                    notifyChecklistModified(
-                        uncheckedItems = fullList.toUncheckedListItemsUi(newItem.id),
-                        checkedItems = fullList.toCheckedListItemsUi(),
-                    )
-                }
-            }
+            checklistRepository.insertChecklistItemAfterFollowing(
+                checklistId = currentState.checklistId,
+                itemBefore = item.id,
+                itemToInsert = ChecklistItem.generateEmpty(),
+            )
         }
     }
 
     fun onFocusStateChanged(isFocused: Boolean, item: UncheckedListItemUi) {
         viewModelScope.launch(Dispatchers.Default) {
             val currentState = _state.value
-            val targetItem = currentState.uncheckedItems.find { it.id == item.id }
-            if (targetItem == null || targetItem.isFocused == isFocused) {
-                return@launch
+            if (isFocused) {
+                focusedItemIndex.set(currentState.uncheckedItems.indexOfFirst { it.id == item.id })
             }
-            val updateList = currentState.uncheckedItems.map { updateItem ->
-                if (updateItem.id == item.id) {
-                    updateItem.copy(isFocused = isFocused)
+            val newUncheckedItems = currentState.uncheckedItems.mapIndexed { index, item ->
+                if (focusedItemIndex.get() != index) {
+                    item.copy(focusRequest = null)
                 } else {
-                    updateItem.copy(isFocused = false)
+                    item
                 }
             }
-            _state.update { it.copy(uncheckedItems = updateList) }
+            _state.update { it.copy(uncheckedItems = newUncheckedItems) }
         }
     }
 
     fun onDeleteClick(item: UncheckedListItemUi) {
-        deleteItemJob = viewModelScope.launch(Dispatchers.Default) {
+        viewModelScope.launch(Dispatchers.Default) {
             val currentState = _state.value
-            coroutineScope {
-                launch {
-                    checklistRepository.deleteChecklistItem(itemId = item.id, checklistId = currentState.checklistId)
-                }
-                launch {
-                    notifyChecklistModified(uncheckedItems = currentState.uncheckedItems - item)
-                }
-            }
+            _state.update { it.copy(uncheckedItems = it.uncheckedItems - item) }
+            checklistRepository.deleteChecklistItem(itemId = item.id, checklistId = currentState.checklistId)
         }
     }
 
     fun onMoveItems(fromIndex: Int, toIndex: Int) {
-        moveItemsJob = viewModelScope.launch(Dispatchers.Default) {
+        viewModelScope.launch(Dispatchers.Default) {
             val currentState = _state.value
-            val fullList = checklistRepository.getItemsForChecklist(currentState.checklistId)
-            val itemToMove = currentState.uncheckedItems[fromIndex]
-            val destinationItem = currentState.uncheckedItems[toIndex]
+            // Apply UI move
+            _state.update { initialState -> moveUncheckedItems(state = initialState, fromIndex = fromIndex, toIndex = toIndex) }
 
-            val fullListFromIndex = fullList.indexOfFirst { it.id == itemToMove.id }
-            val fullListToIndex = fullList.indexOfFirst { it.id == destinationItem.id } + 1
-
-            val buffer = fullList.toMutableList()
-            buffer.moveItem(fullListFromIndex, fullListToIndex)
-            for (i in buffer.indices) {
-                buffer[i] = buffer[i].copy(listPosition = i)
+            if (fromIndex !in currentState.uncheckedItems.indices || toIndex !in currentState.uncheckedItems.indices) {
+                return@launch
             }
-            coroutineScope {
-                buffer.forEach {
-                    launch {
-                        checklistRepository.saveChecklistItem(checklistId = currentState.checklistId, it)
-                    }
-                }
-                launch {
-                    val focusedItemId = currentState.uncheckedItems.indexOfFirst { it.isFocused }.toLong()
-                    notifyChecklistModified(
-                        uncheckedItems = buffer.toUncheckedListItemsUi(focusedItemId = focusedItemId),
-                        checkedItems = buffer.toCheckedListItemsUi()
+
+            val fromItem = currentState.uncheckedItems[fromIndex]
+            val toItem = currentState.uncheckedItems[toIndex]
+
+            checklistRepository.moveChecklistItems(
+                checklistId = currentState.checklistId,
+                fromItemId = fromItem.id,
+                toItemId = toItem.id,
+            )
+        }
+    }
+
+    private suspend fun loadInitialState(): EditChecklistScreenState {
+        var checklist = checklistRepository.getChecklistById(initialChecklistId ?: 0)
+        if (checklist == null) {
+            checklist = checklistRepository.insertChecklist(Checklist.generateEmpty())
+        }
+        return checklist.toEditChecklistScreenState(
+            focusedItemIndex = null,
+            showCheckedItems = false,
+            modificationStatusMessage = buildModificationDateText(checklist.modificationDate)
+        )
+    }
+
+    private fun observeDatabaseChanges(checklistId: Long) {
+        viewModelScope.launch(Dispatchers.Default) {
+            val stateFlow = checklistRepository
+                .observeChecklistById(checklistId)
+                .map { checklist ->
+                    val currentStatus = _state.value
+                    checklist.toEditChecklistScreenState(
+                        focusedItemIndex = focusedItemIndex.get(),
+                        showCheckedItems = currentStatus.showCheckedItems,
+                        modificationStatusMessage = buildModificationDateText(checklist.modificationDate)
                     )
                 }
+            _state.emitAll(stateFlow)
+        }
+    }
+
+    private fun updateItemText(
+        state: EditChecklistScreenState,
+        itemId: Long,
+        text: String,
+    ): EditChecklistScreenState {
+        val uncheckedItems = state.uncheckedItems.map { item ->
+            if (item.id == itemId) {
+                item.copy(text = text)
+            } else {
+                item
             }
         }
+        return state.copy(uncheckedItems = uncheckedItems)
     }
 
-    private fun loadInitialState() {
-        viewModelScope.launch(Dispatchers.Default) {
-            var checklist = checklistRepository.getChecklistById(initialChecklistId ?: 0)
-            if (checklist == null) {
-                checklist = checklistRepository.insertChecklist(Checklist.EMPTY)
-            }
-            val initialState = checklist.toEditChecklistScreenState(
-                focusedItemId = null,
-                showCheckedItems = false,
-                modificationStatusMessage = buildModificationDateText(checklist.modificationDate)
-            )
-            _state.emit(initialState)
+    private fun insertItemAfterFocused(
+        state: EditChecklistScreenState,
+        focusedItem: UncheckedListItemUi,
+    ): EditChecklistScreenState {
+        val uncheckedItems = state.uncheckedItems
+        val newItemIndex = uncheckedItems.indexOf(focusedItem) + 1
+        focusedItemIndex.set(newItemIndex)
+
+        val listAfterFocusedItem = if (newItemIndex == uncheckedItems.size) {
+            emptyList()
+        } else {
+            uncheckedItems.subList(newItemIndex, uncheckedItems.size)
         }
+        val newItem = ChecklistItem.generateEmpty().toUncheckedListItemUi()
+        val newListOfUnchecked = uncheckedItems.subList(0, newItemIndex) + newItem + listAfterFocusedItem
+        return state.copy(uncheckedItems = newListOfUnchecked)
     }
 
-    private suspend fun notifyChecklistModified(
-        title: String = _state.value.title,
-        isPinned: Boolean = _state.value.isPinned,
-        uncheckedItems: List<UncheckedListItemUi> = _state.value.uncheckedItems,
-        checkedItems: List<CheckedListItemUi> = _state.value.checkedItems,
-    ) {
-        val modificationDate = OffsetDateTime.now()
-        checklistRepository.updateChecklistModifiedDate(checklistId = _state.value.checklistId, date = modificationDate)
-        _state.update {
-            it.copy(
-                title = title,
-                isPinned = isPinned,
-                uncheckedItems = uncheckedItems,
-                checkedItems = checkedItems,
-                modificationStatusMessage = buildModificationDateText(modificationDate),
-            )
-        }
-    }
-
-    private fun <T> MutableList<T>.moveItem(fromIndex: Int, toIndex: Int) {
-        if (fromIndex == toIndex) return
-        if (fromIndex !in indices || toIndex !in 0..size) return
-
-        val item = removeAt(fromIndex)
-        val insertIndex = if (fromIndex < toIndex) toIndex - 1 else toIndex
-        add(insertIndex, item)
+    private fun moveUncheckedItems(
+        state: EditChecklistScreenState,
+        fromIndex: Int,
+        toIndex: Int,
+    ): EditChecklistScreenState {
+        val uncheckedItems = state.uncheckedItems.toMutableList()
+        uncheckedItems.moveItem(fromIndex = fromIndex, toIndex = toIndex)
+        return state.copy(uncheckedItems = uncheckedItems.toList())
     }
 }

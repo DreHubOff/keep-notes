@@ -17,7 +17,7 @@ import androidx.compose.ui.unit.sp
 import com.jksol.keep.notes.MainScreenDemoData
 import com.jksol.keep.notes.R
 import com.jksol.keep.notes.ui.screens.main.model.MainScreenItem
-import com.jksol.keep.notes.ui.shared.ChecklistCheckbox
+import com.jksol.keep.notes.ui.screens.main.ChecklistCheckbox
 import com.jksol.keep.notes.ui.theme.ApplicationTheme
 
 private const val MAX_LINES_TITLE = 5
@@ -75,7 +75,7 @@ private fun ChecklistItems(
                 modifier = Modifier.fillMaxWidth(),
                 text = checkListItem.text,
                 checked = checkListItem.isChecked,
-                enabled = true,
+                enabled = false,
                 onClick = onItemClicked,
             )
         }

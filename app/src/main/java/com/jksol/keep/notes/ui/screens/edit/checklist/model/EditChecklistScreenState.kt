@@ -11,4 +11,9 @@ data class EditChecklistScreenState(
     val uncheckedItems: List<UncheckedListItemUi> = emptyList(),
     val checkedItems: List<CheckedListItemUi> = emptyList(),
     val showCheckedItems: Boolean = false,
-)
+) {
+
+    companion object {
+        val EMPTY = EditChecklistScreenState()
+    }
+}

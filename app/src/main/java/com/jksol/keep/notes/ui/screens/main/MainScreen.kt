@@ -11,12 +11,18 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.systemBars
+import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.FabPosition
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
+import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -30,9 +36,11 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.jksol.keep.notes.demo_data.MainScreenDemoData.notesList
 import com.jksol.keep.notes.demo_data.MainScreenDemoData.welcomeBanner
 import com.jksol.keep.notes.ui.screens.Route
+import com.jksol.keep.notes.ui.screens.main.drawer.MainDrawer
 import com.jksol.keep.notes.ui.screens.main.fab.MainFabContainer
 import com.jksol.keep.notes.ui.screens.main.model.MainScreenItem
 import com.jksol.keep.notes.ui.screens.main.model.MainScreenState
+import com.jksol.keep.notes.ui.shared.SnackbarEvent
 import com.jksol.keep.notes.ui.theme.ApplicationTheme
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -43,17 +51,40 @@ fun MainScreen(
     checklistEditingResult: Route.EditChecklistScreen.Result?,
 ) {
     val viewModel = hiltViewModel<MainViewModel>(LocalActivity.current as ComponentActivity)
-    viewModel.processNoteEditingResult(noteEditingResult)
-    viewModel.processChecklistEditingResult(checklistEditingResult)
+    LaunchedEffect(noteEditingResult) {
+        viewModel.processNoteEditingResult(noteEditingResult)
+    }
+    LaunchedEffect(checklistEditingResult) {
+        viewModel.processChecklistEditingResult(checklistEditingResult)
+    }
+
     val state by viewModel.uiState.collectAsState(MainScreenState.EMPTY)
-    ScreenContent(
-        state,
-        openTextNoteEditor = viewModel::openTextNoteEditor,
-        openCheckListEditor = viewModel::openCheckListEditor,
-        toggleAddModeSelection = viewModel::toggleAddModeSelection,
-        onToggleSearchVisibility = viewModel::onToggleSearchVisibility,
-        onNewSearchPrompt = viewModel::onNewSearchPrompt,
-    )
+    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+    val coroutineScope = rememberCoroutineScope()
+    ModalNavigationDrawer(
+        drawerState = drawerState,
+        gesturesEnabled = drawerState.isOpen,
+        drawerContent = {
+            MainDrawer(
+                drawerState = drawerState
+            )
+        }
+    ) {
+        ScreenContent(
+            state,
+            openTextNoteEditor = viewModel::openTextNoteEditor,
+            openCheckListEditor = viewModel::openCheckListEditor,
+            toggleAddModeSelection = viewModel::toggleAddModeSelection,
+            onToggleSearchVisibility = viewModel::onToggleSearchVisibility,
+            onNewSearchPrompt = viewModel::onNewSearchPrompt,
+            onSnackbarAction = viewModel::handleSnackbarAction,
+            onOpenMenuClick = {
+                coroutineScope.launch {
+                    drawerState.open()
+                }
+            }
+        )
+    }
 }
 
 @Composable
@@ -64,11 +95,18 @@ private fun ScreenContent(
     toggleAddModeSelection: () -> Unit = {},
     onToggleSearchVisibility: () -> Unit = {},
     onNewSearchPrompt: (String) -> Unit = {},
+    onSnackbarAction: (SnackbarEvent.Action) -> Unit = {},
+    onOpenMenuClick: () -> Unit = {},
 ) {
     val showOverlay = state.addItemsMode
     val coroutineScope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
-    handleSnackbarState(coroutineScope, snackbarHostState, state)
+    handleSnackbarState(
+        coroutineScope = coroutineScope,
+        snackbarHostState = snackbarHostState,
+        state = state,
+        onActionExecuted = onSnackbarAction,
+    )
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         floatingActionButton = {
@@ -94,6 +132,7 @@ private fun ScreenContent(
                 onNewSearchPrompt = onNewSearchPrompt,
                 openTextNoteEditor = openTextNoteEditor,
                 openCheckListEditor = openCheckListEditor,
+                onOpenMenuClick = onOpenMenuClick,
             )
             Overlay(enabled = showOverlay, onClick = { toggleAddModeSelection() })
         }
@@ -108,6 +147,7 @@ private fun DisplayState(
     onNewSearchPrompt: (String) -> Unit,
     openTextNoteEditor: (MainScreenItem.TextNote?) -> Unit,
     openCheckListEditor: (MainScreenItem.Checklist?) -> Unit,
+    onOpenMenuClick: () -> Unit,
 ) {
     when {
         state.searchEnabled -> {
@@ -127,6 +167,7 @@ private fun DisplayState(
                 innerPadding = innerPadding,
                 banner = state.screenItems.first() as MainScreenItem.TextNote,
                 onToggleSearchVisibility = onToggleSearchVisibility,
+                onOpenMenuClick = onOpenMenuClick,
             )
         }
 
@@ -137,6 +178,7 @@ private fun DisplayState(
                 onToggleSearchVisibility = onToggleSearchVisibility,
                 openTextNoteEditor = openTextNoteEditor,
                 openCheckListEditor = openCheckListEditor,
+                onOpenMenuClick = onOpenMenuClick,
             )
             SystemBarBackground(innerPadding)
         }
@@ -157,11 +199,20 @@ private fun handleSnackbarState(
     coroutineScope: CoroutineScope,
     snackbarHostState: SnackbarHostState,
     state: MainScreenState,
+    onActionExecuted: (SnackbarEvent.Action) -> Unit,
 ) {
     val snackbarEvent = state.snackbarEvent ?: return
+    val action: SnackbarEvent.Action? = snackbarEvent.action
     snackbarEvent.consume()?.let { message ->
         coroutineScope.launch {
-            snackbarHostState.showSnackbar(message)
+            val executionResult = snackbarHostState.showSnackbar(
+                message = message,
+                actionLabel = snackbarEvent.action?.label,
+                duration = if (action != null) SnackbarDuration.Long else SnackbarDuration.Short
+            )
+            if (action != null && executionResult == SnackbarResult.ActionPerformed) {
+                onActionExecuted(action)
+            }
         }
     }
 }

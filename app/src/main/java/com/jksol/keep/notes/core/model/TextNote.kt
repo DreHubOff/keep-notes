@@ -14,6 +14,7 @@ data class TextNote(
     override val backgroundColor: NoteColor?,
     override val isPinned: Boolean,
     override val isTrashed: Boolean,
+    override val trashedDate: OffsetDateTime?,
     override val hasReminder: Boolean,
 ) : Parcelable, ApplicationMainDataType {
     companion object {
@@ -26,6 +27,7 @@ data class TextNote(
             backgroundColor = null,
             isPinned = false,
             isTrashed = false,
+            trashedDate = null,
             hasReminder = false,
         )
     }

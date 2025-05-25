@@ -16,6 +16,7 @@
     <string name="search_empty_list">No matching search</string>
     <string name="title">Title</string>
     <string name="note">Note</string>
+    <string name="notes">Notes</string>
     <string name="go_back">Go back</string>
     <string name="pin_this_note">Pin this note</string>
     <string name="empty_notes_discarded">Empty notes discarded</string>
@@ -27,5 +28,20 @@
     <string name="drag_current_item">Drag current item</string>
     <string name="add_item">Add item</string>
     <string name="checked_item_count_pattern">%d checked item</string>
+    <string name="action_add_reminder">Add Reminder</string>
+    <string name="action_delete">Delete</string>
+    <string name="action_share">Share</string>
+    <string name="menu_desc">Open menu</string>
+    <string name="undo">Undo</string>
+    <string name="checklist_moved_to_trash">Checklist moved to trash</string>
+    <string name="note_moved_to_trash">Note moved to trash</string>
+    <string name="my_notes_title">My Notes</string>
+    <string name="trash">Trash</string>
+    <string name="action_empty_trash">Empty Trash</string>
+    <string name="no_notes_in_trash">No notes in Trash</string>
+    <string name="dialog_title_empty_trash">Empty Trash?</string>
+    <string name="confirm_empty_trash_message">All notes in Trash will be permanently deleted.</string>
+    <string name="confirm_empty_trash">Empty Trash</string>
+    <string name="cancel">Cancel</string>
 
 </resources>

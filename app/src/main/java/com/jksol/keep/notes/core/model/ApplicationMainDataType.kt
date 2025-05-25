@@ -11,4 +11,5 @@ sealed interface ApplicationMainDataType : SortableListItem {
     val hasReminder: Boolean
     val backgroundColor: NoteColor?
     val isTrashed: Boolean
+    val trashedDate: OffsetDateTime?
 }

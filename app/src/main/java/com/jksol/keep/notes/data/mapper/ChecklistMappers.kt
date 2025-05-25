@@ -16,6 +16,7 @@ fun ChecklistWithItems.toDomain(): Checklist {
         isPinned = checklist.isPinned,
         backgroundColor = checklist.backgroundColor,
         isTrashed = checklist.isTrashed,
+        trashedDate = checklist.trashedDate,
     )
 }
 
@@ -37,6 +38,7 @@ fun Checklist.toEntity(): ChecklistEntity {
         isPinned = isPinned,
         backgroundColor = backgroundColor,
         isTrashed = isTrashed,
+        trashedDate = trashedDate,
     )
 }
 

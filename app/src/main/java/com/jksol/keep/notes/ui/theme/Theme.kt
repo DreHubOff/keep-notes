@@ -1,8 +1,13 @@
+@file:OptIn(ExperimentalMaterial3Api::class)
+
 package com.jksol.keep.notes.ui.theme
 
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.CheckboxColors
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MenuItemColors
+import androidx.compose.material3.TopAppBarColors
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
@@ -20,6 +25,8 @@ private val LightColorScheme = lightColorScheme(
     tertiary = Pink40,
     primaryContainer = VividBlue,
     secondaryContainer = LightSkyBlue,
+    surfaceContainerLow = SoftGlacier,
+    surfaceContainerHigh = SoftGlacier,
     onSurface = SemiGray,
     surfaceVariant = IceBlue,
     onSurfaceVariant = Color.Black,
@@ -41,6 +48,33 @@ fun themedCheckboxColors(): CheckboxColors {
             disabledBorderColor = onSurface,
             disabledUncheckedBorderColor = onSurface,
             disabledIndeterminateBorderColor = onSurface,
+        )
+    }
+}
+
+@Composable
+fun themedDropdownMenuItemColors(): MenuItemColors {
+    return with(MaterialTheme.colorScheme) {
+        MenuItemColors(
+            textColor = onSurfaceVariant,
+            leadingIconColor = onSurfaceVariant,
+            trailingIconColor = onSurfaceVariant,
+            disabledTextColor = onSurface,
+            disabledLeadingIconColor = onSurface,
+            disabledTrailingIconColor = onSurface,
+        )
+    }
+}
+
+@Composable
+fun themedTopAppBarColors(): TopAppBarColors {
+    return with(MaterialTheme.colorScheme) {
+        TopAppBarColors(
+            containerColor = background,
+            scrolledContainerColor = background,
+            navigationIconContentColor = onSurfaceVariant,
+            titleContentColor = onSurfaceVariant,
+            actionIconContentColor = onSurfaceVariant,
         )
     }
 }

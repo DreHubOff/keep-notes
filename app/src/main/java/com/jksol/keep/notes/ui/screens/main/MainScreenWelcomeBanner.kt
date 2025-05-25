@@ -10,7 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.jksol.keep.notes.demo_data.MainScreenDemoData
-import com.jksol.keep.notes.ui.screens.main.listitem.MainTextNote
+import com.jksol.keep.notes.ui.screens.trash.listitem.TrashTextNote
 import com.jksol.keep.notes.ui.screens.main.model.MainScreenItem
 import com.jksol.keep.notes.ui.screens.main.search.MainSearchBarEntryPoint
 import com.jksol.keep.notes.ui.theme.ApplicationTheme
@@ -21,6 +21,7 @@ fun MainScreenWelcomeBanner(
     innerPadding: PaddingValues,
     banner: MainScreenItem.TextNote,
     onToggleSearchVisibility: () -> Unit = {},
+    onOpenMenuClick: () -> Unit = {},
 ) {
 
     Column(
@@ -30,10 +31,11 @@ fun MainScreenWelcomeBanner(
         MainSearchBarEntryPoint(
             innerPadding = innerPadding,
             modifier = Modifier.padding(bottom = 8.dp),
-            onClick = onToggleSearchVisibility,
+            onSearchClick = onToggleSearchVisibility,
+            onOpenMenuClick = onOpenMenuClick,
         )
 
-        MainTextNote(
+        TrashTextNote(
             modifier = Modifier.padding(horizontal = 8.dp),
             item = banner,
         )

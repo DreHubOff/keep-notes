@@ -18,6 +18,7 @@ import com.jksol.keep.notes.util.moveItem
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -65,7 +66,7 @@ class EditChecklistViewModel @Inject constructor(
             val checklistId = _state.value.checklistId
             navigationEventsHost.navigateBack(
                 result = Route.EditChecklistScreen.Result.KEY to
-                        Route.EditChecklistScreen.Result(checklistId = checklistId)
+                        Route.EditChecklistScreen.Result.Edited(checklistId = checklistId)
             )
         }
     }
@@ -244,6 +245,21 @@ class EditChecklistViewModel @Inject constructor(
                 }
             }
             state.copy(uncheckedItems = uncheckedItems)
+        }
+    }
+
+    fun onDeleteChecklistClick() {
+        viewModelScope.launch(Dispatchers.Default) {
+            val checklistId = _state.value.checklistId
+            coroutineScope {
+                launch { checklistRepository.moveToTrash(checklistId = checklistId) }
+                launch {
+                    navigationEventsHost.navigateBack(
+                        result = Route.EditChecklistScreen.Result.KEY to
+                                Route.EditChecklistScreen.Result.Trashed(checklistId = checklistId)
+                    )
+                }
+            }
         }
     }
 

@@ -12,8 +12,14 @@ sealed class Route {
     @Serializable
     data class EditNoteScreen(val noteId: Long?) : Route() {
 
-        @Parcelize
-        class Result(val noteId: Long) : Parcelable {
+        sealed class Result : Parcelable {
+
+            @Parcelize
+            data class Edited(val noteId: Long) : Result()
+
+            @Parcelize
+            data class Trashed(val noteId: Long) : Result()
+
             companion object {
                 val KEY: String = Result::class.java.name
             }
@@ -23,8 +29,14 @@ sealed class Route {
     @Serializable
     data class EditChecklistScreen(val checklistId: Long?) : Route() {
 
-        @Parcelize
-        class Result(val checklistId: Long) : Parcelable {
+        sealed class Result : Parcelable {
+
+            @Parcelize
+            data class Edited(val checklistId: Long) : Result()
+
+            @Parcelize
+            data class Trashed(val checklistId: Long) : Result()
+
             companion object {
                 val KEY: String = Result::class.java.name
             }

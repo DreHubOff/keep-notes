@@ -49,6 +49,7 @@ fun EditNoteScreen() {
             onContentChanged = viewModel::onContentChanged,
             onBackClick = viewModel::onBackClicked,
             onPinCheckedChange = viewModel::onPinCheckedChange,
+            onDeleteClick = viewModel::moveToTrash,
         )
     }
 }
@@ -60,6 +61,7 @@ fun ScreenContent(
     onContentChanged: (String) -> Unit = {},
     onBackClick: () -> Unit = {},
     onPinCheckedChange: (Boolean) -> Unit = {},
+    onDeleteClick: () -> Unit = {},
 ) {
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -76,7 +78,8 @@ fun ScreenContent(
                 systemBarInset = innerPadding.calculateTopPadding(),
                 pinned = state.isPinned,
                 onBackClick = onBackClick,
-                onPinCheckedChange = onPinCheckedChange
+                onPinCheckedChange = onPinCheckedChange,
+                onDeleteClick = onDeleteClick,
             )
             Box {
                 DisplayState(

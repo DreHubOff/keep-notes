@@ -1,6 +1,5 @@
 package com.jksol.keep.notes.data
 
-import android.util.Log
 import androidx.room.withTransaction
 import com.jksol.keep.notes.core.model.Checklist
 import com.jksol.keep.notes.core.model.ChecklistItem
@@ -160,6 +159,23 @@ class ChecklistRepository @Inject constructor(
         }
     }
 
+    suspend fun moveToTrash(checklistId: Long) {
+        withContext(NonCancellable) {
+            database.withTransaction {
+                checklistDao.updateIsTrashedById(id = checklistId, isTrashed = true)
+                checklistDao.updateTrashedDateById(id = checklistId, date = OffsetDateTime.now())
+            }
+        }
+    }
+
+    suspend fun restoreChecklist(checklistId: Long) {
+        withContext(NonCancellable) {
+            database.withTransaction {
+                checklistDao.updateIsTrashedById(id = checklistId, isTrashed = false)
+                checklistDao.updateTrashedDateById(id = checklistId, date = null)
+            }
+        }
+    }
 
     private suspend fun reorderItemPositions(checklistId: Long) {
         val reordered = checklistItemDao.getItemsForChecklist(checklistId = checklistId).mapIndexed { index, item ->

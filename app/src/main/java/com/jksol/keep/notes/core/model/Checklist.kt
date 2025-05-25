@@ -14,6 +14,7 @@ data class Checklist(
     override val isPinned: Boolean,
     override val backgroundColor: NoteColor?,
     override val isTrashed: Boolean,
+    override val trashedDate: OffsetDateTime?,
 
     // TODO: Not yet implemented
     override val hasReminder: Boolean = false,
@@ -29,6 +30,7 @@ data class Checklist(
             isPinned = false,
             backgroundColor = null,
             isTrashed = false,
+            trashedDate = null,
         )
     }
 }

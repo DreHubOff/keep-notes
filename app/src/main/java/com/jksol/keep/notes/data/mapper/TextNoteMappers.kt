@@ -13,7 +13,8 @@ fun TextNoteEntity.toDomain(): TextNote {
         backgroundColor = displayColorResource,
         isPinned = isPinned,
         isTrashed = isTrashed,
-        hasReminder = hasReminder
+        hasReminder = hasReminder,
+        trashedDate = trashedDate,
     )
 }
 
@@ -27,6 +28,7 @@ fun TextNote.toEntity(): TextNoteEntity {
         displayColorResource = backgroundColor,
         isPinned = isPinned,
         isTrashed = isTrashed,
-        hasReminder = hasReminder
+        hasReminder = hasReminder,
+        trashedDate = trashedDate,
     )
 }

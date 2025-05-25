@@ -13,6 +13,7 @@ import com.jksol.keep.notes.ui.screens.edit.note.model.EditNoteScreenState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -71,7 +72,8 @@ class EditNoteViewModel @Inject constructor(
             val currentState = _state.value
             if (currentState !is EditNoteScreenState.Idle) return@launch
             navigationEventsHost.navigateBack(
-                Route.EditNoteScreen.Result.KEY to Route.EditNoteScreen.Result(currentState.noteId)
+                Route.EditNoteScreen.Result.KEY to
+                        Route.EditNoteScreen.Result.Edited(noteId = currentState.noteId)
             )
         }
     }
@@ -81,6 +83,23 @@ class EditNoteViewModel @Inject constructor(
             val currentState = _state.value
             if (currentState is EditNoteScreenState.Idle) {
                 updateIdleState(state = currentState, isPinned = pinned)
+            }
+        }
+    }
+
+    fun moveToTrash() {
+        viewModelScope.launch(Dispatchers.Default) {
+            val currentState = _state.value as? EditNoteScreenState.Idle ?: return@launch
+            coroutineScope {
+                launch {
+                    textNotesRepository.moveToTrash(currentState.noteId)
+                }
+                launch {
+                    navigationEventsHost.navigateBack(
+                        result = Route.EditNoteScreen.Result.KEY to
+                                Route.EditNoteScreen.Result.Trashed(noteId = currentState.noteId)
+                    )
+                }
             }
         }
     }

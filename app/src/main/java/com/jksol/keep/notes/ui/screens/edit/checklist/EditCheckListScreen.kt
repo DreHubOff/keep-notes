@@ -64,6 +64,7 @@ fun EditCheckListScreen() {
         onTitleNextClick = viewModel::onTitleNextClick,
         onMoveCompleted = viewModel::onMoveCompleted,
         onItemFocused = viewModel::onItemFocused,
+        onDeleteChecklistClick = { viewModel.onDeleteChecklistClick() },
     )
 }
 
@@ -84,6 +85,7 @@ fun ScreenContent(
     onTitleNextClick: () -> Unit,
     onMoveCompleted: () -> Unit,
     onItemFocused: (UncheckedListItemUi) -> Unit,
+    onDeleteChecklistClick: () -> Unit,
 ) {
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -100,7 +102,8 @@ fun ScreenContent(
                 systemBarInset = innerPadding.calculateTopPadding(),
                 pinned = state.isPinned,
                 onBackClick = onBackClick,
-                onPinCheckedChange = onPinCheckedChange
+                onPinCheckedChange = onPinCheckedChange,
+                onDeleteClick = onDeleteChecklistClick,
             )
             Box {
                 val paddingBottom = remember(innerPadding) { innerPadding.calculateBottomPadding() + 40.dp }
@@ -154,6 +157,7 @@ private fun Preview(@PreviewParameter(EditChecklistScreenStateProvider::class) s
             onTitleNextClick = {},
             onMoveCompleted = {},
             onItemFocused = {},
+            onDeleteChecklistClick = {},
         )
     }
 }

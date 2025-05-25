@@ -14,10 +14,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.jksol.keep.notes.demo_data.MainScreenDemoData
 import com.jksol.keep.notes.R
-import com.jksol.keep.notes.ui.screens.main.listitem.MainCheckList
-import com.jksol.keep.notes.ui.screens.main.listitem.MainTextNote
+import com.jksol.keep.notes.demo_data.MainScreenDemoData
+import com.jksol.keep.notes.ui.shared.listitem.ItemChecklist
+import com.jksol.keep.notes.ui.screens.trash.listitem.TrashTextNote
 import com.jksol.keep.notes.ui.screens.main.model.MainScreenItem
 import com.jksol.keep.notes.ui.screens.main.search.MainSearchBarEntryPoint
 import com.jksol.keep.notes.ui.theme.ApplicationTheme
@@ -30,18 +30,19 @@ fun MainScreenStateIdle(
     listItems: List<MainScreenItem>,
     onToggleSearchVisibility: () -> Unit = {},
     openTextNoteEditor: (MainScreenItem.TextNote?) -> Unit = {},
-    openCheckListEditor: (MainScreenItem.Checklist?) -> Unit,
+    openCheckListEditor: (MainScreenItem.Checklist?) -> Unit = {},
+    onOpenMenuClick: () -> Unit = {},
 ) {
     val scrollState = rememberLazyListState()
     val coroutineScope = rememberCoroutineScope()
 
     if (listItems.isEmpty()) {
         Column {
-            MainSearchBarEntryPoint(innerPadding = innerPadding) onClick@{
-                coroutineScope.launch {
-                    onToggleSearchVisibility()
-                }
-            }
+            MainSearchBarEntryPoint(
+                innerPadding = innerPadding,
+                onSearchClick = onToggleSearchVisibility,
+                onOpenMenuClick = onOpenMenuClick,
+            )
             MainScreenEmptyList(
                 modifier = Modifier
                     .padding(bottom = 100.dp)
@@ -53,7 +54,8 @@ fun MainScreenStateIdle(
     }
 
     LazyColumn(
-        modifier = modifier.fillMaxSize(),
+        modifier = modifier
+            .fillMaxSize(),
         contentPadding = PaddingValues(bottom = 120.dp),
         verticalArrangement = spacedBy(8.dp),
         state = scrollState,
@@ -62,26 +64,32 @@ fun MainScreenStateIdle(
             MainSearchBarEntryPoint(
                 innerPadding = innerPadding,
                 modifier = Modifier.padding(bottom = 8.dp),
-            ) onClick@{
-                coroutineScope.launch {
-                    scrollState.animateScrollToItem(0)
-                    onToggleSearchVisibility()
-                }
-            }
+                onSearchClick = {
+                    coroutineScope.launch {
+                        scrollState.animateScrollToItem(0)
+                        onToggleSearchVisibility()
+                    }
+                },
+                onOpenMenuClick = onOpenMenuClick,
+            )
         }
 
         items(listItems, key = { it.compositeKey }) { item ->
             when (item) {
                 is MainScreenItem.Checklist ->
-                    MainCheckList(
-                        modifier = Modifier.padding(horizontal = 8.dp),
+                    ItemChecklist(
+                        modifier = Modifier
+                            .animateItem()
+                            .padding(horizontal = 8.dp),
                         item = item,
                         onClick = { openCheckListEditor(item) }
                     )
 
                 is MainScreenItem.TextNote ->
-                    MainTextNote(
-                        modifier = Modifier.padding(horizontal = 8.dp),
+                    TrashTextNote(
+                        modifier = Modifier
+                            .animateItem()
+                            .padding(horizontal = 8.dp),
                         item = item,
                         onClick = { openTextNoteEditor(item) }
                     )

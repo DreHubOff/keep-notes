@@ -32,6 +32,9 @@ data class ChecklistEntity(
 
     @ColumnInfo("is_trashed")
     val isTrashed: Boolean,
+
+    @ColumnInfo("trashed_date")
+    val trashedDate: OffsetDateTime?,
 ) {
 
     companion object {

@@ -13,6 +13,7 @@ import com.jksol.keep.notes.ui.navigation.NavigationEventsHost
 import com.jksol.keep.notes.ui.screens.Route
 import com.jksol.keep.notes.ui.screens.main.model.MainScreenItem
 import com.jksol.keep.notes.ui.screens.main.model.MainScreenState
+import com.jksol.keep.notes.ui.screens.main.model.MainSnackbarActionKey
 import com.jksol.keep.notes.ui.shared.SnackbarEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -122,8 +123,37 @@ class MainViewModel @Inject constructor(
         }
     }
 
+    fun handleSnackbarAction(action: SnackbarEvent.Action) {
+        viewModelScope.launch {
+            when (val actionKey = action.key) {
+                is MainSnackbarActionKey.UndoTrashedChecklist ->
+                    checklistRepository.restoreChecklist(actionKey.checklistId)
+
+                is MainSnackbarActionKey.UndoTrashedNote ->
+                    textNotesRepository.restoreNote(actionKey.noteId)
+            }
+        }
+    }
+
     private suspend fun validateNoteEditingResult(result: Route.EditNoteScreen.Result): SnackbarEvent? {
-        val createdNote = textNotesRepository.getNoteById(result.noteId) ?: return null
+        return when (result) {
+            is Route.EditNoteScreen.Result.Edited -> onTextNoteEdited(result.noteId)
+            is Route.EditNoteScreen.Result.Trashed -> onTextNoteTrashed(result.noteId)
+        }
+    }
+
+    private fun onTextNoteTrashed(noteId: Long): SnackbarEvent {
+        return SnackbarEvent(
+            message = context.getString(R.string.note_moved_to_trash),
+            action = SnackbarEvent.Action(
+                label = context.getString(R.string.undo),
+                key = MainSnackbarActionKey.UndoTrashedNote(noteId = noteId)
+            )
+        )
+    }
+
+    private suspend fun onTextNoteEdited(noteId: Long): SnackbarEvent? {
+        val createdNote = textNotesRepository.getNoteById(noteId) ?: return null
         val noteIsEmpty = createdNote.title.isEmpty() && createdNote.content.isEmpty()
         if (noteIsEmpty) {
             textNotesRepository.delete(createdNote)
@@ -133,7 +163,24 @@ class MainViewModel @Inject constructor(
     }
 
     private suspend fun validateChecklistEditingResult(result: Route.EditChecklistScreen.Result): SnackbarEvent? {
-        val createdChecklist = checklistRepository.getChecklistById(result.checklistId) ?: return null
+        return when (result) {
+            is Route.EditChecklistScreen.Result.Edited -> onChecklistEdited(result.checklistId)
+            is Route.EditChecklistScreen.Result.Trashed -> onChecklistTrashed(result.checklistId)
+        }
+    }
+
+    private fun onChecklistTrashed(checklistId: Long): SnackbarEvent {
+        return SnackbarEvent(
+            message = context.getString(R.string.checklist_moved_to_trash),
+            action = SnackbarEvent.Action(
+                label = context.getString(R.string.undo),
+                key = MainSnackbarActionKey.UndoTrashedChecklist(checklistId = checklistId)
+            )
+        )
+    }
+
+    private suspend fun onChecklistEdited(checklistId: Long): SnackbarEvent? {
+        val createdChecklist = checklistRepository.getChecklistById(checklistId) ?: return null
         val checklistIsEmpty =
             (createdChecklist.title.isEmpty() && createdChecklist.items.isEmpty()) ||
                     (createdChecklist.title.isEmpty() && createdChecklist.items.sumOf { it.title.trim().length } == 0)

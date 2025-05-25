@@ -1,28 +1,28 @@
 package com.jksol.keep.notes.ui.screens.main.search
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.sharp.Menu
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.jksol.keep.notes.R
@@ -32,7 +32,8 @@ import com.jksol.keep.notes.ui.theme.ApplicationTheme
 fun MainSearchBarEntryPoint(
     modifier: Modifier = Modifier,
     innerPadding: PaddingValues,
-    onClick: () -> Unit = {},
+    onSearchClick: () -> Unit = {},
+    onOpenMenuClick: () -> Unit = {},
 ) {
     Box(
         modifier = modifier
@@ -45,31 +46,41 @@ fun MainSearchBarEntryPoint(
                 end = SearchBarDefaults.searchButtonHorizontalPadding,
             ),
     ) {
-        Button(
+        Box(
             modifier = Modifier
                 .height(46.dp)
-                .fillMaxWidth(),
-            onClick = onClick,
-            elevation = null,
-            colors = ButtonColors(
-                containerColor = SearchBarDefaults.searchBackgroundColor(),
-                contentColor = SearchBarDefaults.searchContentColor(),
-                disabledContainerColor = Color.Transparent,
-                disabledContentColor = Color.Transparent,
-            ),
-            shape = RoundedCornerShape(SearchBarDefaults.searchButtonCornerRadius)
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(SearchBarDefaults.searchButtonCornerRadius))
+                .background(SearchBarDefaults.searchBackgroundColor())
+                .padding(horizontal = 8.dp),
+            contentAlignment = Alignment.CenterStart
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Icon(Icons.Sharp.Menu, contentDescription = null)
-                Spacer(Modifier.width(14.dp))
-                Text(
-                    text = stringResource(id = R.string.search_notes),
-                    color = MaterialTheme.colorScheme.onSurface,
-                    fontStyle = FontStyle.Normal
-                )
+                IconButton(
+                    onClick = onOpenMenuClick,
+                    modifier = Modifier.size(40.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Sharp.Menu,
+                        contentDescription = stringResource(R.string.menu_desc),
+                        tint = SearchBarDefaults.searchContentColor()
+                    )
+                }
+                TextButton(
+                    onClick = onSearchClick,
+                    modifier = Modifier.weight(1f),
+                    contentPadding = PaddingValues(start = 0.dp)
+                ) {
+                    Text(
+                        modifier = Modifier.fillMaxWidth(),
+                        text = stringResource(id = R.string.search_notes),
+                        color = MaterialTheme.colorScheme.onSurface,
+                    )
+                }
             }
         }
     }

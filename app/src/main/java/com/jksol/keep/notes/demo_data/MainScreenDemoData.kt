@@ -1,4 +1,4 @@
-package com.jksol.keep.notes
+package com.jksol.keep.notes.demo_data
 
 import com.jksol.keep.notes.ui.screens.main.model.MainScreenItem
 import java.util.concurrent.atomic.AtomicLong

@@ -1,4 +1,4 @@
-package com.jksol.keep.notes
+package com.jksol.keep.notes.demo_data
 
 import com.jksol.keep.notes.ui.focus.ElementFocusRequest
 import com.jksol.keep.notes.ui.screens.edit.checklist.model.CheckedListItemUi

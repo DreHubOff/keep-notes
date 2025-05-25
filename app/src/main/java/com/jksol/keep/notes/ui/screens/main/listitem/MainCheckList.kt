@@ -14,7 +14,7 @@ import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.jksol.keep.notes.MainScreenDemoData
+import com.jksol.keep.notes.demo_data.MainScreenDemoData
 import com.jksol.keep.notes.R
 import com.jksol.keep.notes.ui.screens.main.model.MainScreenItem
 import com.jksol.keep.notes.ui.screens.main.ChecklistCheckbox

@@ -27,8 +27,8 @@ import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.jksol.keep.notes.MainScreenDemoData.notesList
-import com.jksol.keep.notes.MainScreenDemoData.welcomeBanner
+import com.jksol.keep.notes.demo_data.MainScreenDemoData.notesList
+import com.jksol.keep.notes.demo_data.MainScreenDemoData.welcomeBanner
 import com.jksol.keep.notes.ui.screens.Route
 import com.jksol.keep.notes.ui.screens.main.fab.MainFabContainer
 import com.jksol.keep.notes.ui.screens.main.model.MainScreenItem

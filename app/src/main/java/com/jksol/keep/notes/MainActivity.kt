@@ -1,13 +1,25 @@
+@file:OptIn(ExperimentalSharedTransitionApi::class)
+
 package com.jksol.keep.notes
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.animation.AnimatedContentScope
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionLayout
+import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.Modifier
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.NavHostController
@@ -20,6 +32,8 @@ import com.jksol.keep.notes.ui.screens.Route
 import com.jksol.keep.notes.ui.screens.edit.checklist.EditCheckListScreen
 import com.jksol.keep.notes.ui.screens.edit.note.EditNoteScreen
 import com.jksol.keep.notes.ui.screens.main.MainScreen
+import com.jksol.keep.notes.ui.shared.LocalSharedTransitionSettings
+import com.jksol.keep.notes.ui.shared.SharedTransitionSettings
 import com.jksol.keep.notes.ui.theme.ApplicationTheme
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
@@ -39,29 +53,45 @@ class MainActivity : ComponentActivity() {
         setContent {
             ApplicationTheme {
                 val navController = rememberNavController()
-                NavHost(
-                    navController = navController,
-                    startDestination = Route.MainScreen,
-                    popExitTransition = { fadeOut() },
-                    popEnterTransition = { fadeIn() },
-                ) {
-                    composable<Route.MainScreen> { backStackEntry ->
-                        val noteEditingResult = backStackEntry
-                            .savedStateHandle
-                            .get<Route.EditNoteScreen.Result>(Route.EditNoteScreen.Result.KEY)
-                        val checklistEditingResult = backStackEntry
-                            .savedStateHandle
-                            .get<Route.EditChecklistScreen.Result>(Route.EditChecklistScreen.Result.KEY)
-                        MainScreen(noteEditingResult, checklistEditingResult)
-                    }
-                    composable<Route.EditNoteScreen> {
-                        EditNoteScreen()
-                    }
-                    composable<Route.EditChecklistScreen> {
-                        EditCheckListScreen()
-                    }
+                SharedTransitionLayout {
+                    BuildNavigationGraph(navController)
                 }
                 ObserveNavigationEvents(navController)
+            }
+        }
+    }
+
+    @Composable
+    private fun SharedTransitionScope.BuildNavigationGraph(navController: NavHostController) {
+        NavHost(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(color = MaterialTheme.colorScheme.background),
+            navController = navController,
+            startDestination = Route.MainScreen,
+            popExitTransition = { fadeOut() },
+            popEnterTransition = { fadeIn() },
+        ) {
+            composable<Route.MainScreen> { backStackEntry ->
+                NavigationRoute(sharedTransitionScope = this@BuildNavigationGraph) {
+                    val noteEditingResult = backStackEntry
+                        .savedStateHandle
+                        .get<Route.EditNoteScreen.Result>(Route.EditNoteScreen.Result.KEY)
+                    val checklistEditingResult = backStackEntry
+                        .savedStateHandle
+                        .get<Route.EditChecklistScreen.Result>(Route.EditChecklistScreen.Result.KEY)
+                    MainScreen(noteEditingResult, checklistEditingResult)
+                }
+            }
+            composable<Route.EditNoteScreen> {
+                NavigationRoute(sharedTransitionScope = this@BuildNavigationGraph) {
+                    EditNoteScreen()
+                }
+            }
+            composable<Route.EditChecklistScreen> {
+                NavigationRoute(sharedTransitionScope = this@BuildNavigationGraph) {
+                    EditCheckListScreen()
+                }
             }
         }
     }
@@ -70,10 +100,14 @@ class MainActivity : ComponentActivity() {
     private fun ObserveNavigationEvents(navController: NavHostController) {
         LaunchedEffect(navigationEventsHost, lifecycle) {
             repeatOnLifecycle(Lifecycle.State.CREATED) {
+                var lastBackEventTime = System.currentTimeMillis()
                 navigationEventsHost.navigationRoute.collectLatest { event ->
-                    withContext(Dispatchers.Main) {
+                    withContext(Dispatchers.Main.immediate) {
                         when (event) {
                             is NavigationEvent.NavigateBack -> {
+                                if (System.currentTimeMillis() - lastBackEventTime < 800) {
+                                    return@withContext
+                                }
                                 event.result?.let { (key, result) ->
                                     navController
                                         .previousBackStackEntry
@@ -81,6 +115,7 @@ class MainActivity : ComponentActivity() {
                                         ?.set(key, result)
                                 }
                                 navController.popBackStack()
+                                lastBackEventTime = System.currentTimeMillis()
                             }
 
                             is NavigationEvent.NavigateTo -> navController.navigate(event.route)
@@ -88,6 +123,20 @@ class MainActivity : ComponentActivity() {
                     }
                 }
             }
+        }
+    }
+
+    @Composable
+    private fun AnimatedContentScope.NavigationRoute(
+        sharedTransitionScope: SharedTransitionScope,
+        content: @Composable AnimatedContentScope.() -> Unit,
+    ) {
+        CompositionLocalProvider(
+            value = LocalSharedTransitionSettings provides SharedTransitionSettings(
+                transitionScope = sharedTransitionScope, animationScope = this@NavigationRoute
+            )
+        ) {
+            content()
         }
     }
 }

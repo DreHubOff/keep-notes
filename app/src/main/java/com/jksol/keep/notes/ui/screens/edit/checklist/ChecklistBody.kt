@@ -1,5 +1,8 @@
+@file:OptIn(ExperimentalSharedTransitionApi::class)
+
 package com.jksol.keep.notes.ui.screens.edit.checklist
 
+import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.layout.Arrangement.Absolute.spacedBy
@@ -45,6 +48,7 @@ import com.jksol.keep.notes.EditChecklistDemoData
 import com.jksol.keep.notes.R
 import com.jksol.keep.notes.ui.screens.edit.checklist.model.CheckedListItemUi
 import com.jksol.keep.notes.ui.screens.edit.checklist.model.UncheckedListItemUi
+import com.jksol.keep.notes.ui.shared.sharedElementTransition
 import com.jksol.keep.notes.ui.theme.ApplicationTheme
 import sh.calvin.reorderable.ReorderableColumn
 
@@ -52,6 +56,8 @@ import sh.calvin.reorderable.ReorderableColumn
 fun ChecklistBody(
     modifier: Modifier,
     title: String,
+    titleTransitionKey: Any = "",
+    contentTransitionKey: Any = "",
     contentPaddingBottom: Dp = 0.dp,
     checkedItems: List<CheckedListItemUi> = emptyList(),
     uncheckedItems: List<UncheckedListItemUi> = emptyList(),
@@ -72,6 +78,9 @@ fun ChecklistBody(
         modifier = modifier,
     ) {
         Title(
+            modifier = Modifier.sharedElementTransition(
+                transitionKey = titleTransitionKey
+            ),
             title = titleCache,
             onTitleChanged = {
                 titleCache = it
@@ -84,6 +93,7 @@ fun ChecklistBody(
 
         if (uncheckedItems.isNotEmpty()) {
             UncheckedItems(
+                modifier = Modifier.sharedElementTransition(transitionKey = contentTransitionKey),
                 items = uncheckedItems,
                 onItemChecked = onItemChecked,
                 onTextChanged = onItemTextChanged,
@@ -217,6 +227,7 @@ private fun AddItemButton(onAddClick: () -> Unit) {
 
 @Composable
 private fun UncheckedItems(
+    modifier: Modifier = Modifier,
     items: List<UncheckedListItemUi>,
     onItemChecked: (UncheckedListItemUi) -> Unit,
     onTextChanged: (String, UncheckedListItemUi) -> Unit,
@@ -226,7 +237,7 @@ private fun UncheckedItems(
     onMoveItems: (fromIndex: Int, toIndex: Int) -> Unit,
 ) {
     ReorderableColumn(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .wrapContentHeight()
             .animateContentSize(),

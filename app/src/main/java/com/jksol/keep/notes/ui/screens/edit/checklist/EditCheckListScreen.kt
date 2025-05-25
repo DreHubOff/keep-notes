@@ -1,6 +1,9 @@
+@file:OptIn(ExperimentalSharedTransitionApi::class)
+
 package com.jksol.keep.notes.ui.screens.edit.checklist
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
@@ -26,6 +29,7 @@ import com.jksol.keep.notes.ui.screens.edit.ModificationDateOverlay
 import com.jksol.keep.notes.ui.screens.edit.checklist.model.CheckedListItemUi
 import com.jksol.keep.notes.ui.screens.edit.checklist.model.EditChecklistScreenState
 import com.jksol.keep.notes.ui.screens.edit.checklist.model.UncheckedListItemUi
+import com.jksol.keep.notes.ui.shared.sharedBoundsTransition
 import com.jksol.keep.notes.ui.theme.ApplicationTheme
 
 @Composable
@@ -74,11 +78,14 @@ fun ScreenContent(
         modifier = Modifier.fillMaxSize(),
         contentWindowInsets = WindowInsets.systemBars
     ) { innerPadding ->
+        val transitionKey = remember(state.checklistId) { state.asTransitionKey(elementName = "card") }
         Column(
             modifier = Modifier
+                .sharedBoundsTransition(transitionKey = transitionKey)
                 .fillMaxSize()
         ) {
             EditActionBar(
+                pinTransitionKey = remember(state.checklistId) { state.asTransitionKey(elementName = "pin") },
                 systemBarInset = innerPadding.calculateTopPadding(),
                 pinned = state.isPinned,
                 onBackClick = onBackClick,
@@ -87,6 +94,8 @@ fun ScreenContent(
             Box {
                 val scrollState = rememberScrollState()
                 val paddingBottom = remember(innerPadding) { innerPadding.calculateBottomPadding() + 40.dp }
+                val titleTransitionKey = remember(state.checklistId) { state.asTransitionKey(elementName = "title") }
+                val contentTransitionKey = remember(state.checklistId) { state.asTransitionKey(elementName = "content") }
                 ChecklistBody(
                     modifier = Modifier
                         .fillMaxSize()
@@ -96,6 +105,8 @@ fun ScreenContent(
                             top = 16.dp,
                         )
                         .verticalScroll(scrollState),
+                    titleTransitionKey = titleTransitionKey,
+                    contentTransitionKey = contentTransitionKey,
                     contentPaddingBottom = paddingBottom,
                     title = state.title,
                     checkedItems = state.checkedItems,

@@ -13,6 +13,8 @@ data class EditChecklistScreenState(
     val showCheckedItems: Boolean = false,
 ) {
 
+    fun asTransitionKey(elementName: String): String = "${elementName}_checklist_$checklistId"
+
     companion object {
         val EMPTY = EditChecklistScreenState()
     }

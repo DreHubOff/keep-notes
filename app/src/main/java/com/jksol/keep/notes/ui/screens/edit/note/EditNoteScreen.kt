@@ -1,6 +1,9 @@
+@file:OptIn(ExperimentalSharedTransitionApi::class)
+
 package com.jksol.keep.notes.ui.screens.edit.note
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
@@ -15,6 +18,8 @@ import androidx.compose.material3.FabPosition
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
@@ -25,29 +30,32 @@ import com.jksol.keep.notes.MainScreenDemoData
 import com.jksol.keep.notes.ui.screens.edit.EditActionBar
 import com.jksol.keep.notes.ui.screens.edit.ModificationDateOverlay
 import com.jksol.keep.notes.ui.screens.edit.note.model.EditNoteScreenState
+import com.jksol.keep.notes.ui.shared.sharedBoundsTransition
 import com.jksol.keep.notes.ui.theme.ApplicationTheme
 
 @Composable
 fun EditNoteScreen() {
     val viewModel: EditNoteViewModel = hiltViewModel()
-    val state = viewModel.state.collectAsState(EditNoteScreenState.None)
+    val state by viewModel.state.collectAsState(EditNoteScreenState.None)
 
     BackHandler {
         viewModel.onBackClicked()
     }
 
-    ScreenContent(
-        state = state.value,
-        onTitleChanged = viewModel::onTitleChanged,
-        onContentChanged = viewModel::onContentChanged,
-        onBackClick = viewModel::onBackClicked,
-        onPinCheckedChange = viewModel::onPinCheckedChange,
-    )
+    if (state !is EditNoteScreenState.None) {
+        ScreenContent(
+            state = state as EditNoteScreenState.Idle,
+            onTitleChanged = viewModel::onTitleChanged,
+            onContentChanged = viewModel::onContentChanged,
+            onBackClick = viewModel::onBackClicked,
+            onPinCheckedChange = viewModel::onPinCheckedChange,
+        )
+    }
 }
 
 @Composable
 fun ScreenContent(
-    state: EditNoteScreenState,
+    state: EditNoteScreenState.Idle,
     onTitleChanged: (String) -> Unit = {},
     onContentChanged: (String) -> Unit = {},
     onBackClick: () -> Unit = {},
@@ -61,8 +69,10 @@ fun ScreenContent(
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .sharedBoundsTransition(transitionKey = state.asTransitionKey(elementName = "card"))
         ) {
             EditActionBar(
+                pinTransitionKey = state.asTransitionKey(elementName = "pin"),
                 systemBarInset = innerPadding.calculateTopPadding(),
                 pinned = state.isPinned,
                 onBackClick = onBackClick,
@@ -93,7 +103,8 @@ private fun DisplayState(
 
     when (state) {
         is EditNoteScreenState.Idle -> {
-
+            val titleTransitionKey = remember(state.noteId) { state.asTransitionKey(elementName = "title") }
+            val contentTransitionKey = remember(state.noteId) { state.asTransitionKey(elementName = "content") }
             NoteBody(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -102,6 +113,8 @@ private fun DisplayState(
                     .padding(top = 16.dp, start = 16.dp, end = 16.dp, bottom = 60.dp),
                 title = state.title,
                 content = state.content,
+                titleTransitionKey = titleTransitionKey,
+                contentTransitionKey = contentTransitionKey,
                 onTitleChanged = onTitleChanged,
                 onContentChanged = onContentChanged,
             )
@@ -113,14 +126,14 @@ private fun DisplayState(
 
 @Preview
 @Composable
-private fun Preview(@PreviewParameter(EditNoteScreenStateProvider::class) state: EditNoteScreenState) {
+private fun Preview(@PreviewParameter(EditNoteScreenStateProvider::class) state: EditNoteScreenState.Idle) {
     ApplicationTheme {
         ScreenContent(state = state)
     }
 }
 
-private class EditNoteScreenStateProvider : PreviewParameterProvider<EditNoteScreenState> {
-    override val values: Sequence<EditNoteScreenState>
+private class EditNoteScreenStateProvider : PreviewParameterProvider<EditNoteScreenState.Idle> {
+    override val values: Sequence<EditNoteScreenState.Idle>
         get() = sequenceOf(
             EditNoteScreenState.Idle(
                 noteId = 0,

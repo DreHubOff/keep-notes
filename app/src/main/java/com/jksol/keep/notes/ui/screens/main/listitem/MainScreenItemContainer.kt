@@ -1,5 +1,8 @@
+@file:OptIn(ExperimentalSharedTransitionApi::class)
+
 package com.jksol.keep.notes.ui.screens.main.listitem
 
+import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -29,6 +32,8 @@ import androidx.compose.ui.unit.sp
 import com.jksol.keep.notes.MainScreenDemoData
 import com.jksol.keep.notes.R
 import com.jksol.keep.notes.ui.screens.main.model.MainScreenItem
+import com.jksol.keep.notes.ui.shared.sharedBoundsTransition
+import com.jksol.keep.notes.ui.shared.sharedElementTransition
 import com.jksol.keep.notes.ui.theme.ApplicationTheme
 
 @Composable
@@ -42,21 +47,23 @@ fun MainScreenItemContainer(
     OutlinedCard(
         modifier = modifier
             .fillMaxWidth()
-            .wrapContentHeight(),
+            .wrapContentHeight()
+            .sharedBoundsTransition(transitionKey = remember(item.compositeKey) { item.asTransitionKey(elementName = "card") }),
         enabled = item.interactive,
         onClick = { onClick?.invoke() },
     ) {
+        val contentModifier = Modifier.sharedElementTransition(item.asTransitionKey(elementName = "content"))
         Box {
             if (item.title.isNotEmpty()) {
                 WithTitleNote(
                     textItem = item,
-                    content = content,
+                    content = { content(it.then(contentModifier)) },
                     maxTitleLines = maxTitleLines,
                 )
             } else {
                 WithoutTitleNote(
                     textItem = item,
-                    content = content,
+                    content = { content(it.then(contentModifier)) },
                 )
             }
             Box(modifier = Modifier
@@ -64,7 +71,8 @@ fun MainScreenItemContainer(
                 .clickable(
                     interactionSource = remember { MutableInteractionSource() },
                     indication = ripple(),
-                    enabled = onClick != null) {
+                    enabled = onClick != null
+                ) {
                     onClick?.invoke()
                 }) {
             }
@@ -83,7 +91,13 @@ private fun WithTitleNote(
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         Row(horizontalArrangement = spacedBy(10.dp)) {
-            TitleText(modifier = Modifier.weight(1f), title = textItem.title, mixLines = maxTitleLines)
+            TitleText(
+                modifier = Modifier
+                    .weight(1f)
+                    .sharedElementTransition(transitionKey = textItem.asTransitionKey("title")),
+                title = textItem.title,
+                mixLines = maxTitleLines
+            )
             StatusIcons(textItem)
         }
         content(Modifier)
@@ -129,6 +143,8 @@ private fun StatusIcons(textItem: MainScreenItem) {
         }
         if (textItem.isPinned) {
             Icon(
+                modifier = Modifier
+                    .sharedElementTransition(transitionKey = textItem.asTransitionKey("pin")),
                 painter = painterResource(R.drawable.ic_material_keep),
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.onSurface

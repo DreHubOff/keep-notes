@@ -1,5 +1,8 @@
+@file:OptIn(ExperimentalSharedTransitionApi::class)
+
 package com.jksol.keep.notes.ui.screens.edit.note
 
+import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -25,6 +28,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.jksol.keep.notes.MainScreenDemoData
 import com.jksol.keep.notes.R
+import com.jksol.keep.notes.ui.shared.sharedElementTransition
 import com.jksol.keep.notes.ui.theme.ApplicationTheme
 
 @Composable
@@ -32,6 +36,8 @@ fun NoteBody(
     modifier: Modifier,
     title: String,
     content: String,
+    titleTransitionKey: Any = "",
+    contentTransitionKey: Any = "",
     onTitleChanged: (String) -> Unit = {},
     onContentChanged: (String) -> Unit = {},
 ) {
@@ -39,6 +45,7 @@ fun NoteBody(
     var contentCache by remember { mutableStateOf(content) }
     Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(16.dp)) {
         Title(
+            modifier = Modifier.sharedElementTransition(transitionKey = titleTransitionKey),
             title = titleCache,
             onTitleChanged = {
                 titleCache = it
@@ -47,6 +54,7 @@ fun NoteBody(
             onNextClick = {}
         )
         Content(
+            modifier = Modifier.sharedElementTransition(transitionKey = contentTransitionKey),
             title = contentCache,
             onContentChanged = {
                 contentCache = it

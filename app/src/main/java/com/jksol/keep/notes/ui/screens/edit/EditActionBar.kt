@@ -1,5 +1,8 @@
+@file:OptIn(ExperimentalSharedTransitionApi::class)
+
 package com.jksol.keep.notes.ui.screens.edit
 
+import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -27,10 +30,12 @@ import androidx.compose.ui.unit.dp
 import com.jksol.keep.notes.R
 import com.jksol.keep.notes.ui.shared.ActionBarDefaults
 import com.jksol.keep.notes.ui.shared.PinCheckbox
+import com.jksol.keep.notes.ui.shared.sharedElementTransition
 import com.jksol.keep.notes.ui.theme.ApplicationTheme
 
 @Composable
 fun EditActionBar(
+    pinTransitionKey: Any = "",
     systemBarInset: Dp = 0.dp,
     pinned: Boolean = false,
     onBackClick: () -> Unit = {},
@@ -65,6 +70,10 @@ fun EditActionBar(
             Spacer(modifier = Modifier.weight(1f))
             var checked by remember(pinned) { mutableStateOf(pinned) }
             PinCheckbox(
+                modifier = Modifier
+                    .sharedElementTransition(
+                        transitionKey = pinTransitionKey,
+                    ),
                 isChecked = checked,
                 onCheckedChange = {
                     onPinCheckedChange(it)

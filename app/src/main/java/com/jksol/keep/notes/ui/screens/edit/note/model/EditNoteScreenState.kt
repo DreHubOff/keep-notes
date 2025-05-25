@@ -22,5 +22,8 @@ sealed class EditNoteScreenState {
         override val modificationStatusMessage: String = "",
         val reminderTime: String? = null,
         override val isPinned: Boolean = false,
-    ) : EditNoteScreenState()
+    ) : EditNoteScreenState() {
+
+        fun asTransitionKey(elementName: String) = "${elementName}_text_note_$noteId"
+    }
 }

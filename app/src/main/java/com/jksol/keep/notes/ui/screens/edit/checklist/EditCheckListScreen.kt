@@ -4,19 +4,19 @@ package com.jksol.keep.notes.ui.screens.edit.checklist
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBars
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
@@ -36,25 +36,36 @@ import com.jksol.keep.notes.ui.theme.ApplicationTheme
 fun EditCheckListScreen() {
     val viewModel = hiltViewModel<EditChecklistViewModel>()
 
-    BackHandler {
+    val keyboardController = LocalSoftwareKeyboardController.current
+    val focusManager = LocalFocusManager.current
+    val onBackListener = {
+        focusManager.clearFocus(force = true)
+        keyboardController?.hide()
         viewModel.onBackClick()
+    }
+
+    BackHandler {
+        onBackListener()
     }
 
     val state by viewModel.state.collectAsStateWithLifecycle(EditChecklistScreenState.EMPTY)
     ScreenContent(
         state = state,
-        onTitleChanged = { viewModel.onTitleChanged(it) },
-        onBackClick = { viewModel.onBackClick() },
-        onPinCheckedChange = { viewModel.onPinCheckedChange(it) },
-        onAddChecklistItemClick = { viewModel.onAddChecklistItemClick() },
-        toggleCheckedItemsVisibility = { viewModel.toggleCheckedItemsVisibility() },
-        onItemUnchecked = { viewModel.onItemUnchecked(it) },
-        onItemChecked = { viewModel.onItemChecked(it) },
-        onItemTextChanged = { text, item -> viewModel.onItemTextChanged(text, item) },
-        onDoneClicked = { item -> viewModel.onDoneClicked(item) },
-        onFocusStateChanged = { isFocused, item -> viewModel.onFocusStateChanged(isFocused, item) },
-        onDeleteClick = { viewModel.onDeleteClick(it) },
-        onMoveItems = { fromIndex, toIndex -> viewModel.onMoveItems(fromIndex, toIndex) },
+        onTitleChanged = viewModel::onTitleChanged,
+        onBackClick = onBackListener,
+        onPinCheckedChange = viewModel::onPinCheckedChange,
+        onAddChecklistItemClick = viewModel::onAddChecklistItemClick,
+        toggleCheckedItemsVisibility = viewModel::toggleCheckedItemsVisibility,
+        onItemUnchecked = viewModel::onItemUnchecked,
+        onItemChecked = viewModel::onItemChecked,
+        onItemTextChanged = viewModel::onItemTextChanged,
+        onDoneClicked = viewModel::onDoneClicked,
+        onFocusStateChanged = viewModel::onFocusStateChanged,
+        onDeleteClick = viewModel::onDeleteClick,
+        onMoveItems = viewModel::onMoveItems,
+        onTitleNextClick = viewModel::onTitleNextClick,
+        onMoveCompleted = viewModel::onMoveCompleted,
+        onTitleFocusStateChanged = viewModel::onTitleFocusStateChanged,
     )
 }
 
@@ -73,6 +84,9 @@ fun ScreenContent(
     onFocusStateChanged: (Boolean, UncheckedListItemUi) -> Unit,
     onDeleteClick: (UncheckedListItemUi) -> Unit,
     onMoveItems: (fromIndex: Int, toIndex: Int) -> Unit,
+    onTitleNextClick: () -> Unit,
+    onMoveCompleted: () -> Unit,
+    onTitleFocusStateChanged: (Boolean) -> Unit,
 ) {
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -92,21 +106,10 @@ fun ScreenContent(
                 onPinCheckedChange = onPinCheckedChange
             )
             Box {
-                val scrollState = rememberScrollState()
                 val paddingBottom = remember(innerPadding) { innerPadding.calculateBottomPadding() + 40.dp }
-                val titleTransitionKey = remember(state.checklistId) { state.asTransitionKey(elementName = "title") }
-                val contentTransitionKey = remember(state.checklistId) { state.asTransitionKey(elementName = "content") }
                 ChecklistBody(
                     modifier = Modifier
-                        .fillMaxSize()
-                        .padding(
-                            start = 16.dp,
-                            end = 16.dp,
-                            top = 16.dp,
-                        )
-                        .verticalScroll(scrollState),
-                    titleTransitionKey = titleTransitionKey,
-                    contentTransitionKey = contentTransitionKey,
+                        .fillMaxSize(),
                     contentPaddingBottom = paddingBottom,
                     title = state.title,
                     checkedItems = state.checkedItems,
@@ -119,9 +122,12 @@ fun ScreenContent(
                     onItemChecked = onItemChecked,
                     onItemTextChanged = onItemTextChanged,
                     onDoneClicked = onDoneClicked,
-                    onFocusStateChanged = onFocusStateChanged,
+                    onItemFocusStateChanged = onFocusStateChanged,
                     onDeleteClick = onDeleteClick,
                     onMoveItems = onMoveItems,
+                    onTitleNextClick = onTitleNextClick,
+                    onMoveCompleted = onMoveCompleted,
+                    onTitleFocusStateChanged = onTitleFocusStateChanged,
                 )
                 ModificationDateOverlay(
                     navigationBarPadding = innerPadding.calculateBottomPadding(),
@@ -149,7 +155,10 @@ private fun Preview(@PreviewParameter(EditChecklistScreenStateProvider::class) s
             onDoneClicked = {},
             onFocusStateChanged = { _, _ -> },
             onDeleteClick = {},
-            onMoveItems = { _, _ -> }
+            onMoveItems = { _, _ -> },
+            onTitleNextClick = {},
+            onMoveCompleted = {},
+            onTitleFocusStateChanged = { _ -> },
         )
     }
 }

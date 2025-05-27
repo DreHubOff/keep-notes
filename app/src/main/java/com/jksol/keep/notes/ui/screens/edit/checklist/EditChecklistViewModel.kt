@@ -8,6 +8,7 @@ import com.jksol.keep.notes.core.interactor.BuildModificationDateTextInteractor
 import com.jksol.keep.notes.core.model.Checklist
 import com.jksol.keep.notes.core.model.ChecklistItem
 import com.jksol.keep.notes.data.ChecklistRepository
+import com.jksol.keep.notes.ui.focus.ElementFocusRequest
 import com.jksol.keep.notes.ui.navigation.NavigationEventsHost
 import com.jksol.keep.notes.ui.screens.Route
 import com.jksol.keep.notes.ui.screens.edit.checklist.model.CheckedListItemUi
@@ -26,6 +27,7 @@ import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.updateAndGet
 import kotlinx.coroutines.launch
 import java.util.concurrent.atomic.AtomicInteger
 import javax.inject.Inject
@@ -75,6 +77,12 @@ class EditChecklistViewModel @Inject constructor(
         }
     }
 
+    fun onTitleFocusStateChanged(isFocused: Boolean) {
+        if (isFocused) {
+            sendRequestFocusEvent(focusedPosition = -1)
+        }
+    }
+
     fun onPinCheckedChange(pinned: Boolean) {
         pinnedStateSaveJob?.cancel()
         pinnedStateSaveJob = viewModelScope.launch(Dispatchers.Default) {
@@ -88,10 +96,10 @@ class EditChecklistViewModel @Inject constructor(
             val currentState = _state.value
             val currentList = currentState.uncheckedItems.map { it.copy(focusRequest = null) }
             val blankItem = ChecklistItem.generateEmpty()
-            _state.update {
-                focusedItemIndex.set(currentList.size)
+            val updatedState = _state.updateAndGet {
                 it.copy(uncheckedItems = currentList + blankItem.toUncheckedListItemUi())
             }
+            sendRequestFocusEvent(focusedPosition = updatedState.uncheckedItems.lastIndex)
             checklistRepository.saveChecklistItemAsLast(
                 checklistId = currentState.checklistId,
                 item = blankItem,
@@ -120,7 +128,12 @@ class EditChecklistViewModel @Inject constructor(
     fun onItemChecked(item: UncheckedListItemUi) {
         viewModelScope.launch(Dispatchers.Default) {
             val currentState = _state.value
-            _state.update { currentState.copy(uncheckedItems = currentState.uncheckedItems - item) }
+            val focusedItem = currentState.uncheckedItems.find { it.focusRequest != null }
+            val newList = _state
+                .updateAndGet { currentState.copy(uncheckedItems = currentState.uncheckedItems - item) }
+                .uncheckedItems
+            val indexOfFocusedItemInNewList = newList.indexOf(focusedItem)
+            sendRequestFocusEvent(indexOfFocusedItemInNewList)
             checklistRepository.updateChecklistItemCheckedState(
                 isChecked = true,
                 itemId = item.id,
@@ -165,7 +178,7 @@ class EditChecklistViewModel @Inject constructor(
                 if (focusedItemIndex.get() != index) {
                     item.copy(focusRequest = null)
                 } else {
-                    item
+                    item.copy(focusRequest = ElementFocusRequest().apply { confirmProcessing() })
                 }
             }
             _state.update { it.copy(uncheckedItems = newUncheckedItems) }
@@ -175,29 +188,62 @@ class EditChecklistViewModel @Inject constructor(
     fun onDeleteClick(item: UncheckedListItemUi) {
         viewModelScope.launch(Dispatchers.Default) {
             val currentState = _state.value
+            val indexOfRemovedItem = currentState.uncheckedItems.indexOf(item)
+            val indexOfFocusedItem = when {
+                currentState.uncheckedItems.size <= 1 -> -1
+                indexOfRemovedItem == 0 -> 0
+                indexOfRemovedItem == currentState.uncheckedItems.lastIndex -> indexOfRemovedItem - 1
+                else -> indexOfRemovedItem
+            }
             _state.update { it.copy(uncheckedItems = it.uncheckedItems - item) }
+            sendRequestFocusEvent(focusedPosition = indexOfFocusedItem)
             checklistRepository.deleteChecklistItem(itemId = item.id, checklistId = currentState.checklistId)
         }
     }
 
     fun onMoveItems(fromIndex: Int, toIndex: Int) {
+        _state.update { initialState ->
+            moveUncheckedItems(state = initialState, fromIndex = fromIndex, toIndex = toIndex)
+        }
+    }
+
+    fun onMoveCompleted() {
         viewModelScope.launch(Dispatchers.Default) {
             val currentState = _state.value
-            // Apply UI move
-            _state.update { initialState -> moveUncheckedItems(state = initialState, fromIndex = fromIndex, toIndex = toIndex) }
+            val uncheckedItems = currentState.uncheckedItems
+            val indexOfFocused = uncheckedItems.indexOfFirst { it.focusRequest != null }
+            sendRequestFocusEvent(focusedPosition = indexOfFocused)
 
-            if (fromIndex !in currentState.uncheckedItems.indices || toIndex !in currentState.uncheckedItems.indices) {
-                return@launch
-            }
-
-            val fromItem = currentState.uncheckedItems[fromIndex]
-            val toItem = currentState.uncheckedItems[toIndex]
-
-            checklistRepository.moveChecklistItems(
+            checklistRepository.saveItemsNewOrder(
                 checklistId = currentState.checklistId,
-                fromItemId = fromItem.id,
-                toItemId = toItem.id,
+                orderedItemIds = uncheckedItems.map { it.id },
             )
+        }
+    }
+
+    fun onTitleNextClick() {
+        viewModelScope.launch(Dispatchers.Default) {
+            val uncheckedItems = _state.value.uncheckedItems
+            val hasUncheckedItems = uncheckedItems.isNotEmpty()
+            if (hasUncheckedItems) {
+                sendRequestFocusEvent(focusedPosition = 0)
+            } else {
+                onAddChecklistItemClick()
+            }
+        }
+    }
+
+    private fun sendRequestFocusEvent(focusedPosition: Int) {
+        focusedItemIndex.set(focusedPosition)
+        _state.update { state ->
+            val uncheckedItems = state.uncheckedItems.mapIndexed { index, item ->
+                if (index == focusedItemIndex.get()) {
+                    item.copy(focusRequest = ElementFocusRequest())
+                } else {
+                    item.copy(focusRequest = null)
+                }
+            }
+            state.copy(uncheckedItems = uncheckedItems)
         }
     }
 

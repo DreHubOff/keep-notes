@@ -16,6 +16,11 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyItemScope
+import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -34,8 +39,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -44,96 +51,132 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.jksol.keep.notes.demo_data.EditChecklistDemoData
 import com.jksol.keep.notes.R
+import com.jksol.keep.notes.demo_data.EditChecklistDemoData
 import com.jksol.keep.notes.ui.screens.edit.checklist.model.CheckedListItemUi
 import com.jksol.keep.notes.ui.screens.edit.checklist.model.UncheckedListItemUi
-import com.jksol.keep.notes.ui.shared.sharedElementTransition
 import com.jksol.keep.notes.ui.theme.ApplicationTheme
-import sh.calvin.reorderable.ReorderableColumn
+import sh.calvin.reorderable.ReorderableItem
+import sh.calvin.reorderable.rememberReorderableLazyListState
 
 @Composable
 fun ChecklistBody(
     modifier: Modifier,
     title: String,
-    titleTransitionKey: Any = "",
-    contentTransitionKey: Any = "",
     contentPaddingBottom: Dp = 0.dp,
     checkedItems: List<CheckedListItemUi> = emptyList(),
     uncheckedItems: List<UncheckedListItemUi> = emptyList(),
     showCheckedItems: Boolean = false,
     onTitleChanged: (String) -> Unit = {},
+    onTitleNextClick: () -> Unit = {},
     onAddChecklistItemClick: () -> Unit = {},
     toggleCheckedItemsVisibility: () -> Unit = {},
     onItemUnchecked: (CheckedListItemUi) -> Unit = {},
     onItemChecked: (UncheckedListItemUi) -> Unit = {},
     onItemTextChanged: (String, UncheckedListItemUi) -> Unit = { _, _ -> },
     onDoneClicked: (UncheckedListItemUi) -> Unit = {},
-    onFocusStateChanged: (Boolean, UncheckedListItemUi) -> Unit = { _, _ -> },
+    onItemFocusStateChanged: (Boolean, UncheckedListItemUi) -> Unit = { _, _ -> },
+    onTitleFocusStateChanged: (Boolean) -> Unit = { _ -> },
     onDeleteClick: (UncheckedListItemUi) -> Unit = {},
     onMoveItems: (fromIndex: Int, toIndex: Int) -> Unit = { _, _ -> },
+    onMoveCompleted: () -> Unit = { },
 ) {
     var titleCache by remember(title) { mutableStateOf(title) }
-    Column(
+    val lazyListState = rememberLazyListState()
+
+    val itemsBeforeReorderable = 2
+    val reorderableLazyListState = rememberReorderableLazyListState(lazyListState) { from, to ->
+        val fromIndex = from.index - itemsBeforeReorderable
+        val toIndex = to.index - itemsBeforeReorderable
+        onMoveItems(fromIndex, toIndex)
+    }
+
+    LazyColumn(
         modifier = modifier,
+        state = lazyListState,
+        contentPadding = PaddingValues(bottom = contentPaddingBottom, top = 16.dp),
     ) {
-        Title(
-            modifier = Modifier.sharedElementTransition(
-                transitionKey = titleTransitionKey
-            ),
-            title = titleCache,
-            onTitleChanged = {
-                titleCache = it
-                onTitleChanged(it)
-            },
-            onNextClick = {}
-        )
-
-        Spacer(modifier = Modifier.height(12.dp))
-
-        if (uncheckedItems.isNotEmpty()) {
-            UncheckedItems(
-                modifier = Modifier.sharedElementTransition(transitionKey = contentTransitionKey),
-                items = uncheckedItems,
-                onItemChecked = onItemChecked,
-                onTextChanged = onItemTextChanged,
-                onDoneClicked = onDoneClicked,
-                onFocusStateChanged = onFocusStateChanged,
-                onDeleteClick = onDeleteClick,
-                onMoveItems = onMoveItems,
+        item(key = "title") {
+            Title(
+                modifier = Modifier
+                    .padding(horizontal = 16.dp)
+                    .onFocusChanged { focusState ->
+                        onTitleFocusStateChanged(focusState.isFocused)
+                    },
+                title = titleCache,
+                onTitleChanged = {
+                    titleCache = it
+                    onTitleChanged(it)
+                },
+                onNextClick = onTitleNextClick,
             )
         }
+        item(key = "spacer1") {
+            Spacer(modifier = Modifier.height(12.dp))
+        }
 
-        AddItemButton(onAddClick = onAddChecklistItemClick)
-
-        if (checkedItems.isNotEmpty()) {
-            HideCheckedItemsButton(
-                checked = showCheckedItems.not(),
-                hiddenItemCount = checkedItems.size,
-                toggleCheckedItemsVisibility = toggleCheckedItemsVisibility,
-            )
-            if (showCheckedItems) {
-                CheckedItems(
-                    checkedItems = checkedItems,
-                    onItemUnchecked = onItemUnchecked,
-                )
+        if (uncheckedItems.isNotEmpty()) {
+            items(uncheckedItems, key = { item -> item.id }) { item ->
+                ReorderableItem(
+                    state = reorderableLazyListState,
+                    key = item.id,
+                ) {
+                    DraggableChecklistItem(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .animateItem(),
+                        title = item.text,
+                        checked = false,
+                        focusRequest = item.focusRequest,
+                        onCheckedChange = { onItemChecked(item) },
+                        onTextChanged = { onItemTextChanged(it, item) },
+                        onDoneClicked = { onDoneClicked(item) },
+                        onFocusStateChanged = { onItemFocusStateChanged(it, item) },
+                        onDeleteClick = { onDeleteClick(item) },
+                        onDragCompleted = { onMoveCompleted() }
+                    )
+                }
             }
         }
 
-        Spacer(modifier = Modifier.height(contentPaddingBottom))
+        item(key = "AddItemButton") {
+            AddItemButton(
+                modifier = Modifier.animateItem(),
+                onAddClick = onAddChecklistItemClick,
+            )
+        }
+
+        item(key = "CheckedItems") {
+            if (checkedItems.isNotEmpty()) {
+                HideCheckedItemsButton(
+                    modifier = Modifier.animateItem(),
+                    checked = showCheckedItems.not(),
+                    hiddenItemCount = checkedItems.size,
+                    toggleCheckedItemsVisibility = toggleCheckedItemsVisibility,
+                )
+                if (showCheckedItems) {
+                    CheckedItems(
+                        modifier = Modifier.animateItem(),
+                        checkedItems = checkedItems,
+                        onItemUnchecked = onItemUnchecked,
+                    )
+                }
+            }
+        }
     }
 }
 
 @Composable
 private fun CheckedItems(
+    modifier: Modifier,
     checkedItems: List<CheckedListItemUi>,
     onItemUnchecked: (CheckedListItemUi) -> Unit,
 ) {
     Column(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .wrapContentHeight()
-            .padding(start = 24.dp)
+            .padding(start = 46.dp)
             .animateContentSize(),
         verticalArrangement = spacedBy(4.dp),
     ) {
@@ -153,12 +196,13 @@ private fun CheckedItems(
 
 @Composable
 private fun HideCheckedItemsButton(
+    modifier: Modifier,
     checked: Boolean,
     hiddenItemCount: Int,
     toggleCheckedItemsVisibility: () -> Unit,
 ) {
     TextButton(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .graphicsLayer {
                 translationY = -14f
@@ -174,7 +218,9 @@ private fun HideCheckedItemsButton(
                 .format(hiddenItemCount)
         }
         Row(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = spacedBy(6.dp),
         ) {
@@ -199,9 +245,12 @@ private fun HideCheckedItemsButton(
 }
 
 @Composable
-private fun AddItemButton(onAddClick: () -> Unit) {
+private fun AddItemButton(
+    modifier: Modifier,
+    onAddClick: () -> Unit,
+) {
     TextButton(
-        modifier = Modifier,
+        modifier = modifier.padding(horizontal = 16.dp),
         onClick = onAddClick,
         contentPadding = PaddingValues(start = 34.dp, end = 34.dp),
         border = null,
@@ -226,43 +275,6 @@ private fun AddItemButton(onAddClick: () -> Unit) {
 }
 
 @Composable
-private fun UncheckedItems(
-    modifier: Modifier = Modifier,
-    items: List<UncheckedListItemUi>,
-    onItemChecked: (UncheckedListItemUi) -> Unit,
-    onTextChanged: (String, UncheckedListItemUi) -> Unit,
-    onDoneClicked: (UncheckedListItemUi) -> Unit,
-    onFocusStateChanged: (Boolean, UncheckedListItemUi) -> Unit,
-    onDeleteClick: (UncheckedListItemUi) -> Unit,
-    onMoveItems: (fromIndex: Int, toIndex: Int) -> Unit,
-) {
-    ReorderableColumn(
-        modifier = modifier
-            .fillMaxWidth()
-            .wrapContentHeight()
-            .animateContentSize(),
-        list = items,
-        onSettle = onMoveItems,
-        verticalArrangement = spacedBy(4.dp),
-    ) { _, item, _ ->
-        key(item.id) {
-            DraggableChecklistItem(
-                modifier = Modifier
-                    .fillMaxWidth(),
-                title = item.text,
-                checked = false,
-                focusRequest = item.focusRequest,
-                onCheckedChange = { onItemChecked(item) },
-                onTextChanged = { onTextChanged(it, item) },
-                onDoneClicked = { onDoneClicked(item) },
-                onFocusStateChanged = { onFocusStateChanged(it, item) },
-                onDeleteClick = { onDeleteClick(item) }
-            )
-        }
-    }
-}
-
-@Composable
 private fun Title(
     title: String,
     modifier: Modifier = Modifier,
@@ -281,7 +293,9 @@ private fun Title(
             fontSize = 18.sp,
         ),
         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
-        keyboardActions = KeyboardActions(onNext = { onNextClick() }),
+        keyboardActions = KeyboardActions(onNext = {
+            onNextClick()
+        }),
         decorationBox = { innerTextField ->
             Box(Modifier.fillMaxWidth()) {
                 if (title.isEmpty()) {

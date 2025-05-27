@@ -5,6 +5,7 @@ import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -19,6 +20,7 @@ import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -32,12 +34,15 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.jksol.keep.notes.ui.focus.ElementFocusRequest
 import com.jksol.keep.notes.ui.theme.ApplicationTheme
 import com.jksol.keep.notes.ui.theme.themedCheckboxColors
@@ -47,6 +52,7 @@ fun EditableChecklistCheckbox(
     modifier: Modifier = Modifier,
     text: String,
     checked: Boolean,
+    isDragged: Boolean = false,
     focusRequest: ElementFocusRequest? = null,
     onCheckedChange: (Boolean) -> Unit = {},
     onTextChanged: (String) -> Unit = {},
@@ -54,8 +60,6 @@ fun EditableChecklistCheckbox(
     onFocusStateChanged: (Boolean) -> Unit = {},
     onDeleteClick: () -> Unit = {},
 ) {
-    var isFocused by remember { mutableStateOf(false) }
-
     Row(
         modifier = modifier
             .clickable(enabled = checked) { onCheckedChange(!checked) }
@@ -63,9 +67,18 @@ fun EditableChecklistCheckbox(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         val focusRequester = remember { FocusRequester() }
+        var isFocused by remember { mutableStateOf(false) }
+        var textField by remember { mutableStateOf(TextFieldValue(text)) }
 
-        LaunchedEffect(focusRequest) {
-            if (focusRequest?.isHandled() == false) {
+        if (!isFocused && focusRequest?.isHandled() == false) {
+            textField = TextFieldValue(text, selection = TextRange(textField.text.length))
+        }
+
+        LaunchedEffect(focusRequest, isDragged, isFocused) {
+            if (isFocused) {
+                focusRequest?.confirmProcessing()
+            }
+            if (!isDragged && focusRequest?.isHandled() == false) {
                 focusRequester.requestFocus()
                 focusRequest.confirmProcessing()
             }
@@ -83,53 +96,86 @@ fun EditableChecklistCheckbox(
         )
 
         val textColor = MaterialTheme.colorScheme.run { if (checked) onSurface else onSurfaceVariant }
-        var textCache by remember(text) { mutableStateOf(text) }
-        BasicTextField(
-            value = textCache,
-            onValueChange = {
-                textCache = it
-                onTextChanged(it)
-            },
-            modifier = Modifier
-                .weight(1f)
-                .wrapContentHeight()
-                .graphicsLayer { this.translationX = translationX }
-                .focusRequester(focusRequester)
-                .onFocusChanged {
-                    isFocused = it.isFocused
-                    onFocusStateChanged(it.isFocused)
-                },
-            textStyle = TextStyle(
-                color = textColor,
-                fontWeight = FontWeight.Normal,
-                textDecoration = if (checked) TextDecoration.LineThrough else null
-            ),
-            enabled = !checked,
-            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-            keyboardActions = KeyboardActions(onDone = { onDoneClicked() }),
-            decorationBox = { innerTextField ->
-                Box(
-                    Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 2.dp)
-                ) {
-                    innerTextField()
-                }
-            }
+        val textStyle = TextStyle(
+            color = textColor,
+            fontSize = 14.sp,
+            lineHeight = 18.sp,
+            letterSpacing = 0.sp,
+            fontWeight = FontWeight.Normal,
+            textDecoration = if (checked) TextDecoration.LineThrough else null
         )
-        AnimatedVisibility(visible = isFocused) {
-            IconButton(
-                modifier = Modifier.size(32.dp),
-                onClick = onDeleteClick
-            ) {
-                Icon(
-                    modifier = Modifier.size(20.dp),
-                    imageVector = Icons.Default.Clear,
-                    contentDescription = null,
-                )
-            }
+
+        if (isDragged) {
+            OnDragOverlay(text = textField.text, textStyle = textStyle, translationX = translationX)
+        } else {
+            BasicTextField(
+                value = textField,
+                onValueChange = { newValue ->
+                    textField = newValue
+                    onTextChanged(newValue.text)
+                },
+                modifier = Modifier
+                    .weight(1f)
+                    .wrapContentHeight()
+                    .graphicsLayer { this.translationX = translationX }
+                    .focusRequester(focusRequester)
+                    .onFocusChanged { focusState ->
+                        isFocused = focusState.isFocused
+                        onFocusStateChanged(focusState.isFocused)
+                    },
+                textStyle = textStyle,
+                enabled = !checked,
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                keyboardActions = KeyboardActions(onDone = { onDoneClicked() }),
+                decorationBox = { innerTextField ->
+                    Box(
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 2.dp)
+                    ) {
+                        innerTextField()
+                    }
+                }
+            )
         }
+
+        AnimatedVisibility(visible = focusRequest != null) { DeleteIcon(onDeleteClick) }
     }
+}
+
+@Composable
+private fun DeleteIcon(onDeleteClick: () -> Unit) {
+    IconButton(
+        modifier = Modifier.size(32.dp),
+        onClick = onDeleteClick
+    ) {
+        Icon(
+            modifier = Modifier.size(20.dp),
+            imageVector = Icons.Default.Clear,
+            contentDescription = null,
+        )
+    }
+}
+
+@Composable
+private fun RowScope.OnDragOverlay(
+    text: String,
+    textStyle: TextStyle,
+    translationX: Float,
+) {
+    Text(
+        text = text,
+        color = textStyle.color,
+        fontWeight = textStyle.fontWeight,
+        fontSize = textStyle.fontSize,
+        lineHeight = textStyle.lineHeight,
+        letterSpacing = textStyle.letterSpacing,
+        textDecoration = textStyle.textDecoration,
+        modifier = Modifier
+            .weight(1f)
+            .wrapContentHeight()
+            .graphicsLayer { this.translationX = translationX }
+    )
 }
 
 @Preview(name = "Checked", showBackground = true)
@@ -173,6 +219,19 @@ private fun PreviewNotCheckedLongFocused() {
             text = "\uD83D\uDCBB Finish coding the checklist feature, \uD83D\uDCBB Finish coding the checklist feature",
             checked = false,
             focusRequest = ElementFocusRequest(),
+        )
+    }
+}
+
+@Preview(name = "Dragged", showBackground = true)
+@Composable
+private fun PreviewDragged() {
+    ApplicationTheme {
+        EditableChecklistCheckbox(
+            text = "\uD83D\uDCBB Finish coding the checklist feature, \uD83D\uDCBB Finish coding the checklist feature",
+            checked = false,
+            focusRequest = ElementFocusRequest(),
+            isDragged = true
         )
     }
 }

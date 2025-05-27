@@ -1,5 +1,6 @@
 package com.jksol.keep.notes.data
 
+import android.util.Log
 import androidx.room.withTransaction
 import com.jksol.keep.notes.core.model.Checklist
 import com.jksol.keep.notes.core.model.ChecklistItem
@@ -9,7 +10,6 @@ import com.jksol.keep.notes.data.database.dao.ChecklistItemDao
 import com.jksol.keep.notes.data.database.table.ChecklistWithItems
 import com.jksol.keep.notes.data.mapper.toDomain
 import com.jksol.keep.notes.data.mapper.toEntity
-import com.jksol.keep.notes.util.moveItem
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.filter
@@ -142,24 +142,24 @@ class ChecklistRepository @Inject constructor(
         }
     }
 
-    suspend fun moveChecklistItems(checklistId: Long, fromItemId: Long, toItemId: Long) {
+    suspend fun saveItemsNewOrder(checklistId: Long, orderedItemIds: List<Long>) {
         withContext(NonCancellable) {
             database.withTransaction {
-                val allItems = checklistItemDao.getItemsForChecklist(checklistId = checklistId)
-
-                val fromIndex = allItems.indexOfFirst { it.id == fromItemId }
-                val toIndex = allItems.indexOfFirst { it.id == toItemId }
-
-                val updatedCollection = allItems.toMutableList().apply {
-                    moveItem(fromIndex = fromIndex, toIndex = toIndex)
-                    for (i in indices) {
-                        this[i] = this[i].copy(listPosition = i)
-                    }
+                val dbUncheckedItems = checklistItemDao.getUncheckedItemsForChecklist(checklistId = checklistId)
+                if (orderedItemIds.size != dbUncheckedItems.size) {
+                    return@withTransaction
+                }
+                val orderedPositions = dbUncheckedItems.map { it.listPosition }.sorted()
+                val updatedCollection = List(orderedItemIds.size) { index ->
+                    val itemId = orderedItemIds[index]
+                    val dbItem = dbUncheckedItems.find { it.id == itemId }
+                    dbItem?.copy(listPosition = orderedPositions[index]) ?: error("Item with id=$itemId not found")
                 }
                 checklistItemDao.insertChecklistItems(updatedCollection)
             }
         }
     }
+
 
     private suspend fun reorderItemPositions(checklistId: Long) {
         val reordered = checklistItemDao.getItemsForChecklist(checklistId = checklistId).mapIndexed { index, item ->

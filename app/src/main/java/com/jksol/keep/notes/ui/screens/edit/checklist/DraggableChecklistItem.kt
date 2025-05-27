@@ -42,6 +42,7 @@ fun ReorderableCollectionItemScope.DraggableChecklistItem(
     onDoneClicked: () -> Unit = {},
     onDeleteClick: () -> Unit = {},
     onDragCompleted: () -> Unit = {},
+    onItemFocused: () -> Unit,
 ) {
     var isDragging by remember { mutableStateOf(false) }
     val itemElevation by animateDpAsState(
@@ -84,6 +85,7 @@ fun ReorderableCollectionItemScope.DraggableChecklistItem(
                 onTextChanged = onTextChanged,
                 onDoneClicked = onDoneClicked,
                 onDeleteClick = onDeleteClick,
+                onItemFocused = onItemFocused,
             )
         }
     }
@@ -103,6 +105,7 @@ private fun Preview() {
                     DraggableChecklistItem(
                         title = "This is a title",
                         checked = false,
+                        onItemFocused = { },
                     )
                 }
             }

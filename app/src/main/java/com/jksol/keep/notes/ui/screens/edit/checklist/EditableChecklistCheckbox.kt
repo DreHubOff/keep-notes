@@ -61,6 +61,7 @@ fun EditableChecklistCheckbox(
     onTextChanged: (String) -> Unit = {},
     onDoneClicked: () -> Unit = {},
     onDeleteClick: () -> Unit = {},
+    onItemFocused: () -> Unit = {},
 ) {
     Row(
         modifier = modifier
@@ -71,6 +72,7 @@ fun EditableChecklistCheckbox(
         val focusRequester = remember { FocusRequester() }
         var isFocused by remember { mutableStateOf(false) }
         var textField by remember { mutableStateOf(TextFieldValue(text)) }
+        var textSelection by remember { mutableStateOf(textField.selection) }
         var previousText by remember { mutableStateOf(textField.text) }
 
         if (!isFocused && focusRequest?.isHandled() == false) {
@@ -84,6 +86,13 @@ fun EditableChecklistCheckbox(
             if (!isDragged && focusRequest?.isHandled() == false) {
                 focusRequester.requestFocus()
                 focusRequest.confirmProcessing()
+            }
+        }
+
+        LaunchedEffect(isDragged) {
+            if (!isDragged && isFocused) {
+                focusRequester.requestFocus()
+                textField = TextFieldValue(text, selection = textSelection)
             }
         }
 
@@ -116,6 +125,7 @@ fun EditableChecklistCheckbox(
                 onValueChange = { newValue ->
                     previousText = textField.text
                     textField = newValue
+                    textSelection = newValue.selection
                     onTextChanged(newValue.text)
                 },
                 modifier = Modifier
@@ -123,7 +133,12 @@ fun EditableChecklistCheckbox(
                     .wrapContentHeight()
                     .graphicsLayer { this.translationX = translationX }
                     .focusRequester(focusRequester)
-                    .onFocusChanged { focusState -> isFocused = focusState.isFocused }
+                    .onFocusChanged { focusState ->
+                        isFocused = focusState.isFocused
+                        if (isFocused) {
+                            onItemFocused()
+                        }
+                    }
                     .onKeyEvent { event ->
                         if (event.key == Key.Backspace) {
                             if (previousText.isEmpty()) {

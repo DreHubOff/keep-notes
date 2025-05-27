@@ -217,6 +217,10 @@ class EditChecklistViewModel @Inject constructor(
         }
     }
 
+    fun onItemFocused(item: UncheckedListItemUi) {
+        focusedItemIndex.set(_state.value.uncheckedItems.indexOf(item))
+    }
+
     private fun sendRequestFocusEvent(focusedPosition: Int) {
         focusedItemIndex.set(focusedPosition)
         lastFocusRequest = ElementFocusRequest()

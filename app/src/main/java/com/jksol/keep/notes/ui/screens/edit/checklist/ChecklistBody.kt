@@ -74,6 +74,7 @@ fun ChecklistBody(
     onDeleteClick: (UncheckedListItemUi) -> Unit = {},
     onMoveItems: (fromIndex: Int, toIndex: Int) -> Unit = { _, _ -> },
     onMoveCompleted: () -> Unit = { },
+    onItemFocused: (UncheckedListItemUi) -> Unit = {},
 ) {
     var titleCache by remember(title) { mutableStateOf(title) }
     val lazyListState = rememberLazyListState()
@@ -122,7 +123,8 @@ fun ChecklistBody(
                         onTextChanged = { onItemTextChanged(it, item) },
                         onDoneClicked = { onDoneClicked(item) },
                         onDeleteClick = { onDeleteClick(item) },
-                        onDragCompleted = { onMoveCompleted() }
+                        onDragCompleted = { onMoveCompleted() },
+                        onItemFocused = { onItemFocused(item) }
                     )
                 }
             }

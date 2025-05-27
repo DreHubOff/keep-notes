@@ -4,7 +4,6 @@ package com.jksol.keep.notes.ui.screens.edit.checklist
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.ExperimentalSharedTransitionApi
-import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
@@ -64,6 +63,7 @@ fun EditCheckListScreen() {
         onMoveItems = viewModel::onMoveItems,
         onTitleNextClick = viewModel::onTitleNextClick,
         onMoveCompleted = viewModel::onMoveCompleted,
+        onItemFocused = viewModel::onItemFocused,
     )
 }
 
@@ -83,6 +83,7 @@ fun ScreenContent(
     onMoveItems: (fromIndex: Int, toIndex: Int) -> Unit,
     onTitleNextClick: () -> Unit,
     onMoveCompleted: () -> Unit,
+    onItemFocused: (UncheckedListItemUi) -> Unit,
 ) {
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -122,6 +123,7 @@ fun ScreenContent(
                     onMoveItems = onMoveItems,
                     onTitleNextClick = onTitleNextClick,
                     onMoveCompleted = onMoveCompleted,
+                    onItemFocused = onItemFocused,
                 )
                 ModificationDateOverlay(
                     navigationBarPadding = innerPadding.calculateBottomPadding(),
@@ -151,6 +153,7 @@ private fun Preview(@PreviewParameter(EditChecklistScreenStateProvider::class) s
             onMoveItems = { _, _ -> },
             onTitleNextClick = {},
             onMoveCompleted = {},
+            onItemFocused = {},
         )
     }
 }

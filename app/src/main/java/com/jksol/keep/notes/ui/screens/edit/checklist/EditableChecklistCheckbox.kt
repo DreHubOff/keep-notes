@@ -71,7 +71,7 @@ fun EditableChecklistCheckbox(
         val focusRequester = remember { FocusRequester() }
         var isFocused by remember { mutableStateOf(false) }
         var textField by remember { mutableStateOf(TextFieldValue(text)) }
-        var backspaceClickedTimesOnEmptyText by remember { mutableStateOf(0) }
+        var previousText by remember { mutableStateOf(textField.text) }
 
         if (!isFocused && focusRequest?.isHandled() == false) {
             textField = TextFieldValue(text, selection = TextRange(textField.text.length))
@@ -114,9 +114,7 @@ fun EditableChecklistCheckbox(
             BasicTextField(
                 value = textField,
                 onValueChange = { newValue ->
-                    if (newValue.text.isNotEmpty()) {
-                        backspaceClickedTimesOnEmptyText = 0
-                    }
+                    previousText = textField.text
                     textField = newValue
                     onTextChanged(newValue.text)
                 },
@@ -128,12 +126,12 @@ fun EditableChecklistCheckbox(
                     .onFocusChanged { focusState -> isFocused = focusState.isFocused }
                     .onKeyEvent { event ->
                         if (event.key == Key.Backspace) {
-                            if (textField.text.isEmpty()) {
-                                backspaceClickedTimesOnEmptyText += 1
-                            }
-                            if (backspaceClickedTimesOnEmptyText >= 1) {
+                            if (previousText.isEmpty()) {
                                 onDeleteClick()
                                 return@onKeyEvent true
+                            }
+                            if (previousText.isNotEmpty() && textField.text.isEmpty()) {
+                                previousText = ""
                             }
                         }
                         false

@@ -60,12 +60,10 @@ fun EditCheckListScreen() {
         onItemChecked = viewModel::onItemChecked,
         onItemTextChanged = viewModel::onItemTextChanged,
         onDoneClicked = viewModel::onDoneClicked,
-        onFocusStateChanged = viewModel::onFocusStateChanged,
         onDeleteClick = viewModel::onDeleteClick,
         onMoveItems = viewModel::onMoveItems,
         onTitleNextClick = viewModel::onTitleNextClick,
         onMoveCompleted = viewModel::onMoveCompleted,
-        onTitleFocusStateChanged = viewModel::onTitleFocusStateChanged,
     )
 }
 
@@ -81,12 +79,10 @@ fun ScreenContent(
     onItemChecked: (UncheckedListItemUi) -> Unit,
     onItemTextChanged: (String, UncheckedListItemUi) -> Unit,
     onDoneClicked: (UncheckedListItemUi) -> Unit,
-    onFocusStateChanged: (Boolean, UncheckedListItemUi) -> Unit,
     onDeleteClick: (UncheckedListItemUi) -> Unit,
     onMoveItems: (fromIndex: Int, toIndex: Int) -> Unit,
     onTitleNextClick: () -> Unit,
     onMoveCompleted: () -> Unit,
-    onTitleFocusStateChanged: (Boolean) -> Unit,
 ) {
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -122,12 +118,10 @@ fun ScreenContent(
                     onItemChecked = onItemChecked,
                     onItemTextChanged = onItemTextChanged,
                     onDoneClicked = onDoneClicked,
-                    onItemFocusStateChanged = onFocusStateChanged,
                     onDeleteClick = onDeleteClick,
                     onMoveItems = onMoveItems,
                     onTitleNextClick = onTitleNextClick,
                     onMoveCompleted = onMoveCompleted,
-                    onTitleFocusStateChanged = onTitleFocusStateChanged,
                 )
                 ModificationDateOverlay(
                     navigationBarPadding = innerPadding.calculateBottomPadding(),
@@ -153,12 +147,10 @@ private fun Preview(@PreviewParameter(EditChecklistScreenStateProvider::class) s
             onItemChecked = {},
             onItemTextChanged = { _, _ -> },
             onDoneClicked = {},
-            onFocusStateChanged = { _, _ -> },
             onDeleteClick = {},
             onMoveItems = { _, _ -> },
             onTitleNextClick = {},
             onMoveCompleted = {},
-            onTitleFocusStateChanged = { _ -> },
         )
     }
 }

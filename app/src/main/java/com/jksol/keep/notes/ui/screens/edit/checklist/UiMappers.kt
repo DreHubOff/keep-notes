@@ -9,6 +9,7 @@ import com.jksol.keep.notes.ui.screens.edit.checklist.model.UncheckedListItemUi
 
 fun Checklist.toEditChecklistScreenState(
     focusedItemIndex: Int?,
+    focusRequest: ElementFocusRequest?,
     showCheckedItems: Boolean,
     modificationStatusMessage: String,
 ): EditChecklistScreenState {
@@ -17,17 +18,17 @@ fun Checklist.toEditChecklistScreenState(
         title = title,
         isPinned = isPinned,
         modificationStatusMessage = modificationStatusMessage,
-        uncheckedItems = items.toUncheckedListItemsUi(focusedItemIndex = focusedItemIndex),
+        uncheckedItems = items.toUncheckedListItemsUi(focusedItemIndex = focusedItemIndex, focusRequest = focusRequest),
         checkedItems = items.toCheckedListItemsUi(),
         showCheckedItems = showCheckedItems
     )
 }
 
-fun ChecklistItem.toUncheckedListItemUi(isFocused: Boolean = false): UncheckedListItemUi {
+fun ChecklistItem.toUncheckedListItemUi(focusRequest: ElementFocusRequest? = null): UncheckedListItemUi {
     return UncheckedListItemUi(
         id = id,
         text = title,
-        focusRequest = if (isFocused) ElementFocusRequest() else null,
+        focusRequest = focusRequest,
     )
 }
 
@@ -42,10 +43,15 @@ fun List<ChecklistItem>.toCheckedListItemsUi(): List<CheckedListItemUi> {
         }
 }
 
-fun List<ChecklistItem>.toUncheckedListItemsUi(focusedItemIndex: Int?): List<UncheckedListItemUi> {
+fun List<ChecklistItem>.toUncheckedListItemsUi(
+    focusedItemIndex: Int?,
+    focusRequest: ElementFocusRequest?,
+): List<UncheckedListItemUi> {
     return asSequence()
         .filter { !it.isChecked }
         .sortedBy { it.listPosition }
-        .mapIndexed { index, item -> item.toUncheckedListItemUi(isFocused = index == focusedItemIndex) }
+        .mapIndexed { index, item ->
+            item.toUncheckedListItemUi(focusRequest = if (index == focusedItemIndex) focusRequest else null)
+        }
         .toList()
 }

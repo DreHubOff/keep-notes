@@ -17,8 +17,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyItemScope
-import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.BasicTextField
@@ -39,10 +37,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -75,8 +71,6 @@ fun ChecklistBody(
     onItemChecked: (UncheckedListItemUi) -> Unit = {},
     onItemTextChanged: (String, UncheckedListItemUi) -> Unit = { _, _ -> },
     onDoneClicked: (UncheckedListItemUi) -> Unit = {},
-    onItemFocusStateChanged: (Boolean, UncheckedListItemUi) -> Unit = { _, _ -> },
-    onTitleFocusStateChanged: (Boolean) -> Unit = { _ -> },
     onDeleteClick: (UncheckedListItemUi) -> Unit = {},
     onMoveItems: (fromIndex: Int, toIndex: Int) -> Unit = { _, _ -> },
     onMoveCompleted: () -> Unit = { },
@@ -98,11 +92,7 @@ fun ChecklistBody(
     ) {
         item(key = "title") {
             Title(
-                modifier = Modifier
-                    .padding(horizontal = 16.dp)
-                    .onFocusChanged { focusState ->
-                        onTitleFocusStateChanged(focusState.isFocused)
-                    },
+                modifier = Modifier.padding(horizontal = 16.dp),
                 title = titleCache,
                 onTitleChanged = {
                     titleCache = it
@@ -131,7 +121,6 @@ fun ChecklistBody(
                         onCheckedChange = { onItemChecked(item) },
                         onTextChanged = { onItemTextChanged(it, item) },
                         onDoneClicked = { onDoneClicked(item) },
-                        onFocusStateChanged = { onItemFocusStateChanged(it, item) },
                         onDeleteClick = { onDeleteClick(item) },
                         onDragCompleted = { onMoveCompleted() }
                     )

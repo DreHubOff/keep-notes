@@ -34,6 +34,9 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -57,7 +60,6 @@ fun EditableChecklistCheckbox(
     onCheckedChange: (Boolean) -> Unit = {},
     onTextChanged: (String) -> Unit = {},
     onDoneClicked: () -> Unit = {},
-    onFocusStateChanged: (Boolean) -> Unit = {},
     onDeleteClick: () -> Unit = {},
 ) {
     Row(
@@ -69,6 +71,7 @@ fun EditableChecklistCheckbox(
         val focusRequester = remember { FocusRequester() }
         var isFocused by remember { mutableStateOf(false) }
         var textField by remember { mutableStateOf(TextFieldValue(text)) }
+        var backspaceClickedTimesOnEmptyText by remember { mutableStateOf(0) }
 
         if (!isFocused && focusRequest?.isHandled() == false) {
             textField = TextFieldValue(text, selection = TextRange(textField.text.length))
@@ -111,6 +114,9 @@ fun EditableChecklistCheckbox(
             BasicTextField(
                 value = textField,
                 onValueChange = { newValue ->
+                    if (newValue.text.isNotEmpty()) {
+                        backspaceClickedTimesOnEmptyText = 0
+                    }
                     textField = newValue
                     onTextChanged(newValue.text)
                 },
@@ -119,9 +125,18 @@ fun EditableChecklistCheckbox(
                     .wrapContentHeight()
                     .graphicsLayer { this.translationX = translationX }
                     .focusRequester(focusRequester)
-                    .onFocusChanged { focusState ->
-                        isFocused = focusState.isFocused
-                        onFocusStateChanged(focusState.isFocused)
+                    .onFocusChanged { focusState -> isFocused = focusState.isFocused }
+                    .onKeyEvent { event ->
+                        if (event.key == Key.Backspace) {
+                            if (textField.text.isEmpty()) {
+                                backspaceClickedTimesOnEmptyText += 1
+                            }
+                            if (backspaceClickedTimesOnEmptyText >= 1) {
+                                onDeleteClick()
+                                return@onKeyEvent true
+                            }
+                        }
+                        false
                     },
                 textStyle = textStyle,
                 enabled = !checked,
@@ -139,7 +154,7 @@ fun EditableChecklistCheckbox(
             )
         }
 
-        AnimatedVisibility(visible = focusRequest != null) { DeleteIcon(onDeleteClick) }
+        AnimatedVisibility(visible = isFocused) { DeleteIcon(onDeleteClick) }
     }
 }
 

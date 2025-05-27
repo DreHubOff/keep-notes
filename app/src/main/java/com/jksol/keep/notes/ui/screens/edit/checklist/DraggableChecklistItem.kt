@@ -40,7 +40,6 @@ fun ReorderableCollectionItemScope.DraggableChecklistItem(
     onCheckedChange: (Boolean) -> Unit = {},
     onTextChanged: (String) -> Unit = {},
     onDoneClicked: () -> Unit = {},
-    onFocusStateChanged: (Boolean) -> Unit = {},
     onDeleteClick: () -> Unit = {},
     onDragCompleted: () -> Unit = {},
 ) {
@@ -84,7 +83,6 @@ fun ReorderableCollectionItemScope.DraggableChecklistItem(
                 onCheckedChange = onCheckedChange,
                 onTextChanged = onTextChanged,
                 onDoneClicked = onDoneClicked,
-                onFocusStateChanged = onFocusStateChanged,
                 onDeleteClick = onDeleteClick,
             )
         }

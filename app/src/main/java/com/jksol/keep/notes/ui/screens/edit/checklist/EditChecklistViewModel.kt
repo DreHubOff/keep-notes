@@ -24,6 +24,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.getAndUpdate
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.update
@@ -52,11 +53,12 @@ class EditChecklistViewModel @Inject constructor(
         }
         .distinctUntilChanged()
 
-    private var focusedItemIndex = AtomicInteger(-1)
+    private var lastFocusRequest: ElementFocusRequest? = null
+    private val focusedItemIndex = AtomicInteger(-1)
 
     private var changeTitleJob: Job? = null
     private var pinnedStateSaveJob: Job? = null
-    private var itemTitleUpdateJob: Job? = null
+    private var itemTitleUpdateJobs: MutableMap<Long, Job> = mutableMapOf()
 
     fun onBackClick() {
         viewModelScope.launch(Dispatchers.Default) {
@@ -77,12 +79,6 @@ class EditChecklistViewModel @Inject constructor(
         }
     }
 
-    fun onTitleFocusStateChanged(isFocused: Boolean) {
-        if (isFocused) {
-            sendRequestFocusEvent(focusedPosition = -1)
-        }
-    }
-
     fun onPinCheckedChange(pinned: Boolean) {
         pinnedStateSaveJob?.cancel()
         pinnedStateSaveJob = viewModelScope.launch(Dispatchers.Default) {
@@ -99,7 +95,8 @@ class EditChecklistViewModel @Inject constructor(
             val updatedState = _state.updateAndGet {
                 it.copy(uncheckedItems = currentList + blankItem.toUncheckedListItemUi())
             }
-            sendRequestFocusEvent(focusedPosition = updatedState.uncheckedItems.lastIndex)
+            focusedItemIndex.set(updatedState.uncheckedItems.lastIndex)
+            lastFocusRequest = ElementFocusRequest()
             checklistRepository.saveChecklistItemAsLast(
                 checklistId = currentState.checklistId,
                 item = blankItem,
@@ -143,45 +140,32 @@ class EditChecklistViewModel @Inject constructor(
     }
 
     fun onItemTextChanged(text: String, item: UncheckedListItemUi) {
-        itemTitleUpdateJob?.cancel()
-        itemTitleUpdateJob = viewModelScope.launch(Dispatchers.Default) {
+        itemTitleUpdateJobs[item.id]?.cancel()
+        val newJob = viewModelScope.launch(Dispatchers.Default) {
             delay(600)
-            _state.update { updateItemText(state = it, itemId = item.id, text = text) }
-            val currentState = _state.value
+            val currentState = _state.updateAndGet { updateItemText(state = it, itemId = item.id, text = text) }
             checklistRepository.updateChecklistItemTitle(
                 itemId = item.id,
                 checklistId = currentState.checklistId,
                 title = text,
             )
         }
+        newJob.invokeOnCompletion { itemTitleUpdateJobs.remove(item.id) }
+        itemTitleUpdateJobs[item.id] = newJob
     }
 
     fun onDoneClicked(item: UncheckedListItemUi) {
         viewModelScope.launch(Dispatchers.Default) {
-            _state.update { insertItemAfterFocused(state = it, focusedItem = item) }
+            val oldState = _state.getAndUpdate { insertItemAfterFocused(state = it, focusedItem = item) }
+            val indexOfFocused = oldState.uncheckedItems.indexOf(item) + 1
             val currentState = _state.value
+            focusedItemIndex.set(indexOfFocused)
+            lastFocusRequest = ElementFocusRequest()
             checklistRepository.insertChecklistItemAfterFollowing(
                 checklistId = currentState.checklistId,
                 itemBefore = item.id,
                 itemToInsert = ChecklistItem.generateEmpty(),
             )
-        }
-    }
-
-    fun onFocusStateChanged(isFocused: Boolean, item: UncheckedListItemUi) {
-        viewModelScope.launch(Dispatchers.Default) {
-            val currentState = _state.value
-            if (isFocused) {
-                focusedItemIndex.set(currentState.uncheckedItems.indexOfFirst { it.id == item.id })
-            }
-            val newUncheckedItems = currentState.uncheckedItems.mapIndexed { index, item ->
-                if (focusedItemIndex.get() != index) {
-                    item.copy(focusRequest = null)
-                } else {
-                    item.copy(focusRequest = ElementFocusRequest().apply { confirmProcessing() })
-                }
-            }
-            _state.update { it.copy(uncheckedItems = newUncheckedItems) }
         }
     }
 
@@ -235,10 +219,11 @@ class EditChecklistViewModel @Inject constructor(
 
     private fun sendRequestFocusEvent(focusedPosition: Int) {
         focusedItemIndex.set(focusedPosition)
+        lastFocusRequest = ElementFocusRequest()
         _state.update { state ->
             val uncheckedItems = state.uncheckedItems.mapIndexed { index, item ->
                 if (index == focusedItemIndex.get()) {
-                    item.copy(focusRequest = ElementFocusRequest())
+                    item.copy(focusRequest = lastFocusRequest)
                 } else {
                     item.copy(focusRequest = null)
                 }
@@ -254,6 +239,7 @@ class EditChecklistViewModel @Inject constructor(
         }
         return checklist.toEditChecklistScreenState(
             focusedItemIndex = null,
+            focusRequest = lastFocusRequest,
             showCheckedItems = false,
             modificationStatusMessage = buildModificationDateText(checklist.modificationDate)
         )
@@ -264,10 +250,14 @@ class EditChecklistViewModel @Inject constructor(
             val stateFlow = checklistRepository
                 .observeChecklistById(checklistId)
                 .map { checklist ->
-                    val currentStatus = _state.value
+                    val currentState = _state.value
+                    if (currentState.uncheckedItems.getOrNull(focusedItemIndex.get())?.id == 0L) {
+                        lastFocusRequest = ElementFocusRequest()
+                    }
                     checklist.toEditChecklistScreenState(
                         focusedItemIndex = focusedItemIndex.get(),
-                        showCheckedItems = currentStatus.showCheckedItems,
+                        focusRequest = lastFocusRequest,
+                        showCheckedItems = currentState.showCheckedItems,
                         modificationStatusMessage = buildModificationDateText(checklist.modificationDate)
                     )
                 }
@@ -296,8 +286,6 @@ class EditChecklistViewModel @Inject constructor(
     ): EditChecklistScreenState {
         val uncheckedItems = state.uncheckedItems
         val newItemIndex = uncheckedItems.indexOf(focusedItem) + 1
-        focusedItemIndex.set(newItemIndex)
-
         val listAfterFocusedItem = if (newItemIndex == uncheckedItems.size) {
             emptyList()
         } else {

@@ -90,6 +90,7 @@ fun ChecklistBody(
         modifier = modifier,
         state = lazyListState,
         contentPadding = PaddingValues(bottom = contentPaddingBottom, top = 16.dp),
+        verticalArrangement = spacedBy(4.dp),
     ) {
         item(key = "title") {
             Title(

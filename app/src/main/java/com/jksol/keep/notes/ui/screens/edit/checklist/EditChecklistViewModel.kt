@@ -175,12 +175,13 @@ class EditChecklistViewModel @Inject constructor(
             val indexOfRemovedItem = currentState.uncheckedItems.indexOf(item)
             val indexOfFocusedItem = when {
                 currentState.uncheckedItems.size <= 1 -> -1
-                indexOfRemovedItem == 0 -> 0
+                indexOfRemovedItem == 0 -> 1
                 indexOfRemovedItem == currentState.uncheckedItems.lastIndex -> indexOfRemovedItem - 1
-                else -> indexOfRemovedItem
+                else -> indexOfRemovedItem + 1
             }
-            _state.update { it.copy(uncheckedItems = it.uncheckedItems - item) }
             sendRequestFocusEvent(focusedPosition = indexOfFocusedItem)
+            delay(50)
+            _state.update { it.copy(uncheckedItems = it.uncheckedItems - item) }
             checklistRepository.deleteChecklistItem(itemId = item.id, checklistId = currentState.checklistId)
         }
     }
@@ -195,9 +196,6 @@ class EditChecklistViewModel @Inject constructor(
         viewModelScope.launch(Dispatchers.Default) {
             val currentState = _state.value
             val uncheckedItems = currentState.uncheckedItems
-            val indexOfFocused = uncheckedItems.indexOfFirst { it.focusRequest != null }
-            sendRequestFocusEvent(focusedPosition = indexOfFocused)
-
             checklistRepository.saveItemsNewOrder(
                 checklistId = currentState.checklistId,
                 orderedItemIds = uncheckedItems.map { it.id },
@@ -218,7 +216,20 @@ class EditChecklistViewModel @Inject constructor(
     }
 
     fun onItemFocused(item: UncheckedListItemUi) {
-        focusedItemIndex.set(_state.value.uncheckedItems.indexOf(item))
+        _state.update { state ->
+            state.copy(
+                uncheckedItems = state
+                    .uncheckedItems
+                    .mapIndexed { index, listItem ->
+                        if (listItem.id == item.id) {
+                            focusedItemIndex.set(index)
+                            listItem.copy(focusRequest = ElementFocusRequest().apply { confirmProcessing() })
+                        } else {
+                            listItem.copy(focusRequest = null)
+                        }
+                    }
+            )
+        }
     }
 
     private fun sendRequestFocusEvent(focusedPosition: Int) {

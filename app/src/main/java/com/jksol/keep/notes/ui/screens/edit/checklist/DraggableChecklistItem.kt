@@ -79,7 +79,7 @@ fun ReorderableCollectionItemScope.DraggableChecklistItem(
                 modifier = Modifier,
                 text = title,
                 checked = checked,
-                isDragged = isDragging,
+                isDragging = isDragging,
                 focusRequest = focusRequest,
                 onCheckedChange = onCheckedChange,
                 onTextChanged = onTextChanged,

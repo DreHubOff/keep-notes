@@ -16,8 +16,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.jksol.keep.notes.R
 import com.jksol.keep.notes.demo_data.MainScreenDemoData
-import com.jksol.keep.notes.ui.shared.listitem.ItemChecklist
-import com.jksol.keep.notes.ui.screens.trash.listitem.TrashTextNote
+import com.jksol.keep.notes.ui.screens.main.listitem.MainChecklist
+import com.jksol.keep.notes.ui.screens.main.listitem.MainTextNote
 import com.jksol.keep.notes.ui.screens.main.model.MainScreenItem
 import com.jksol.keep.notes.ui.screens.main.search.MainSearchBarEntryPoint
 import com.jksol.keep.notes.ui.theme.ApplicationTheme
@@ -77,7 +77,7 @@ fun MainScreenStateIdle(
         items(listItems, key = { it.compositeKey }) { item ->
             when (item) {
                 is MainScreenItem.Checklist ->
-                    ItemChecklist(
+                    MainChecklist(
                         modifier = Modifier
                             .animateItem()
                             .padding(horizontal = 8.dp),
@@ -86,7 +86,7 @@ fun MainScreenStateIdle(
                     )
 
                 is MainScreenItem.TextNote ->
-                    TrashTextNote(
+                    MainTextNote(
                         modifier = Modifier
                             .animateItem()
                             .padding(horizontal = 8.dp),

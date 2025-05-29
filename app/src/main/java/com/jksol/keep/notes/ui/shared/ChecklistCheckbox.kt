@@ -1,4 +1,4 @@
-package com.jksol.keep.notes.ui.screens.main
+package com.jksol.keep.notes.ui.shared
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Row

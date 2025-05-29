@@ -1,4 +1,4 @@
-package com.jksol.keep.notes.ui.mapper
+package com.jksol.keep.notes.ui.screens.main.mapper
 
 import com.jksol.keep.notes.core.model.ApplicationMainDataType
 import com.jksol.keep.notes.core.model.Checklist

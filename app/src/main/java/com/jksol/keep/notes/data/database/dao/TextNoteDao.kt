@@ -18,17 +18,8 @@ interface TextNoteDao {
     @Query("SELECT * FROM $TEXT_NOTE_TABLE_NAME WHERE id = :id LIMIT 1")
     suspend fun getById(id: String): TextNoteEntity?
 
-    @Query("UPDATE $TEXT_NOTE_TABLE_NAME SET title = :newTitle WHERE id = :id")
-    suspend fun updateTitleById(id: Long, newTitle: String)
-
-    @Query("UPDATE $TEXT_NOTE_TABLE_NAME SET content = :newContent WHERE id = :id")
-    suspend fun updateContentById(id: Long, newContent: String)
-
     @Query("UPDATE $TEXT_NOTE_TABLE_NAME SET pinned = :pinned WHERE id = :id")
-    suspend fun updatePennedStateById(id: Long, pinned: Int)
-
-    @Query("UPDATE $TEXT_NOTE_TABLE_NAME SET modification_date = :date WHERE id = :id")
-    suspend fun updateModificationDateById(id: Long, date: OffsetDateTime)
+    suspend fun updatePinnedStateById(id: Long, pinned: Int)
 
     @Query(
         """

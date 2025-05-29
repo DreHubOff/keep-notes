@@ -1,21 +1,18 @@
 package com.jksol.keep.notes.ui.screens.main.listitem
 
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
 import com.jksol.keep.notes.demo_data.MainScreenDemoData
 import com.jksol.keep.notes.ui.screens.main.model.MainScreenItem
+import com.jksol.keep.notes.ui.shared.listitem.TextNoteCard
+import com.jksol.keep.notes.ui.shared.listitem.TextNoteCardData
 import com.jksol.keep.notes.ui.theme.ApplicationTheme
-
-private const val MAX_LINES_TITLE = 5
-private const val MAX_LINES_CONTENT = 10
 
 @Composable
 fun MainTextNote(
@@ -23,27 +20,24 @@ fun MainTextNote(
     item: MainScreenItem.TextNote,
     onClick: (() -> Unit)? = null,
 ) {
-    MainScreenItemContainer(
+    val cardData = remember(item) {
+        TextNoteCardData(
+            transitionKey = item.asTransitionKey("card"),
+            title = item.title,
+            content = item.content
+        )
+    }
+    TextNoteCard(
         modifier = modifier,
-        item = item,
-        maxTitleLines = MAX_LINES_TITLE,
+        item = cardData,
         onClick = onClick,
-        content = { contentModifier ->
-            if (item.content.isNotEmpty()) {
-                ContentText(modifier = contentModifier, textItem = item)
-            }
+        itemStatus = {
+            MainItemStatusIcons(
+                isPinned = item.isPinned,
+                pinTransitionKey = item.asTransitionKey("pin"),
+                hasScheduledReminder = item.hasScheduledReminder,
+            )
         }
-    )
-}
-
-@Composable
-private fun ContentText(modifier: Modifier, textItem: MainScreenItem.TextNote) {
-    Text(
-        modifier = modifier,
-        text = textItem.content,
-        color = MaterialTheme.colorScheme.onSurface,
-        maxLines = MAX_LINES_CONTENT,
-        overflow = TextOverflow.Ellipsis,
     )
 }
 

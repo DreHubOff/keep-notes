@@ -9,24 +9,25 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.sp
 import com.jksol.keep.notes.ui.screens.trash.model.TrashListItem
-import com.jksol.keep.notes.ui.shared.listitem.TextNoteCard
-import com.jksol.keep.notes.ui.shared.listitem.TextNoteCardData
+import com.jksol.keep.notes.ui.shared.listitem.ChecklistCard
+import com.jksol.keep.notes.ui.shared.listitem.ChecklistCardData
 import com.jksol.keep.notes.ui.theme.ApplicationTheme
 
 @Composable
-fun TrashTextNote(
+fun TrashChecklist(
     modifier: Modifier,
-    item: TrashListItem.TextNote,
+    item: TrashListItem.Checklist,
     onClick: () -> Unit,
 ) {
     val cardData = remember(item) {
-        TextNoteCardData(
+        ChecklistCardData(
             transitionKey = item.asTransitionKey("card"),
             title = item.title,
-            content = item.content,
+            items = item.items,
+            tickedItemsCount = item.tickedItems,
         )
     }
-    TextNoteCard(
+    ChecklistCard(
         modifier = modifier,
         item = cardData,
         onClick = onClick,
@@ -45,13 +46,19 @@ fun TrashTextNote(
 @Composable
 private fun Preview() {
     ApplicationTheme {
-        TrashTextNote(
+        TrashChecklist(
             modifier = Modifier,
-            item = TrashListItem.TextNote(
+            item = TrashListItem.Checklist(
                 id = 1,
                 title = "Title",
-                content = "Some content in this text note",
+                items = listOf(
+                    "1. Some content in this text note",
+                    "2. Some content in this text note",
+                    "3. Some content in this text note",
+                    "4. Some content in this text note",
+                ),
                 daysLeftMessage = "2 day left",
+                tickedItems = 2,
             ),
             onClick = {},
         )

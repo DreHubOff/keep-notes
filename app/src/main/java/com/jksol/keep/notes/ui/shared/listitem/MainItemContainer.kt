@@ -31,16 +31,13 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.jksol.keep.notes.ui.shared.sharedBoundsTransition
-import com.jksol.keep.notes.ui.shared.sharedElementTransition
 
 @Composable
 fun MainItemContainer(
     modifier: Modifier = Modifier,
     cardTransitionKey: Any,
-    titleTransitionKey: Any,
-    contentTransitionKey: Any,
     title: String,
-    maxTitleLines: Int,
+    maxTitleLines: Int = 5,
     onClick: (() -> Unit)?,
     itemStatus: (@Composable RowScope.() -> Unit)?,
     content: @Composable (Modifier) -> Unit,
@@ -53,20 +50,18 @@ fun MainItemContainer(
         enabled = onClick != null,
         onClick = { onClick?.invoke() },
     ) {
-        val contentModifier = Modifier.sharedElementTransition(transitionKey = contentTransitionKey)
         Box {
             if (title.isNotEmpty()) {
                 WithTitleNote(
-                    transitionKey = titleTransitionKey,
                     title = title,
                     itemStatus = itemStatus,
-                    content = { content(it.then(contentModifier)) },
+                    content = content,
                     maxTitleLines = maxTitleLines,
                 )
             } else {
                 WithoutTitleNote(
                     itemStatus = itemStatus,
-                    content = { content(it.then(contentModifier)) },
+                    content = content,
                 )
             }
             Box(modifier = Modifier
@@ -87,7 +82,6 @@ fun MainItemContainer(
 private fun WithTitleNote(
     title: String,
     maxTitleLines: Int,
-    transitionKey: Any,
     content: @Composable (Modifier) -> Unit,
     itemStatus: @Composable() (RowScope.() -> Unit)?,
 ) {
@@ -97,9 +91,7 @@ private fun WithTitleNote(
     ) {
         Row(horizontalArrangement = spacedBy(10.dp)) {
             TitleText(
-                modifier = Modifier
-                    .weight(1f)
-                    .sharedElementTransition(transitionKey = transitionKey),
+                modifier = Modifier.weight(1f),
                 title = title,
                 mixLines = maxTitleLines
             )
@@ -156,8 +148,6 @@ private fun PreviewWithStatusText() {
     MaterialTheme {
         MainItemContainer(
             cardTransitionKey = Unit,
-            titleTransitionKey = Unit,
-            contentTransitionKey = Unit,
             title = "Deleted Note",
             maxTitleLines = 1,
             onClick = {},
@@ -185,8 +175,6 @@ private fun WithIconStatusPreview() {
     MaterialTheme {
         MainItemContainer(
             cardTransitionKey = "preview_card_icon",
-            titleTransitionKey = "preview_title_icon",
-            contentTransitionKey = "preview_content_icon",
             title = "Trashed Reminder",
             maxTitleLines = 1,
             onClick = {},

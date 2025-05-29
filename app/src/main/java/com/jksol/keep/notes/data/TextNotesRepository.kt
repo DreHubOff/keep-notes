@@ -60,6 +60,7 @@ class TextNotesRepository @Inject constructor(
             dataSource.withTransaction {
                 textNoteDao.updateIsTrashedById(id = noteId, isTrashed = true)
                 textNoteDao.updateTrashedDateById(id = noteId, date = OffsetDateTime.now())
+                textNoteDao.updatePinnedStateById(id = noteId, pinned = 0)
             }
         }
     }

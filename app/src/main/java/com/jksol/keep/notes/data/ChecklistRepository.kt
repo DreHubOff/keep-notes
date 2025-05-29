@@ -164,6 +164,7 @@ class ChecklistRepository @Inject constructor(
             database.withTransaction {
                 checklistDao.updateIsTrashedById(id = checklistId, isTrashed = true)
                 checklistDao.updateTrashedDateById(id = checklistId, date = OffsetDateTime.now())
+                checklistDao.updatePinnedStateById(id = checklistId, isPinned = false)
             }
         }
     }

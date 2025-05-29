@@ -1,6 +1,7 @@
 package com.jksol.keep.notes.demo_data
 
 import com.jksol.keep.notes.ui.screens.main.model.MainScreenItem
+import com.jksol.keep.notes.ui.shared.listitem.TextNoteCardData
 import java.util.concurrent.atomic.AtomicLong
 
 object MainScreenDemoData {
@@ -8,6 +9,14 @@ object MainScreenDemoData {
     private val idsGen = AtomicLong(0)
 
     object TextNotes {
+        fun MainScreenItem.TextNote.asCardData(): TextNoteCardData {
+            return TextNoteCardData(
+                transitionKey = Unit,
+                title = title,
+                content = content,
+            )
+        }
+
         val welcomeBanner
             get() = MainScreenItem.TextNote(
                 id = idsGen.getAndIncrement(),

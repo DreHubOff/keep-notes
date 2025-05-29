@@ -30,6 +30,7 @@ private val LightColorScheme = lightColorScheme(
     onSurface = SemiGray,
     surfaceVariant = IceBlue,
     onSurfaceVariant = Color.Black,
+    error = BloodRed
 )
 
 @Composable

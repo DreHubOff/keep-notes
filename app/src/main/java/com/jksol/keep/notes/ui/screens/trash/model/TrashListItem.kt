@@ -26,14 +26,11 @@ sealed class TrashListItem {
     data class Checklist(
         override val id: Long,
         override val title: String,
-        val items: List<Item>,
+        val items: List<String>,
         val tickedItems: Int = 0,
         val hasTickedItems: Boolean = tickedItems > 0,
         override val daysLeftMessage: String,
     ) : TrashListItem() {
-
-        @Stable
-        data class Item(val text: String)
 
         override fun asTransitionKey(elementName: String): String = "${elementName}_checklist_$id"
     }

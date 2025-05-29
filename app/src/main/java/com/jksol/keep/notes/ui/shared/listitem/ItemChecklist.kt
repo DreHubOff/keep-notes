@@ -13,26 +13,28 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.jksol.keep.notes.R
-import com.jksol.keep.notes.ui.screens.main.ChecklistCheckbox
-import com.jksol.keep.notes.ui.screens.main.model.MainScreenItem
-
-private const val MAX_LINES_TITLE = 5
+import com.jksol.keep.notes.ui.shared.ChecklistCheckbox
 
 @Composable
-fun ItemChecklist(
+fun ChecklistCard(
     modifier: Modifier,
-    item: MainScreenItem.Checklist,
-    onClick: () -> Unit = {},
+    item: ChecklistCardData,
+    onClick: (() -> Unit)? = {},
     itemStatus: (@Composable RowScope.() -> Unit)?,
 ) {
     MainItemContainer(
         modifier = modifier,
-        item = item,
-        maxTitleLines = MAX_LINES_TITLE,
+        cardTransitionKey = item.transitionKey,
+        title = item.title,
         onClick = onClick,
+        itemStatus = itemStatus,
     ) { contentModifier ->
-        if (item.items.isNotEmpty() || item.hasTickedItems) {
-            ChecklistContent(modifier = contentModifier, item = item, onItemClicked = onClick)
+        if (item.items.isNotEmpty() || item.tickedItemsCount > 0) {
+            ChecklistContent(
+                modifier = contentModifier,
+                tickedItemsCount = item.tickedItemsCount,
+                visibleItems = item.items,
+            )
         }
     }
 }
@@ -40,18 +42,18 @@ fun ItemChecklist(
 @Composable
 private fun ChecklistContent(
     modifier: Modifier,
-    item: MainScreenItem.Checklist,
-    onItemClicked: () -> Unit,
+    tickedItemsCount: Int,
+    visibleItems: List<String>,
 ) {
     Column(
         modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(2.dp),
     ) {
-        ChecklistItems(item, onItemClicked)
-        if (item.hasTickedItems) {
+        ChecklistItems(items = visibleItems)
+        if (tickedItemsCount > 0) {
             Text(
                 modifier = Modifier.padding(horizontal = 6.dp),
-                text = stringResource(R.string.ticked_items_counter).format(item.tickedItems),
+                text = stringResource(R.string.ticked_items_counter).format(tickedItemsCount),
                 color = MaterialTheme.colorScheme.onSurface,
                 fontSize = 12.sp
             )
@@ -60,20 +62,16 @@ private fun ChecklistContent(
 }
 
 @Composable
-private fun ChecklistItems(
-    item: MainScreenItem.Checklist,
-    onItemClicked: () -> Unit = {},
-) {
+private fun ChecklistItems(items: List<String>) {
     Column(
         modifier = Modifier,
     ) {
-        item.items.forEach { checkListItem ->
+        items.forEach { checklistItem ->
             ChecklistCheckbox(
                 modifier = Modifier.fillMaxWidth(),
-                text = checkListItem.text,
-                checked = checkListItem.isChecked,
+                text = checklistItem,
+                checked = false,
                 enabled = false,
-                onClick = onItemClicked,
             )
         }
     }

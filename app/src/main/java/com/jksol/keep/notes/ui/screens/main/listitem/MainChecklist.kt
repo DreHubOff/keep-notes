@@ -1,0 +1,63 @@
+package com.jksol.keep.notes.ui.screens.main.listitem
+
+import androidx.compose.foundation.layout.padding
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewParameter
+import androidx.compose.ui.tooling.preview.PreviewParameterProvider
+import androidx.compose.ui.unit.dp
+import com.jksol.keep.notes.demo_data.MainScreenDemoData
+import com.jksol.keep.notes.ui.screens.main.model.MainScreenItem
+import com.jksol.keep.notes.ui.shared.listitem.ChecklistCard
+import com.jksol.keep.notes.ui.shared.listitem.ChecklistCardData
+import com.jksol.keep.notes.ui.theme.ApplicationTheme
+
+@Composable
+fun MainChecklist(
+    modifier: Modifier,
+    item: MainScreenItem.Checklist,
+    onClick: () -> Unit = {},
+) {
+    val rememberChecklistCardData = remember(item) {
+        ChecklistCardData(
+            transitionKey = item.asTransitionKey("card"),
+            title = item.title,
+            items = item.items.map { it.text },
+            tickedItemsCount = item.tickedItems,
+        )
+    }
+    ChecklistCard(
+        modifier = modifier,
+        item = rememberChecklistCardData,
+        onClick = if (item.interactive) onClick else null,
+        itemStatus = {
+            MainItemStatusIcons(
+                isPinned = item.isPinned,
+                pinTransitionKey = item.asTransitionKey("pin"),
+                hasScheduledReminder = item.hasScheduledReminder,
+            )
+        }
+    )
+}
+
+@Preview
+@Composable
+private fun Preview(@PreviewParameter(MainCheckListStateProvider::class) state: MainScreenItem.Checklist) {
+    ApplicationTheme {
+        MainChecklist(modifier = Modifier.padding(8.dp), item = state)
+    }
+}
+
+private class MainCheckListStateProvider : PreviewParameterProvider<MainScreenItem.Checklist> {
+    override val values: Sequence<MainScreenItem.Checklist>
+        get() = sequenceOf(
+            MainScreenDemoData.CheckLists.reminderPinnedChecklist,
+            MainScreenDemoData.CheckLists.reminderOnlyChecklist,
+            MainScreenDemoData.CheckLists.pinnedOnlyChecklist,
+            MainScreenDemoData.CheckLists.emptyTitleChecklist,
+            MainScreenDemoData.CheckLists.emptyContentChecklist,
+            MainScreenDemoData.CheckLists.longTitleChecklist,
+        )
+}

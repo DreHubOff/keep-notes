@@ -15,6 +15,7 @@ val SemiGray = Color(0x99000000)
 val IceBlue = Color(0xFFE7EEF6)
 val LightSkyBlue = Color(0xFFD4E2FF)
 val SoftGlacier = Color(0xFFF6F9FE)
+val BloodRed = Color(0xFFCD2D2D)
 
 val Peach = Color(0xFFFDD5B9)
 val Mint = Color(0xFFC1E9D7)

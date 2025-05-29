@@ -8,7 +8,7 @@ import com.jksol.keep.notes.core.interactor.ObserveApplicationMainTypeInteractor
 import com.jksol.keep.notes.data.ChecklistRepository
 import com.jksol.keep.notes.data.TextNotesRepository
 import com.jksol.keep.notes.data.preferences.UserPreferences
-import com.jksol.keep.notes.ui.mapper.toMainScreenItem
+import com.jksol.keep.notes.ui.screens.main.mapper.toMainScreenItem
 import com.jksol.keep.notes.ui.navigation.NavigationEventsHost
 import com.jksol.keep.notes.ui.screens.Route
 import com.jksol.keep.notes.ui.screens.main.model.MainScreenItem

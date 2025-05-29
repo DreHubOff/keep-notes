@@ -149,6 +149,7 @@ private fun DisplayState(
     openCheckListEditor: (MainScreenItem.Checklist?) -> Unit,
     onOpenMenuClick: () -> Unit,
 ) {
+    if (state == MainScreenState.EMPTY) return
     when {
         state.searchEnabled -> {
             MainScreenStateSearch(

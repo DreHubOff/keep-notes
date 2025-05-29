@@ -3,6 +3,7 @@
 package com.jksol.keep.notes.ui.screens.edit.checklist
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column

@@ -7,26 +7,30 @@ import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope.PlaceHolderSize
-import androidx.compose.animation.SharedTransitionScope.PlaceHolderSize.Companion.animatedSize
 import androidx.compose.animation.SharedTransitionScope.PlaceHolderSize.Companion.contentSize
 import androidx.compose.animation.SharedTransitionScope.ResizeMode
-import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.Spring.StiffnessMediumLow
+import androidx.compose.animation.core.VisibilityThreshold
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Rect
 
 val LocalSharedTransitionSettings = compositionLocalOf<SharedTransitionSettings?> { null }
 
 @Composable
 fun Modifier.sharedBoundsTransition(
     transitionKey: Any,
-    boundsTransform: BoundsTransform = BoundsTransform { _, _ -> tween(durationMillis = 600) },
-    enter: EnterTransition = fadeIn(animationSpec = tween(durationMillis = 300)),
-    exit: ExitTransition = fadeOut(animationSpec = tween(durationMillis = 300)),
+    boundsTransform: BoundsTransform = BoundsTransform { _, _ ->
+        spring(stiffness = StiffnessMediumLow, visibilityThreshold = Rect.VisibilityThreshold)
+    },
+    enter: EnterTransition = fadeIn(),
+    exit: ExitTransition = fadeOut(),
     resizeMode: ResizeMode = ResizeMode.RemeasureToBounds,
-    placeHolderSize: PlaceHolderSize = animatedSize,
+    placeHolderSize: PlaceHolderSize = contentSize,
     renderInOverlayDuringTransition: Boolean = true,
     zIndexInOverlay: Float = 0f,
 ): Modifier {
@@ -49,7 +53,9 @@ fun Modifier.sharedBoundsTransition(
 @Composable
 fun Modifier.sharedElementTransition(
     transitionKey: Any,
-    boundsTransform: BoundsTransform = BoundsTransform { _, _ -> tween(durationMillis = 500) },
+    boundsTransform: BoundsTransform = BoundsTransform { _, _ ->
+        spring(stiffness = StiffnessMediumLow, visibilityThreshold = Rect.VisibilityThreshold)
+    },
     placeHolderSize: PlaceHolderSize = contentSize,
     renderInOverlayDuringTransition: Boolean = true,
     zIndexInOverlay: Float = 0f,

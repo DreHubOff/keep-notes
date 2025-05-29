@@ -3,7 +3,6 @@
 package com.jksol.keep.notes
 
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -11,8 +10,10 @@ import androidx.compose.animation.AnimatedContentScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.animation.SharedTransitionScope
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
@@ -20,6 +21,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.TransformOrigin
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.NavHostController
@@ -46,6 +48,13 @@ class MainActivity : ComponentActivity() {
 
     @Inject
     lateinit var navigationEventsHost: NavigationEventsHost
+
+    private val defaultScreenEnterAnimation by lazy {
+        scaleIn(
+            animationSpec = tween(durationMillis = 300),
+            transformOrigin = TransformOrigin(1f, 1f)
+        ) + fadeIn(animationSpec = tween(300))
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -83,12 +92,12 @@ class MainActivity : ComponentActivity() {
                     MainScreen(noteEditingResult, checklistEditingResult)
                 }
             }
-            composable<Route.EditNoteScreen> {
+            composable<Route.EditNoteScreen>(enterTransition = { defaultScreenEnterAnimation }) {
                 NavigationRoute(sharedTransitionScope = this@BuildNavigationGraph) {
                     EditNoteScreen()
                 }
             }
-            composable<Route.EditChecklistScreen> {
+            composable<Route.EditChecklistScreen>(enterTransition = { defaultScreenEnterAnimation }) {
                 NavigationRoute(sharedTransitionScope = this@BuildNavigationGraph) {
                     EditCheckListScreen()
                 }

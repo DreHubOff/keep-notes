@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.wrapContentHeight
@@ -19,8 +20,9 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
@@ -38,8 +40,17 @@ fun EditNoteScreen() {
     val viewModel: EditNoteViewModel = hiltViewModel()
     val state by viewModel.state.collectAsState(EditNoteScreenState.None)
 
-    BackHandler {
+    val focusManager = LocalFocusManager.current
+    val keyboardManager = LocalSoftwareKeyboardController.current
+
+    val backAction = {
+        focusManager.clearFocus(force = true)
+        keyboardManager?.hide()
         viewModel.onBackClicked()
+    }
+
+    BackHandler {
+        backAction()
     }
 
     if (state !is EditNoteScreenState.None) {
@@ -47,8 +58,9 @@ fun EditNoteScreen() {
             state = state as EditNoteScreenState.Idle,
             onTitleChanged = viewModel::onTitleChanged,
             onContentChanged = viewModel::onContentChanged,
-            onBackClick = viewModel::onBackClicked,
+            onBackClick = { backAction() },
             onPinCheckedChange = viewModel::onPinCheckedChange,
+            onTitleNextClick = viewModel::onTitleNextClick,
             onDeleteClick = viewModel::moveToTrash,
         )
     }
@@ -61,6 +73,7 @@ fun ScreenContent(
     onContentChanged: (String) -> Unit = {},
     onBackClick: () -> Unit = {},
     onPinCheckedChange: (Boolean) -> Unit = {},
+    onTitleNextClick: () -> Unit = {},
     onDeleteClick: () -> Unit = {},
 ) {
     Scaffold(
@@ -86,6 +99,7 @@ fun ScreenContent(
                     state = state,
                     onTitleChanged = onTitleChanged,
                     onContentChanged = onContentChanged,
+                    onTitleNextClick = onTitleNextClick,
                 )
                 ModificationDateOverlay(
                     navigationBarPadding = innerPadding.calculateBottomPadding(),
@@ -101,25 +115,18 @@ private fun DisplayState(
     state: EditNoteScreenState,
     onTitleChanged: (String) -> Unit = {},
     onContentChanged: (String) -> Unit = {},
+    onTitleNextClick: () -> Unit = {},
 ) {
-    val scrollState = rememberScrollState()
-
     when (state) {
         is EditNoteScreenState.Idle -> {
-            val titleTransitionKey = remember(state.noteId) { state.asTransitionKey(elementName = "title") }
-            val contentTransitionKey = remember(state.noteId) { state.asTransitionKey(elementName = "content") }
             NoteBody(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .wrapContentHeight()
-                    .verticalScroll(scrollState)
-                    .padding(top = 16.dp, start = 16.dp, end = 16.dp, bottom = 60.dp),
+                modifier = Modifier,
                 title = state.title,
                 content = state.content,
-                titleTransitionKey = titleTransitionKey,
-                contentTransitionKey = contentTransitionKey,
+                contentFocusRequest = state.contentFocusRequest,
                 onTitleChanged = onTitleChanged,
                 onContentChanged = onContentChanged,
+                onTitleNextClick = onTitleNextClick,
             )
         }
 

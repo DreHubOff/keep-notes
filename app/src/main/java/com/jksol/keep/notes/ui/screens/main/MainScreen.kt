@@ -17,6 +17,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -43,8 +44,12 @@ fun MainScreen(
     checklistEditingResult: Route.EditChecklistScreen.Result?,
 ) {
     val viewModel = hiltViewModel<MainViewModel>(LocalActivity.current as ComponentActivity)
-    viewModel.processNoteEditingResult(noteEditingResult)
-    viewModel.processChecklistEditingResult(checklistEditingResult)
+    LaunchedEffect(noteEditingResult) {
+        viewModel.processNoteEditingResult(noteEditingResult)
+    }
+    LaunchedEffect(checklistEditingResult) {
+        viewModel.processChecklistEditingResult(checklistEditingResult)
+    }
     val state by viewModel.uiState.collectAsState(MainScreenState.EMPTY)
     ScreenContent(
         state,
@@ -109,6 +114,7 @@ private fun DisplayState(
     openTextNoteEditor: (MainScreenItem.TextNote?) -> Unit,
     openCheckListEditor: (MainScreenItem.Checklist?) -> Unit,
 ) {
+    if (state == MainScreenState.EMPTY) return
     when {
         state.searchEnabled -> {
             MainScreenStateSearch(

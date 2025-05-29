@@ -250,10 +250,12 @@ class EditChecklistViewModel @Inject constructor(
     private suspend fun loadInitialState(): EditChecklistScreenState {
         var checklist = checklistRepository.getChecklistById(initialChecklistId ?: 0)
         if (checklist == null) {
+            focusedItemIndex.set(0)
+            lastFocusRequest = ElementFocusRequest()
             checklist = checklistRepository.insertChecklist(Checklist.generateEmpty())
         }
         return checklist.toEditChecklistScreenState(
-            focusedItemIndex = null,
+            focusedItemIndex = focusedItemIndex.get(),
             focusRequest = lastFocusRequest,
             showCheckedItems = false,
             modificationStatusMessage = buildModificationDateText(checklist.modificationDate)

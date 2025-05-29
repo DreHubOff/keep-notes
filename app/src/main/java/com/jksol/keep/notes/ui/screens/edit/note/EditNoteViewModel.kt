@@ -7,6 +7,7 @@ import androidx.navigation.toRoute
 import com.jksol.keep.notes.core.interactor.BuildModificationDateTextInteractor
 import com.jksol.keep.notes.core.model.TextNote
 import com.jksol.keep.notes.data.TextNotesRepository
+import com.jksol.keep.notes.ui.focus.ElementFocusRequest
 import com.jksol.keep.notes.ui.navigation.NavigationEventsHost
 import com.jksol.keep.notes.ui.screens.Route
 import com.jksol.keep.notes.ui.screens.edit.note.model.EditNoteScreenState
@@ -18,6 +19,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.OffsetDateTime
 import javax.inject.Inject
@@ -85,11 +87,23 @@ class EditNoteViewModel @Inject constructor(
         }
     }
 
+    fun onTitleNextClick() {
+        _state.update { state ->
+            if (state is EditNoteScreenState.Idle) {
+                state.copy(contentFocusRequest = ElementFocusRequest())
+            } else {
+                state
+            }
+        }
+    }
+
     private fun loadInitialState() {
         viewModelScope.launch {
             var currentNote = textNotesRepository.getNoteById(initialNoteId)
+            var requestContentFocus = false
             if (currentNote == null) {
                 currentNote = textNotesRepository.saveTextNote(TextNote.generateEmpty())
+                requestContentFocus = true
             }
             _state.emit(
                 EditNoteScreenState.Idle(
@@ -98,7 +112,8 @@ class EditNoteViewModel @Inject constructor(
                     content = currentNote.content,
                     modificationStatusMessage = buildModificationDateText(currentNote.modificationDate),
                     reminderTime = "",
-                    isPinned = currentNote.isPinned
+                    isPinned = currentNote.isPinned,
+                    contentFocusRequest = if (requestContentFocus) ElementFocusRequest() else null
                 )
             )
         }

@@ -1,6 +1,7 @@
 package com.jksol.keep.notes.ui.screens.edit.note.model
 
 import androidx.compose.runtime.Stable
+import com.jksol.keep.notes.ui.focus.ElementFocusRequest
 
 sealed class EditNoteScreenState {
 
@@ -22,6 +23,7 @@ sealed class EditNoteScreenState {
         override val modificationStatusMessage: String = "",
         val reminderTime: String? = null,
         override val isPinned: Boolean = false,
+        val contentFocusRequest: ElementFocusRequest? = null,
     ) : EditNoteScreenState() {
 
         fun asTransitionKey(elementName: String) = "${elementName}_text_note_$noteId"

@@ -23,7 +23,7 @@ data class Checklist(
         fun generateEmpty() = Checklist(
             id = 0L,
             title = "",
-            items = emptyList(),
+            items = listOf(ChecklistItem.generateEmpty()),
             creationDate = OffsetDateTime.now(),
             modificationDate = OffsetDateTime.now(),
             isPinned = false,

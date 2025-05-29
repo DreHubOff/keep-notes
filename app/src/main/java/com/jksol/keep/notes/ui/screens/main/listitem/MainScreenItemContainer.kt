@@ -2,6 +2,7 @@
 
 package com.jksol.keep.notes.ui.screens.main.listitem
 
+import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -29,8 +30,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.jksol.keep.notes.demo_data.MainScreenDemoData
 import com.jksol.keep.notes.R
+import com.jksol.keep.notes.demo_data.MainScreenDemoData
 import com.jksol.keep.notes.ui.screens.main.model.MainScreenItem
 import com.jksol.keep.notes.ui.shared.sharedBoundsTransition
 import com.jksol.keep.notes.ui.shared.sharedElementTransition

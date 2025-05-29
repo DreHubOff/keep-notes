@@ -5,63 +5,87 @@ package com.jksol.keep.notes.ui.screens.edit.note
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.relocation.BringIntoViewRequester
+import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.jksol.keep.notes.demo_data.MainScreenDemoData
 import com.jksol.keep.notes.R
-import com.jksol.keep.notes.ui.shared.sharedElementTransition
+import com.jksol.keep.notes.demo_data.MainScreenDemoData
+import com.jksol.keep.notes.ui.focus.ElementFocusRequest
 import com.jksol.keep.notes.ui.theme.ApplicationTheme
+import kotlinx.coroutines.launch
 
 @Composable
 fun NoteBody(
     modifier: Modifier,
     title: String,
     content: String,
-    titleTransitionKey: Any = "",
-    contentTransitionKey: Any = "",
+    contentFocusRequest: ElementFocusRequest? = null,
     onTitleChanged: (String) -> Unit = {},
     onContentChanged: (String) -> Unit = {},
+    onTitleNextClick: () -> Unit = {},
 ) {
-    var titleCache by remember { mutableStateOf(title) }
-    var contentCache by remember { mutableStateOf(content) }
-    Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(16.dp)) {
-        Title(
-            modifier = Modifier.sharedElementTransition(transitionKey = titleTransitionKey),
-            title = titleCache,
-            onTitleChanged = {
-                titleCache = it
-                onTitleChanged(it)
-            },
-            onNextClick = {}
-        )
-        Content(
-            modifier = Modifier.sharedElementTransition(transitionKey = contentTransitionKey),
-            title = contentCache,
-            onContentChanged = {
-                contentCache = it
-                onContentChanged(it)
-            },
-            onDoneClick = {}
-        )
+    val bringIntoViewRequester = remember { BringIntoViewRequester() }
+    val lazyListState = rememberLazyListState()
+
+    LazyColumn(
+        state = lazyListState,
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(top = 16.dp, start = 16.dp, end = 16.dp)
+            .imePadding()
+            .then(modifier),
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+        contentPadding = PaddingValues(bottom = 60.dp)
+    ) {
+        item(key = "Title") {
+            Title(
+                modifier = Modifier,
+                title = title,
+                onTitleChanged = onTitleChanged,
+                onNextClick = onTitleNextClick,
+            )
+        }
+        item(key = "Content") {
+            Content(
+                modifier = Modifier,
+                title = content,
+                onContentChanged = onContentChanged,
+                contentFocusRequest = contentFocusRequest,
+                bringIntoViewRequester = bringIntoViewRequester,
+            )
+        }
     }
 }
 
@@ -72,9 +96,14 @@ private fun Title(
     onTitleChanged: (String) -> Unit = {},
     onNextClick: () -> Unit = {},
 ) {
+    var titleCache by remember { mutableStateOf(TextFieldValue(title)) }
+
     BasicTextField(
-        value = title,
-        onValueChange = onTitleChanged,
+        value = titleCache,
+        onValueChange = { newTextFieldValue ->
+            titleCache = newTextFieldValue
+            onTitleChanged(newTextFieldValue.text)
+        },
         modifier = modifier
             .fillMaxWidth()
             .wrapContentHeight(),
@@ -87,7 +116,7 @@ private fun Title(
         keyboardActions = KeyboardActions(onNext = { onNextClick() }),
         decorationBox = { innerTextField ->
             Box(Modifier.fillMaxWidth()) {
-                if (title.isEmpty()) {
+                if (titleCache.text.isEmpty()) {
                     Text(
                         text = stringResource(R.string.title),
                         color = MaterialTheme.colorScheme.onSurface,
@@ -106,23 +135,57 @@ private fun Content(
     title: String,
     modifier: Modifier = Modifier,
     onContentChanged: (String) -> Unit = {},
-    onDoneClick: () -> Unit = {},
+    contentFocusRequest: ElementFocusRequest?,
+    bringIntoViewRequester: BringIntoViewRequester,
 ) {
+
+    val focusRequester = remember { FocusRequester() }
+    var isTextFieldFocused by remember { mutableStateOf(false) }
+    var textFieldValue by remember { mutableStateOf(TextFieldValue(title)) }
+    val coroutineScope = rememberCoroutineScope()
+
+    LaunchedEffect(contentFocusRequest) {
+        if (contentFocusRequest == null) return@LaunchedEffect
+        if (!contentFocusRequest.isHandled()) {
+            focusRequester.requestFocus()
+            contentFocusRequest.confirmProcessing()
+            textFieldValue = textFieldValue.copy(selection = TextRange(textFieldValue.text.length))
+        }
+    }
+
     BasicTextField(
-        value = title,
-        onValueChange = onContentChanged,
+        value = textFieldValue,
+        onValueChange = { newContent ->
+            textFieldValue = newContent
+            onContentChanged(newContent.text)
+        },
         modifier = modifier
             .fillMaxWidth()
-            .wrapContentHeight(),
+            .wrapContentHeight()
+            .focusRequester(focusRequester)
+            .bringIntoViewRequester(bringIntoViewRequester)
+            .imePadding()
+            .onFocusChanged {
+                if (it.isFocused) {
+                    coroutineScope.launch {
+                        bringIntoViewRequester.bringIntoView()
+                    }
+                }
+                isTextFieldFocused = it.isFocused
+            },
+        onTextLayout = {
+            val cursorRect = it.getCursorRect(textFieldValue.selection.start)
+            coroutineScope.launch {
+                bringIntoViewRequester.bringIntoView(cursorRect)
+            }
+        },
         textStyle = TextStyle(
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             fontSize = 16.sp,
         ),
-        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-        keyboardActions = KeyboardActions(onDone = { onDoneClick() }),
         decorationBox = { innerTextField ->
             Box(Modifier.fillMaxWidth()) {
-                if (title.isEmpty()) {
+                if (textFieldValue.text.isEmpty()) {
                     Text(
                         text = stringResource(R.string.note),
                         color = MaterialTheme.colorScheme.onSurface,

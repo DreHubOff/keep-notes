@@ -35,7 +35,7 @@ class EditNoteViewModel @Inject constructor(
 
     private val initialNoteId = savedStateHandle.toRoute<Route.EditNoteScreen>().noteId ?: 0
 
-    private val _state = MutableStateFlow<EditNoteScreenState>(EditNoteScreenState.None)
+    private val _state = MutableStateFlow(EditNoteScreenState.EMPTY)
     val state: Flow<EditNoteScreenState> = _state
         .asStateFlow()
         .onStart { loadInitialState() }
@@ -49,9 +49,7 @@ class EditNoteViewModel @Inject constructor(
             contentModificationJob?.join()
             delay(600)
             val currentState = _state.value
-            if (currentState is EditNoteScreenState.Idle) {
-                updateIdleState(state = currentState, title = title)
-            }
+            updateNote(state = currentState, title = title)
         }
     }
 
@@ -61,9 +59,7 @@ class EditNoteViewModel @Inject constructor(
             titleModificationJob?.join()
             delay(600)
             val currentState = _state.value
-            if (currentState is EditNoteScreenState.Idle) {
-                updateIdleState(state = currentState, content = content)
-            }
+            updateNote(state = currentState, content = content)
         }
     }
 
@@ -72,7 +68,6 @@ class EditNoteViewModel @Inject constructor(
             contentModificationJob?.join()
             titleModificationJob?.join()
             val currentState = _state.value
-            if (currentState !is EditNoteScreenState.Idle) return@launch
             navigationEventsHost.navigateBack(
                 Route.EditNoteScreen.Result.KEY to
                         Route.EditNoteScreen.Result.Edited(noteId = currentState.noteId)
@@ -83,20 +78,12 @@ class EditNoteViewModel @Inject constructor(
     fun onPinCheckedChange(pinned: Boolean) {
         viewModelScope.launch(Dispatchers.Default) {
             val currentState = _state.value
-            if (currentState is EditNoteScreenState.Idle) {
-                updateIdleState(state = currentState, isPinned = pinned)
-            }
+            updateNote(state = currentState, isPinned = pinned)
         }
     }
 
     fun onTitleNextClick() {
-        _state.update { state ->
-            if (state is EditNoteScreenState.Idle) {
-                state.copy(contentFocusRequest = ElementFocusRequest())
-            } else {
-                state
-            }
-        }
+        _state.update { state -> state.copy(contentFocusRequest = ElementFocusRequest()) }
     }
 
     fun moveToTrash() {
@@ -117,29 +104,28 @@ class EditNoteViewModel @Inject constructor(
     }
 
     private fun loadInitialState() {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.Default) {
             var currentNote = textNotesRepository.getNoteById(initialNoteId)
             var requestContentFocus = false
             if (currentNote == null) {
                 currentNote = textNotesRepository.saveTextNote(TextNote.generateEmpty())
                 requestContentFocus = true
             }
-            _state.emit(
-                EditNoteScreenState.Idle(
+            _state.update {
+                it.copy(
                     noteId = currentNote.id,
                     title = currentNote.title,
                     content = currentNote.content,
                     modificationStatusMessage = buildModificationDateText(currentNote.modificationDate),
-                    reminderTime = "",
                     isPinned = currentNote.isPinned,
                     contentFocusRequest = if (requestContentFocus) ElementFocusRequest() else null
                 )
-            )
+            }
         }
     }
 
-    private suspend fun updateIdleState(
-        state: EditNoteScreenState.Idle,
+    private suspend fun updateNote(
+        state: EditNoteScreenState,
         title: String = state.title,
         content: String = state.content,
         isPinned: Boolean = state.isPinned,

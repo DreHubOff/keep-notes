@@ -1,5 +1,6 @@
 package com.jksol.keep.notes.ui.screens.main.model
 
+import com.jksol.keep.notes.ui.focus.ElementFocusRequest
 import com.jksol.keep.notes.ui.shared.SnackbarEvent
 
 data class MainScreenState(
@@ -9,6 +10,7 @@ data class MainScreenState(
     val snackbarEvent: SnackbarEvent?,
     val searchEnabled: Boolean = searchPrompt != null,
     val isWelcomeBanner: Boolean,
+    val showNavigationOverlay: ElementFocusRequest?,
 ) {
     companion object {
         val EMPTY: MainScreenState = MainScreenState(
@@ -17,6 +19,7 @@ data class MainScreenState(
             addItemsMode = false,
             snackbarEvent = null,
             isWelcomeBanner = false,
+            showNavigationOverlay = null,
         )
     }
 }

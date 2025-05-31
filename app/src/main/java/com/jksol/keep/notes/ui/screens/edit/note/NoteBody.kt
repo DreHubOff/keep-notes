@@ -43,6 +43,7 @@ import androidx.compose.ui.unit.sp
 import com.jksol.keep.notes.R
 import com.jksol.keep.notes.demo_data.MainScreenDemoData
 import com.jksol.keep.notes.ui.focus.ElementFocusRequest
+import com.jksol.keep.notes.ui.shared.sharedElementTransition
 import com.jksol.keep.notes.ui.theme.ApplicationTheme
 import kotlinx.coroutines.launch
 
@@ -51,6 +52,7 @@ fun NoteBody(
     modifier: Modifier,
     title: String,
     content: String,
+    titleTransitionKey: Any = Unit,
     contentFocusRequest: ElementFocusRequest? = null,
     onTitleChanged: (String) -> Unit = {},
     onContentChanged: (String) -> Unit = {},
@@ -71,7 +73,7 @@ fun NoteBody(
     ) {
         item(key = "Title") {
             Title(
-                modifier = Modifier,
+                modifier = Modifier.sharedElementTransition(titleTransitionKey),
                 title = title,
                 onTitleChanged = onTitleChanged,
                 onNextClick = onTitleNextClick,

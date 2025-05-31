@@ -8,12 +8,14 @@ import com.jksol.keep.notes.core.interactor.ObserveApplicationMainTypeInteractor
 import com.jksol.keep.notes.data.ChecklistRepository
 import com.jksol.keep.notes.data.TextNotesRepository
 import com.jksol.keep.notes.data.preferences.UserPreferences
+import com.jksol.keep.notes.ui.focus.ElementFocusRequest
 import com.jksol.keep.notes.ui.mapper.toMainScreenItem
 import com.jksol.keep.notes.ui.navigation.NavigationEventsHost
 import com.jksol.keep.notes.ui.screens.Route
 import com.jksol.keep.notes.ui.screens.main.model.MainScreenItem
 import com.jksol.keep.notes.ui.screens.main.model.MainScreenState
 import com.jksol.keep.notes.ui.shared.SnackbarEvent
+import com.jksol.keep.notes.ui.shared.defaultTransitionAnimationDuration
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
@@ -61,6 +63,10 @@ class MainViewModel @Inject constructor(
         viewModelScope.launch {
             exitSearch()
             exitAddModeSelection()
+            if (note == null) {
+                delay(250)
+            }
+            requestNavigationOverlay()
             navigationEventsHost.navigate(
                 Route.EditNoteScreen(noteId = note?.id)
             )
@@ -71,6 +77,10 @@ class MainViewModel @Inject constructor(
         viewModelScope.launch {
             exitSearch()
             exitAddModeSelection()
+            if (checklist == null) {
+                delay(250)
+            }
+            requestNavigationOverlay()
             navigationEventsHost.navigate(
                 Route.EditChecklistScreen(checklistId = checklist?.id)
             )
@@ -111,6 +121,7 @@ class MainViewModel @Inject constructor(
     fun processNoteEditingResult(result: Route.EditNoteScreen.Result?) {
         viewModelScope.launch(Dispatchers.Default) {
             val resultMessageEvent = validateNoteEditingResult(result ?: return@launch) ?: return@launch
+            delay(defaultTransitionAnimationDuration.toLong())
             _uiState.update { state -> state.copy(snackbarEvent = resultMessageEvent) }
         }
     }
@@ -118,6 +129,7 @@ class MainViewModel @Inject constructor(
     fun processChecklistEditingResult(result: Route.EditChecklistScreen.Result?) {
         viewModelScope.launch(Dispatchers.Default) {
             val resultMessageEvent = validateChecklistEditingResult(result ?: return@launch) ?: return@launch
+            delay(defaultTransitionAnimationDuration.toLong())
             _uiState.update { state -> state.copy(snackbarEvent = resultMessageEvent) }
         }
     }
@@ -144,10 +156,8 @@ class MainViewModel @Inject constructor(
         return null
     }
 
-    private suspend fun exitAddModeSelection() {
-        withContext(Dispatchers.Default) {
-            _uiState.update { state -> state.copy(addItemsMode = false) }
-        }
+    private fun exitAddModeSelection() {
+        _uiState.update { state -> state.copy(addItemsMode = false) }
     }
 
     private suspend fun exitSearch() {
@@ -181,6 +191,10 @@ class MainViewModel @Inject constructor(
             items
         }
         return currentState.copy(screenItems = screenItems, searchPrompt = searchPrompt, isWelcomeBanner = isWelcomeBanner)
+    }
+
+    private fun requestNavigationOverlay() {
+        _uiState.update { it.copy(showNavigationOverlay = ElementFocusRequest()) }
     }
 
     private fun buildWelcomeBanner(): MainScreenItem.TextNote {

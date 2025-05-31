@@ -14,6 +14,7 @@ import com.jksol.keep.notes.ui.screens.Route
 import com.jksol.keep.notes.ui.screens.edit.checklist.model.CheckedListItemUi
 import com.jksol.keep.notes.ui.screens.edit.checklist.model.EditChecklistScreenState
 import com.jksol.keep.notes.ui.screens.edit.checklist.model.UncheckedListItemUi
+import com.jksol.keep.notes.ui.shared.defaultTransitionAnimationDuration
 import com.jksol.keep.notes.util.moveItem
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -250,6 +251,7 @@ class EditChecklistViewModel @Inject constructor(
     private suspend fun loadInitialState(): EditChecklistScreenState {
         var checklist = checklistRepository.getChecklistById(initialChecklistId ?: 0)
         if (checklist == null) {
+            delay(defaultTransitionAnimationDuration.toLong())
             focusedItemIndex.set(0)
             lastFocusRequest = ElementFocusRequest()
             checklist = checklistRepository.insertChecklist(Checklist.generateEmpty())

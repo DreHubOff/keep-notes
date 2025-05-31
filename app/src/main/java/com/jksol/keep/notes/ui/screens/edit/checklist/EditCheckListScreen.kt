@@ -3,10 +3,10 @@
 package com.jksol.keep.notes.ui.screens.edit.checklist
 
 import androidx.activity.compose.BackHandler
-import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.systemBars
@@ -29,7 +29,10 @@ import com.jksol.keep.notes.ui.screens.edit.ModificationDateOverlay
 import com.jksol.keep.notes.ui.screens.edit.checklist.model.CheckedListItemUi
 import com.jksol.keep.notes.ui.screens.edit.checklist.model.EditChecklistScreenState
 import com.jksol.keep.notes.ui.screens.edit.checklist.model.UncheckedListItemUi
-import com.jksol.keep.notes.ui.shared.sharedBoundsTransition
+import com.jksol.keep.notes.ui.shared.mainItemCardTransition
+import com.jksol.keep.notes.ui.shared.rememberChecklistToEditorPinTransitionKey
+import com.jksol.keep.notes.ui.shared.rememberChecklistToEditorTitleTransitionKey
+import com.jksol.keep.notes.ui.shared.rememberChecklistToEditorTransitionKey
 import com.jksol.keep.notes.ui.theme.ApplicationTheme
 
 @Composable
@@ -87,51 +90,89 @@ fun ScreenContent(
     onItemFocused: (UncheckedListItemUi) -> Unit,
 ) {
     Scaffold(
-        modifier = Modifier.fillMaxSize(),
-        contentWindowInsets = WindowInsets.systemBars
+        modifier = Modifier
+            .fillMaxSize()
+            .mainItemCardTransition(rememberChecklistToEditorTransitionKey(state.checklistId)),
+        contentWindowInsets = WindowInsets.systemBars,
     ) { innerPadding ->
-        val transitionKey = remember(state.checklistId) { state.asTransitionKey(elementName = "card") }
         Column(
             modifier = Modifier
-                .sharedBoundsTransition(transitionKey = transitionKey)
-                .fillMaxSize()
+                .fillMaxSize(),
         ) {
             EditActionBar(
-                pinTransitionKey = remember(state.checklistId) { state.asTransitionKey(elementName = "pin") },
+                pinTransitionKey = rememberChecklistToEditorPinTransitionKey(state.checklistId),
                 systemBarInset = innerPadding.calculateTopPadding(),
                 pinned = state.isPinned,
                 onBackClick = onBackClick,
                 onPinCheckedChange = onPinCheckedChange
             )
-            Box {
-                val paddingBottom = remember(innerPadding) { innerPadding.calculateBottomPadding() + 40.dp }
-                ChecklistBody(
-                    modifier = Modifier
-                        .fillMaxSize(),
-                    contentPaddingBottom = paddingBottom,
-                    title = state.title,
-                    checkedItems = state.checkedItems,
-                    uncheckedItems = state.uncheckedItems,
-                    onTitleChanged = onTitleChanged,
-                    showCheckedItems = state.showCheckedItems,
-                    onAddChecklistItemClick = onAddChecklistItemClick,
-                    toggleCheckedItemsVisibility = toggleCheckedItemsVisibility,
-                    onItemUnchecked = onItemUnchecked,
-                    onItemChecked = onItemChecked,
-                    onItemTextChanged = onItemTextChanged,
-                    onDoneClicked = onDoneClicked,
-                    onDeleteClick = onDeleteClick,
-                    onMoveItems = onMoveItems,
-                    onTitleNextClick = onTitleNextClick,
-                    onMoveCompleted = onMoveCompleted,
-                    onItemFocused = onItemFocused,
-                )
-                ModificationDateOverlay(
-                    navigationBarPadding = innerPadding.calculateBottomPadding(),
-                    message = state.modificationStatusMessage,
+            if (state !== EditChecklistScreenState.EMPTY) {
+                Editor(
+                    innerPadding,
+                    state,
+                    onTitleChanged,
+                    onAddChecklistItemClick,
+                    toggleCheckedItemsVisibility,
+                    onItemUnchecked,
+                    onItemChecked,
+                    onItemTextChanged,
+                    onDoneClicked,
+                    onDeleteClick,
+                    onMoveItems,
+                    onTitleNextClick,
+                    onMoveCompleted,
+                    onItemFocused
                 )
             }
         }
+    }
+}
+
+@Composable
+private fun Editor(
+    innerPadding: PaddingValues,
+    state: EditChecklistScreenState,
+    onTitleChanged: (String) -> Unit,
+    onAddChecklistItemClick: () -> Unit,
+    toggleCheckedItemsVisibility: () -> Unit,
+    onItemUnchecked: (CheckedListItemUi) -> Unit,
+    onItemChecked: (UncheckedListItemUi) -> Unit,
+    onItemTextChanged: (String, UncheckedListItemUi) -> Unit,
+    onDoneClicked: (UncheckedListItemUi) -> Unit,
+    onDeleteClick: (UncheckedListItemUi) -> Unit,
+    onMoveItems: (fromIndex: Int, toIndex: Int) -> Unit,
+    onTitleNextClick: () -> Unit,
+    onMoveCompleted: () -> Unit,
+    onItemFocused: (UncheckedListItemUi) -> Unit,
+) {
+    Box {
+        val paddingBottom = remember(innerPadding) { innerPadding.calculateBottomPadding() + 40.dp }
+        ChecklistBody(
+            modifier = Modifier
+                .fillMaxSize(),
+            contentPaddingBottom = paddingBottom,
+            title = state.title,
+            titleTransitionKey = rememberChecklistToEditorTitleTransitionKey(state.checklistId),
+            checkedItems = state.checkedItems,
+            uncheckedItems = state.uncheckedItems,
+            onTitleChanged = onTitleChanged,
+            showCheckedItems = state.showCheckedItems,
+            onAddChecklistItemClick = onAddChecklistItemClick,
+            toggleCheckedItemsVisibility = toggleCheckedItemsVisibility,
+            onItemUnchecked = onItemUnchecked,
+            onItemChecked = onItemChecked,
+            onItemTextChanged = onItemTextChanged,
+            onDoneClicked = onDoneClicked,
+            onDeleteClick = onDeleteClick,
+            onMoveItems = onMoveItems,
+            onTitleNextClick = onTitleNextClick,
+            onMoveCompleted = onMoveCompleted,
+            onItemFocused = onItemFocused,
+        )
+        ModificationDateOverlay(
+            navigationBarPadding = innerPadding.calculateBottomPadding(),
+            message = state.modificationStatusMessage,
+        )
     }
 }
 

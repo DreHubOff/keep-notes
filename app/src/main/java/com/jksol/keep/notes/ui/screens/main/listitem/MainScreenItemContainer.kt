@@ -2,7 +2,6 @@
 
 package com.jksol.keep.notes.ui.screens.main.listitem
 
-import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -33,6 +32,12 @@ import androidx.compose.ui.unit.sp
 import com.jksol.keep.notes.R
 import com.jksol.keep.notes.demo_data.MainScreenDemoData
 import com.jksol.keep.notes.ui.screens.main.model.MainScreenItem
+import com.jksol.keep.notes.ui.shared.rememberChecklistToEditorPinTransitionKey
+import com.jksol.keep.notes.ui.shared.rememberChecklistToEditorTitleTransitionKey
+import com.jksol.keep.notes.ui.shared.rememberChecklistToEditorTransitionKey
+import com.jksol.keep.notes.ui.shared.rememberTextNotePinToEditorTransitionKey
+import com.jksol.keep.notes.ui.shared.rememberTextNoteToEditorTitleTransitionKey
+import com.jksol.keep.notes.ui.shared.rememberTextNoteToEditorTransitionKey
 import com.jksol.keep.notes.ui.shared.sharedBoundsTransition
 import com.jksol.keep.notes.ui.shared.sharedElementTransition
 import com.jksol.keep.notes.ui.theme.ApplicationTheme
@@ -45,26 +50,36 @@ fun MainScreenItemContainer(
     onClick: (() -> Unit)? = null,
     content: @Composable (Modifier) -> Unit,
 ) {
+    val containerTransitionKey = if (item is MainScreenItem.Checklist) {
+        rememberChecklistToEditorTransitionKey(item.id)
+    } else {
+        rememberTextNoteToEditorTransitionKey(item.id)
+    }
     OutlinedCard(
         modifier = modifier
             .fillMaxWidth()
             .wrapContentHeight()
-            .sharedBoundsTransition(transitionKey = remember(item.compositeKey) { item.asTransitionKey(elementName = "card") }),
+            .sharedBoundsTransition(transitionKey = containerTransitionKey),
         enabled = item.interactive,
         onClick = { onClick?.invoke() },
     ) {
-        val contentModifier = Modifier.sharedElementTransition(item.asTransitionKey(elementName = "content"))
         Box {
             if (item.title.isNotEmpty()) {
                 WithTitleNote(
+                    transitionKey =
+                    if (item is MainScreenItem.Checklist) {
+                        rememberChecklistToEditorTitleTransitionKey(item.id)
+                    } else {
+                        rememberTextNoteToEditorTitleTransitionKey(item.id)
+                    },
                     textItem = item,
-                    content = { content(it.then(contentModifier)) },
+                    content = content,
                     maxTitleLines = maxTitleLines,
                 )
             } else {
                 WithoutTitleNote(
                     textItem = item,
-                    content = { content(it.then(contentModifier)) },
+                    content = content,
                 )
             }
             Box(modifier = Modifier
@@ -86,16 +101,18 @@ private fun WithTitleNote(
     textItem: MainScreenItem,
     maxTitleLines: Int = 2,
     content: @Composable (Modifier) -> Unit,
+    transitionKey: Any,
 ) {
     Column(
-        modifier = Modifier.padding(16.dp),
+        modifier = Modifier
+            .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         Row(horizontalArrangement = spacedBy(10.dp)) {
             TitleText(
                 modifier = Modifier
                     .weight(1f)
-                    .sharedElementTransition(transitionKey = textItem.asTransitionKey("title")),
+                    .sharedElementTransition(transitionKey = transitionKey),
                 title = textItem.title,
                 mixLines = maxTitleLines
             )
@@ -134,6 +151,11 @@ private fun TitleText(modifier: Modifier, title: String, mixLines: Int) {
 
 @Composable
 private fun StatusIcons(textItem: MainScreenItem) {
+    val pinTransitionKey = if (textItem is MainScreenItem.Checklist) {
+        rememberChecklistToEditorPinTransitionKey(textItem.id)
+    } else {
+        rememberTextNotePinToEditorTransitionKey(textItem.id)
+    }
     Row(horizontalArrangement = spacedBy(10.dp)) {
         if (textItem.hasScheduledReminder) {
             Icon(
@@ -145,7 +167,7 @@ private fun StatusIcons(textItem: MainScreenItem) {
         if (textItem.isPinned) {
             Icon(
                 modifier = Modifier
-                    .sharedElementTransition(transitionKey = textItem.asTransitionKey("pin")),
+                    .sharedElementTransition(transitionKey = pinTransitionKey),
                 painter = painterResource(R.drawable.ic_material_keep),
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.onSurface

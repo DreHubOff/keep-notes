@@ -52,6 +52,7 @@ import com.jksol.keep.notes.R
 import com.jksol.keep.notes.demo_data.EditChecklistDemoData
 import com.jksol.keep.notes.ui.screens.edit.checklist.model.CheckedListItemUi
 import com.jksol.keep.notes.ui.screens.edit.checklist.model.UncheckedListItemUi
+import com.jksol.keep.notes.ui.shared.sharedElementTransition
 import com.jksol.keep.notes.ui.theme.ApplicationTheme
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyListState
@@ -64,6 +65,7 @@ fun ChecklistBody(
     checkedItems: List<CheckedListItemUi> = emptyList(),
     uncheckedItems: List<UncheckedListItemUi> = emptyList(),
     showCheckedItems: Boolean = false,
+    titleTransitionKey: Any = Unit,
     onTitleChanged: (String) -> Unit = {},
     onTitleNextClick: () -> Unit = {},
     onAddChecklistItemClick: () -> Unit = {},
@@ -96,7 +98,9 @@ fun ChecklistBody(
     ) {
         item(key = "title") {
             Title(
-                modifier = Modifier.padding(horizontal = 16.dp),
+                modifier = Modifier
+                    .padding(horizontal = 16.dp)
+                    .sharedElementTransition(transitionKey = titleTransitionKey),
                 title = titleCache,
                 onTitleChanged = {
                     titleCache = it

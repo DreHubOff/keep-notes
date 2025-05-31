@@ -3,6 +3,8 @@ package com.jksol.keep.notes.ui.screens.main
 import android.content.res.Configuration
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.LocalActivity
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
@@ -20,9 +22,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
@@ -34,8 +40,10 @@ import com.jksol.keep.notes.ui.screens.Route
 import com.jksol.keep.notes.ui.screens.main.fab.MainFabContainer
 import com.jksol.keep.notes.ui.screens.main.model.MainScreenItem
 import com.jksol.keep.notes.ui.screens.main.model.MainScreenState
+import com.jksol.keep.notes.ui.shared.defaultTransitionAnimationDuration
 import com.jksol.keep.notes.ui.theme.ApplicationTheme
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @Composable
@@ -59,6 +67,7 @@ fun MainScreen(
         onToggleSearchVisibility = viewModel::onToggleSearchVisibility,
         onNewSearchPrompt = viewModel::onNewSearchPrompt,
     )
+    NavigationOverlay(state)
 }
 
 @Composable
@@ -100,7 +109,7 @@ private fun ScreenContent(
                 openTextNoteEditor = openTextNoteEditor,
                 openCheckListEditor = openCheckListEditor,
             )
-            Overlay(enabled = showOverlay, onClick = { toggleAddModeSelection() })
+            FabsOverlay(enabled = showOverlay, onClick = { toggleAddModeSelection() })
         }
     }
 }
@@ -114,8 +123,11 @@ private fun DisplayState(
     openTextNoteEditor: (MainScreenItem.TextNote?) -> Unit,
     openCheckListEditor: (MainScreenItem.Checklist?) -> Unit,
 ) {
-    if (state == MainScreenState.EMPTY) return
     when {
+        state == MainScreenState.EMPTY -> {
+            MainScreenEmptyState(innerPadding = innerPadding)
+        }
+
         state.searchEnabled -> {
             MainScreenStateSearch(
                 innerPadding = innerPadding,
@@ -169,6 +181,45 @@ private fun handleSnackbarState(
         coroutineScope.launch {
             snackbarHostState.showSnackbar(message)
         }
+    }
+}
+
+@Composable
+private fun NavigationOverlay(
+    state: MainScreenState,
+    darkOverlayAlpha: Float = 0.1f,
+) {
+    var overlayVisible by remember { mutableStateOf(false) }
+    var overlayAlpha by remember(darkOverlayAlpha) { mutableFloatStateOf(darkOverlayAlpha) }
+    val navigationOverlayDuration = remember { (defaultTransitionAnimationDuration * 0.8f).toInt() }
+    LaunchedEffect(Unit, state.showNavigationOverlay) {
+        if (state == MainScreenState.EMPTY) return@LaunchedEffect
+        overlayVisible = true
+        if (state.showNavigationOverlay?.isHandled() == false) {
+            state.showNavigationOverlay.confirmProcessing()
+            overlayAlpha = 0f
+            delay(50)
+            overlayAlpha = darkOverlayAlpha
+        } else {
+            overlayAlpha = darkOverlayAlpha
+            delay(50)
+            overlayAlpha = 0f
+        }
+        delay(navigationOverlayDuration.toLong())
+        overlayVisible = false
+    }
+
+    if (overlayVisible) {
+        val animatedAlpha by animateFloatAsState(
+            targetValue = overlayAlpha,
+            animationSpec = tween(durationMillis = navigationOverlayDuration)
+        )
+
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.Black.copy(alpha = animatedAlpha))
+        )
     }
 }
 

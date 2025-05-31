@@ -7,13 +7,14 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.animation.AnimatedContentScope
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
@@ -36,6 +37,7 @@ import com.jksol.keep.notes.ui.screens.edit.note.EditNoteScreen
 import com.jksol.keep.notes.ui.screens.main.MainScreen
 import com.jksol.keep.notes.ui.shared.LocalSharedTransitionSettings
 import com.jksol.keep.notes.ui.shared.SharedTransitionSettings
+import com.jksol.keep.notes.ui.shared.defaultTransitionAnimationDuration
 import com.jksol.keep.notes.ui.theme.ApplicationTheme
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
@@ -51,9 +53,16 @@ class MainActivity : ComponentActivity() {
 
     private val defaultScreenEnterAnimation by lazy {
         scaleIn(
-            animationSpec = tween(durationMillis = 300),
+            animationSpec = tween(durationMillis = defaultTransitionAnimationDuration),
             transformOrigin = TransformOrigin(1f, 1f)
-        ) + fadeIn(animationSpec = tween(300))
+        )
+    }
+
+    private val defaultScreenExitAnimation by lazy {
+        scaleOut(
+            animationSpec = tween(durationMillis = defaultTransitionAnimationDuration),
+            transformOrigin = TransformOrigin(1f, 1f)
+        )
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -78,10 +87,11 @@ class MainActivity : ComponentActivity() {
                 .background(color = MaterialTheme.colorScheme.background),
             navController = navController,
             startDestination = Route.MainScreen,
-            popExitTransition = { fadeOut() },
-            popEnterTransition = { fadeIn() },
         ) {
-            composable<Route.MainScreen> { backStackEntry ->
+            composable<Route.MainScreen>(
+                enterTransition = { EnterTransition.None },
+                exitTransition = { ExitTransition.None },
+            ) { backStackEntry ->
                 NavigationRoute(sharedTransitionScope = this@BuildNavigationGraph) {
                     val noteEditingResult = backStackEntry
                         .savedStateHandle
@@ -92,12 +102,18 @@ class MainActivity : ComponentActivity() {
                     MainScreen(noteEditingResult, checklistEditingResult)
                 }
             }
-            composable<Route.EditNoteScreen>(enterTransition = { defaultScreenEnterAnimation }) {
+            composable<Route.EditNoteScreen>(
+                enterTransition = { defaultScreenEnterAnimation },
+                exitTransition = { defaultScreenExitAnimation },
+            ) {
                 NavigationRoute(sharedTransitionScope = this@BuildNavigationGraph) {
                     EditNoteScreen()
                 }
             }
-            composable<Route.EditChecklistScreen>(enterTransition = { defaultScreenEnterAnimation }) {
+            composable<Route.EditChecklistScreen>(
+                enterTransition = { defaultScreenEnterAnimation },
+                exitTransition = { defaultScreenExitAnimation },
+            ) {
                 NavigationRoute(sharedTransitionScope = this@BuildNavigationGraph) {
                     EditCheckListScreen()
                 }

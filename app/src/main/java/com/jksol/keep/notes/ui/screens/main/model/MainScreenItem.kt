@@ -12,8 +12,6 @@ sealed class MainScreenItem {
 
     val compositeKey: String by lazy { this::class.simpleName + id }
 
-    abstract fun asTransitionKey(elementName: String): String
-
     @Stable
     data class TextNote(
         override val id: Long,
@@ -22,9 +20,7 @@ sealed class MainScreenItem {
         override val isPinned: Boolean = false,
         override val hasScheduledReminder: Boolean = false,
         override val interactive: Boolean = true,
-    ) : MainScreenItem() {
-        override fun asTransitionKey(elementName: String): String = "${elementName}_text_note_$id"
-    }
+    ) : MainScreenItem()
 
     @Stable
     data class Checklist(
@@ -40,7 +36,5 @@ sealed class MainScreenItem {
 
         @Stable
         data class Item(val isChecked: Boolean, val text: String)
-
-        override fun asTransitionKey(elementName: String): String = "${elementName}_checklist_$id"
     }
 }

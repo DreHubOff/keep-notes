@@ -49,6 +49,9 @@ class ChecklistRepository @Inject constructor(
     fun observeNotTrashedChecklists(): Flow<List<Checklist>> =
         checklistDao.observeNotTrashed().map { list -> list.map { checklist -> checklist.toDomain() } }
 
+    fun observeTrashedChecklists(): Flow<List<Checklist>> =
+        checklistDao.observeTrashed().map { list -> list.map { checklist -> checklist.toDomain() } }
+
     suspend fun updateChecklistTitle(checklistId: Long, title: String) {
         withContext(NonCancellable) {
             checklistDao.updateChecklistTitleById(
@@ -106,10 +109,21 @@ class ChecklistRepository @Inject constructor(
         }
     }
 
-    suspend fun delete(checklist: Checklist) {
+    suspend fun delete(checklist: Checklist) = delete(listOf(checklist))
+
+    suspend fun delete(checklists: List<Checklist>) {
         withContext(NonCancellable) {
-            checklistDao.deleteChecklist(checklist.toEntity())
-            checklistItemDao.deleteItems(checklist.items.map { it.toEntity(checklist.id) })
+            database.withTransaction {
+                val items = checklists.flatMap { checklist ->
+                    checklist
+                        .items
+                        .map { item -> item.toEntity(checklist.id) }
+                }
+                checklistItemDao.deleteItems(items)
+
+                val checklistEntities = checklists.map(Checklist::toEntity)
+                checklistDao.deleteChecklists(checklistEntities)
+            }
         }
     }
 

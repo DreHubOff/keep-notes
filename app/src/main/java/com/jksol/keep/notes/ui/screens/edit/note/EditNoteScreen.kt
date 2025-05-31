@@ -1,9 +1,6 @@
-@file:OptIn(ExperimentalSharedTransitionApi::class)
-
 package com.jksol.keep.notes.ui.screens.edit.note
 
 import androidx.activity.compose.BackHandler
-import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -57,7 +54,7 @@ fun EditNoteScreen() {
         onBackClick = { backAction() },
         onPinCheckedChange = viewModel::onPinCheckedChange,
         onTitleNextClick = viewModel::onTitleNextClick,
-        onDeleteClick = viewModel::moveToTrash,
+        onMoveToTrashClick = viewModel::moveToTrash,
     )
 }
 
@@ -69,7 +66,7 @@ fun ScreenContent(
     onBackClick: () -> Unit = {},
     onPinCheckedChange: (Boolean) -> Unit = {},
     onTitleNextClick: () -> Unit = {},
-    onDeleteClick: () -> Unit = {},
+    onMoveToTrashClick: () -> Unit = {},
 ) {
     Scaffold(
         modifier = Modifier
@@ -85,9 +82,10 @@ fun ScreenContent(
                 pinTransitionKey = rememberTextNotePinToEditorTransitionKey(state.noteId),
                 systemBarInset = innerPadding.calculateTopPadding(),
                 pinned = state.isPinned,
+                trashed = state.isTrashed,
                 onBackClick = onBackClick,
                 onPinCheckedChange = onPinCheckedChange,
-                onDeleteClick = onDeleteClick,
+                onMoveToTrashClick = onMoveToTrashClick,
             )
             if (state !== EditNoteScreenState.EMPTY) {
                 Editor(state, onTitleChanged, onContentChanged, onTitleNextClick, innerPadding)

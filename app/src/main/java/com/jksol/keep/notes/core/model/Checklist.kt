@@ -20,6 +20,8 @@ data class Checklist(
     override val hasReminder: Boolean = false,
 ) : Parcelable, ApplicationMainDataType {
 
+    override fun isEmpty(): Boolean = title.trim().isEmpty() && (items.isEmpty() || items.all { it.title.trim().isEmpty() })
+
     companion object {
         fun generateEmpty() = Checklist(
             id = 0L,

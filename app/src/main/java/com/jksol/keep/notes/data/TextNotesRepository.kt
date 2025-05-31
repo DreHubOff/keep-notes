@@ -21,6 +21,9 @@ class TextNotesRepository @Inject constructor(
     fun observeNotTrashedNotes(): Flow<List<TextNote>> =
         textNoteDao.observeNotTrashed().map { list -> list.map { textNote -> textNote.toDomain() } }
 
+    fun observeTrashedNotes(): Flow<List<TextNote>> =
+        textNoteDao.observeTrashed().map { list -> list.map { textNote -> textNote.toDomain() } }
+
     suspend fun getNoteById(id: Long): TextNote? =
         textNoteDao.getById(id.toString())?.toDomain()
 
@@ -31,9 +34,11 @@ class TextNotesRepository @Inject constructor(
         return textNote.copy(id = id)
     }
 
-    suspend fun delete(textNote: TextNote) {
+    suspend fun delete(textNote: TextNote) = delete(listOf(textNote))
+
+    suspend fun delete(textNotes: List<TextNote>) {
         withContext(NonCancellable) {
-            textNoteDao.delete(textNote.toEntity())
+            textNoteDao.delete(textNotes.map(TextNote::toEntity))
         }
     }
 

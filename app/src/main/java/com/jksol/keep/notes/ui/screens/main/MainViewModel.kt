@@ -5,13 +5,14 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.jksol.keep.notes.R
 import com.jksol.keep.notes.core.interactor.ObserveApplicationMainTypeInteractor
+import com.jksol.keep.notes.core.interactor.PermanentlyDeleteOldTrashRecordsInteractor
 import com.jksol.keep.notes.data.ChecklistRepository
 import com.jksol.keep.notes.data.TextNotesRepository
 import com.jksol.keep.notes.data.preferences.UserPreferences
 import com.jksol.keep.notes.ui.focus.ElementFocusRequest
-import com.jksol.keep.notes.ui.screens.main.mapper.toMainScreenItem
 import com.jksol.keep.notes.ui.navigation.NavigationEventsHost
 import com.jksol.keep.notes.ui.screens.Route
+import com.jksol.keep.notes.ui.screens.main.mapper.toMainScreenItem
 import com.jksol.keep.notes.ui.screens.main.model.MainScreenItem
 import com.jksol.keep.notes.ui.screens.main.model.MainScreenState
 import com.jksol.keep.notes.ui.screens.main.model.MainSnackbarActionKey
@@ -31,6 +32,8 @@ import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.time.Duration
+import java.time.OffsetDateTime
 import javax.inject.Inject
 
 @HiltViewModel
@@ -40,6 +43,7 @@ class MainViewModel @Inject constructor(
     private val navigationEventsHost: NavigationEventsHost,
     private val textNotesRepository: TextNotesRepository,
     private val observeApplicationMainType: ObserveApplicationMainTypeInteractor,
+    private val permanentlyDeleteOldTrashRecords: PermanentlyDeleteOldTrashRecordsInteractor,
     private val checklistRepository: ChecklistRepository,
     private val userPreferences: UserPreferences,
 ) : ViewModel() {
@@ -147,6 +151,21 @@ class MainViewModel @Inject constructor(
         }
     }
 
+    fun openTrashClick() {
+        viewModelScope.launch {
+            navigationEventsHost.navigate(Route.TrashScreen)
+        }
+    }
+
+    fun clearTrashOldRecords() {
+        viewModelScope.launch(Dispatchers.Default) {
+            if (Duration.between(lastTrashClearOperationTime, OffsetDateTime.now()).toMinutes() > 1) {
+                permanentlyDeleteOldTrashRecords()
+                lastTrashClearOperationTime = OffsetDateTime.now()
+            }
+        }
+    }
+
     private suspend fun validateNoteEditingResult(result: Route.EditNoteScreen.Result): SnackbarEvent? {
         return when (result) {
             is Route.EditNoteScreen.Result.Edited -> onTextNoteEdited(result.noteId)
@@ -166,8 +185,7 @@ class MainViewModel @Inject constructor(
 
     private suspend fun onTextNoteEdited(noteId: Long): SnackbarEvent? {
         val createdNote = textNotesRepository.getNoteById(noteId) ?: return null
-        val noteIsEmpty = createdNote.title.isEmpty() && createdNote.content.isEmpty()
-        if (noteIsEmpty) {
+        if (createdNote.isEmpty()) {
             textNotesRepository.delete(createdNote)
             return SnackbarEvent(context.getString(R.string.empty_notes_discarded))
         }
@@ -193,10 +211,7 @@ class MainViewModel @Inject constructor(
 
     private suspend fun onChecklistEdited(checklistId: Long): SnackbarEvent? {
         val createdChecklist = checklistRepository.getChecklistById(checklistId) ?: return null
-        val checklistIsEmpty =
-            (createdChecklist.title.isEmpty() && createdChecklist.items.isEmpty()) ||
-                    (createdChecklist.title.isEmpty() && createdChecklist.items.sumOf { it.title.trim().length } == 0)
-        if (checklistIsEmpty) {
+        if (createdChecklist.isEmpty()) {
             checklistRepository.delete(createdChecklist)
             return SnackbarEvent(context.getString(R.string.empty_checklist_discarded))
         }
@@ -251,5 +266,10 @@ class MainViewModel @Inject constructor(
             content = context.getString(R.string.welcome_banner_content),
             interactive = false,
         )
+    }
+
+    companion object {
+
+        var lastTrashClearOperationTime: OffsetDateTime = OffsetDateTime.MIN
     }
 }

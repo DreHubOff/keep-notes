@@ -15,6 +15,9 @@ interface TextNoteDao {
     @Query("SELECT * FROM $TEXT_NOTE_TABLE_NAME WHERE is_trashed = 0")
     fun observeNotTrashed(): Flow<List<TextNoteEntity>>
 
+    @Query("SELECT * FROM $TEXT_NOTE_TABLE_NAME WHERE is_trashed = 1")
+    fun observeTrashed(): Flow<List<TextNoteEntity>>
+
     @Query("SELECT * FROM $TEXT_NOTE_TABLE_NAME WHERE id = :id LIMIT 1")
     suspend fun getById(id: String): TextNoteEntity?
 
@@ -44,6 +47,9 @@ interface TextNoteDao {
 
     @Delete
     suspend fun delete(textNote: TextNoteEntity)
+
+    @Delete
+    suspend fun delete(textNotes: List<TextNoteEntity>)
 
     @Query("UPDATE $TEXT_NOTE_TABLE_NAME SET is_trashed = :isTrashed WHERE id = :id")
     suspend fun updateIsTrashedById(id: Long, isTrashed: Boolean)

@@ -12,9 +12,8 @@ import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.animation.SharedTransitionScope
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.scaleIn
-import androidx.compose.animation.scaleOut
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
@@ -22,23 +21,26 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.TransformOrigin
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.jksol.keep.notes.ui.animation.defaultAnimationSpec
+import com.jksol.keep.notes.ui.animation.scaleInFromBottomRight
+import com.jksol.keep.notes.ui.animation.scaleOutToBottomRight
 import com.jksol.keep.notes.ui.navigation.NavigationEvent
 import com.jksol.keep.notes.ui.navigation.NavigationEventsHost
 import com.jksol.keep.notes.ui.screens.Route
 import com.jksol.keep.notes.ui.screens.edit.checklist.EditCheckListScreen
 import com.jksol.keep.notes.ui.screens.edit.note.EditNoteScreen
 import com.jksol.keep.notes.ui.screens.main.MainScreen
+import com.jksol.keep.notes.ui.screens.trash.TrashScreen
 import com.jksol.keep.notes.ui.shared.LocalSharedTransitionSettings
 import com.jksol.keep.notes.ui.shared.SharedTransitionSettings
-import com.jksol.keep.notes.ui.shared.defaultTransitionAnimationDuration
 import com.jksol.keep.notes.ui.theme.ApplicationTheme
+import com.jksol.keep.notes.util.getAndRemove
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collectLatest
@@ -50,20 +52,6 @@ class MainActivity : ComponentActivity() {
 
     @Inject
     lateinit var navigationEventsHost: NavigationEventsHost
-
-    private val defaultScreenEnterAnimation by lazy {
-        scaleIn(
-            animationSpec = tween(durationMillis = defaultTransitionAnimationDuration),
-            transformOrigin = TransformOrigin(1f, 1f)
-        )
-    }
-
-    private val defaultScreenExitAnimation by lazy {
-        scaleOut(
-            animationSpec = tween(durationMillis = defaultTransitionAnimationDuration),
-            transformOrigin = TransformOrigin(1f, 1f)
-        )
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -95,27 +83,35 @@ class MainActivity : ComponentActivity() {
                 NavigationRoute(sharedTransitionScope = this@BuildNavigationGraph) {
                     val noteEditingResult = backStackEntry
                         .savedStateHandle
-                        .get<Route.EditNoteScreen.Result>(Route.EditNoteScreen.Result.KEY)
+                        .getAndRemove<Route.EditNoteScreen.Result>(Route.EditNoteScreen.Result.KEY)
                     val checklistEditingResult = backStackEntry
                         .savedStateHandle
-                        .get<Route.EditChecklistScreen.Result>(Route.EditChecklistScreen.Result.KEY)
+                        .getAndRemove<Route.EditChecklistScreen.Result>(Route.EditChecklistScreen.Result.KEY)
                     MainScreen(noteEditingResult, checklistEditingResult)
                 }
             }
             composable<Route.EditNoteScreen>(
-                enterTransition = { defaultScreenEnterAnimation },
-                exitTransition = { defaultScreenExitAnimation },
+                enterTransition = { scaleInFromBottomRight() },
+                exitTransition = { scaleOutToBottomRight() },
             ) {
                 NavigationRoute(sharedTransitionScope = this@BuildNavigationGraph) {
                     EditNoteScreen()
                 }
             }
             composable<Route.EditChecklistScreen>(
-                enterTransition = { defaultScreenEnterAnimation },
-                exitTransition = { defaultScreenExitAnimation },
+                enterTransition = { scaleInFromBottomRight() },
+                exitTransition = { scaleOutToBottomRight() },
             ) {
                 NavigationRoute(sharedTransitionScope = this@BuildNavigationGraph) {
                     EditCheckListScreen()
+                }
+            }
+            composable<Route.TrashScreen>(
+                enterTransition = { fadeIn(animationSpec = defaultAnimationSpec()) },
+                exitTransition = { fadeOut(animationSpec = defaultAnimationSpec()) },
+            ) {
+                NavigationRoute(sharedTransitionScope = this@BuildNavigationGraph) {
+                    TrashScreen()
                 }
             }
         }

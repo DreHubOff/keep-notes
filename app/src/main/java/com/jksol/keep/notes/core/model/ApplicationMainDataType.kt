@@ -12,4 +12,6 @@ sealed interface ApplicationMainDataType : SortableListItem {
     val backgroundColor: NoteColor?
     val isTrashed: Boolean
     val trashedDate: OffsetDateTime?
+
+    fun isEmpty(): Boolean
 }

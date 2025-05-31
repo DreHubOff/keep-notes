@@ -1,8 +1,6 @@
-@file:OptIn(ExperimentalSharedTransitionApi::class)
-
 package com.jksol.keep.notes.ui.screens.trash
 
-import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement.Absolute.spacedBy
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -14,62 +12,61 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.jksol.keep.notes.ui.screens.trash.listitem.TrashChecklist
 import com.jksol.keep.notes.ui.screens.trash.listitem.TrashTextNote
 import com.jksol.keep.notes.ui.screens.trash.model.TrashListItem
 import com.jksol.keep.notes.ui.screens.trash.model.TrashScreenState
+import com.jksol.keep.notes.ui.screens.trash.model.UiIntent
 import com.jksol.keep.notes.ui.theme.ApplicationTheme
 
 @Composable
 fun TrashScreen() {
-//    val viewModel: EditNoteViewModel = hiltViewModel()
-//    val state by viewModel.state.collectAsState(EditNoteScreenState.None)
-//
-//    BackHandler {
-//        viewModel.onBackClicked()
-//    }
-//
-//    if (state !is EditNoteScreenState.None) {
-//        ScreenContent(
-//            state = state as EditNoteScreenState.Idle,
-//            onTitleChanged = viewModel::onTitleChanged,
-//            onContentChanged = viewModel::onContentChanged,
-//            onBackClick = viewModel::onBackClicked,
-//            onPinCheckedChange = viewModel::onPinCheckedChange,
-//            onDeleteClick = viewModel::moveToTrash,
-//        )
-//    }
+    val viewModel: TrashViewModel = hiltViewModel()
+
+    BackHandler {
+        viewModel.handleEvent(UiIntent.BackClicked)
+    }
+
+    val state by viewModel.state.collectAsState(TrashScreenState.EMPTY)
+
+    ScreenContent(
+        state = state,
+        onUiIntent = viewModel::handleEvent,
+    )
+
+    if (state.requestEmptyTrashConfirmation) {
+        ConfirmEmptyTrashDialog(
+            onEmptyTrashConfirmed = { viewModel.handleEvent(UiIntent.EmptyTrashConfirmed) },
+            onDismiss = { viewModel.handleEvent(UiIntent.DismissEmptyTrashConfirmation) }
+        )
+    }
 }
 
 @Composable
 private fun ScreenContent(
     state: TrashScreenState,
-    onBackClick: () -> Unit = {},
-    onItemClick: (TrashListItem) -> Unit = {},
+    onUiIntent: (UiIntent) -> Unit = {},
 ) {
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         contentWindowInsets = WindowInsets.systemBars,
-        topBar = {
-
-        }
     ) { innerPadding ->
         Column {
             TrashActionBar(
                 systemBarInset = innerPadding.calculateTopPadding(),
-                onBackClick = onBackClick,
-                showMenu = state.listItems.isNotEmpty()
+                showMenu = state.listItems.isNotEmpty(),
+                onBackClick = { onUiIntent(UiIntent.BackClicked) },
+                onEmptyTrashClick = { onUiIntent(UiIntent.EmptyTrash) }
             )
-            DisplayState(
-                state = state,
-                innerPadding = innerPadding,
-                onItemClick = onItemClick,
-            )
+            DisplayState(state = state, onUiIntent = onUiIntent)
         }
     }
 }
@@ -77,13 +74,20 @@ private fun ScreenContent(
 @Composable
 private fun DisplayState(
     state: TrashScreenState,
-    onItemClick: (TrashListItem) -> Unit,
-    innerPadding: PaddingValues,
+    onUiIntent: (UiIntent) -> Unit = {},
 ) {
+    if (state.listItems.isEmpty()) {
+        TrashEmptyList(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(bottom = 60.dp)
+        )
+        return
+    }
     LazyColumn(
         modifier = Modifier
             .fillMaxSize(),
-        contentPadding = PaddingValues(bottom = 120.dp),
+        contentPadding = PaddingValues(bottom = 120.dp, top = 16.dp),
         verticalArrangement = spacedBy(8.dp),
     ) {
         items(items = state.listItems, key = { it.compositeKey }) { item ->
@@ -94,7 +98,7 @@ private fun DisplayState(
                             .animateItem()
                             .padding(horizontal = 8.dp),
                         item = item,
-                        onClick = { onItemClick(item) },
+                        onClick = { onUiIntent(UiIntent.OpenChecklistScreen(item)) },
                     )
                 }
 
@@ -104,7 +108,7 @@ private fun DisplayState(
                             .animateItem()
                             .padding(horizontal = 8.dp),
                         item = item,
-                        onClick = { onItemClick(item) },
+                        onClick = { onUiIntent(UiIntent.OpenTextNoteScreen(item)) },
                     )
                 }
             }
@@ -124,10 +128,10 @@ private class EditNoteScreenStateProvider : PreviewParameterProvider<TrashScreen
     override val values: Sequence<TrashScreenState>
         get() = sequenceOf(
             // Empty list
-            TrashScreenState(listItems = emptyList()),
+            TrashScreenState.EMPTY.copy(listItems = emptyList()),
 
             // One text note
-            TrashScreenState(
+            TrashScreenState.EMPTY.copy(
                 listItems = listOf(
                     TrashListItem.TextNote(
                         id = 1L,
@@ -139,7 +143,7 @@ private class EditNoteScreenStateProvider : PreviewParameterProvider<TrashScreen
             ),
 
             // One checklist
-            TrashScreenState(
+            TrashScreenState.EMPTY.copy(
                 listItems = listOf(
                     TrashListItem.Checklist(
                         id = 2L,
@@ -152,7 +156,7 @@ private class EditNoteScreenStateProvider : PreviewParameterProvider<TrashScreen
             ),
 
             // Mixed short list
-            TrashScreenState(
+            TrashScreenState.EMPTY.copy(
                 listItems = listOf(
                     TrashListItem.TextNote(
                         id = 3L,
@@ -171,7 +175,7 @@ private class EditNoteScreenStateProvider : PreviewParameterProvider<TrashScreen
             ),
 
             // Longer mixed list
-            TrashScreenState(
+            TrashScreenState.EMPTY.copy(
                 listItems = listOf(
                     TrashListItem.TextNote(
                         id = 5L,

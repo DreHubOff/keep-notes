@@ -10,6 +10,7 @@ data class EditNoteScreenState(
     val reminderTime: String?,
     val title: String,
     val content: String,
+    val isTrashed: Boolean,
 ) {
 
     companion object {
@@ -21,6 +22,7 @@ data class EditNoteScreenState(
             reminderTime = null,
             title = "",
             content = "",
+            isTrashed = false,
         )
     }
 }

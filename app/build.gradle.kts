@@ -21,18 +21,23 @@ android {
         minSdk = 26
         targetSdk = 35
         versionCode = 1
-        versionName = "1.0"
+        versionName = "1.0.0"
     }
 
     buildTypes {
+        debug {
+            buildConfigField("int", "TRASH_ITEM_MAX_LIFETIME_SECONDS", "60 * 1") // 1 minutes
+        }
         release {
             signingConfig = signingConfigs.getByName("debug")
             isMinifyEnabled = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            buildConfigField("int", "TRASH_ITEM_MAX_LIFETIME_SECONDS", "60 * 60 * 24 * 7") // 7 days
         }
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 

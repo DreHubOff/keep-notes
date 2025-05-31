@@ -107,7 +107,7 @@ fun ScreenContent(
                 pinned = state.isPinned,
                 onBackClick = onBackClick,
                 onPinCheckedChange = onPinCheckedChange,
-                onDeleteClick = onDeleteChecklistClick,
+                onMoveToTrashClick = onDeleteChecklistClick,
             )
             if (state !== EditChecklistScreenState.EMPTY) {
                 Editor(

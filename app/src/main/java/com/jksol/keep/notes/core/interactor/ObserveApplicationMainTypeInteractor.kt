@@ -22,13 +22,6 @@ class ObserveApplicationMainTypeInteractor @Inject constructor(
                 val sequence = sequenceOf(textNotes, checklists)
                     .flatten()
                     .sortedByPinnedAndModificationDate()
-                    .filterNot {
-                        it.title.isEmpty() && when (it) {
-                            is TextNote -> it.content.isEmpty()
-                            is Checklist -> it.items.isEmpty()
-                            else -> false
-                        }
-                    }
                 if (searchPrompt.trim().isEmpty()) {
                     sequence
                 } else {

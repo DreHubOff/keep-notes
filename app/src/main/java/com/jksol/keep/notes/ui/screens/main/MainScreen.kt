@@ -39,6 +39,8 @@ import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.repeatOnLifecycle
 import com.jksol.keep.notes.demo_data.MainScreenDemoData.notesList
 import com.jksol.keep.notes.demo_data.MainScreenDemoData.welcomeBanner
 import com.jksol.keep.notes.ui.screens.Route
@@ -59,12 +61,12 @@ fun MainScreen(
     checklistEditingResult: Route.EditChecklistScreen.Result?,
 ) {
     val viewModel = hiltViewModel<MainViewModel>(LocalActivity.current as ComponentActivity)
-    LaunchedEffect(noteEditingResult) {
-        viewModel.processNoteEditingResult(noteEditingResult)
-    }
-    LaunchedEffect(checklistEditingResult) {
-        viewModel.processChecklistEditingResult(checklistEditingResult)
-    }
+    NotifyViewModelOnEditorResult(
+        viewModel = viewModel,
+        noteEditingResult = noteEditingResult,
+        checklistEditingResult = checklistEditingResult
+    )
+    NotifyViewModelWhenToClearTrash(viewModel)
 
     val state by viewModel.uiState.collectAsState(MainScreenState.EMPTY)
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
@@ -74,7 +76,8 @@ fun MainScreen(
         gesturesEnabled = drawerState.isOpen,
         drawerContent = {
             MainDrawer(
-                drawerState = drawerState
+                drawerState = drawerState,
+                openTrashClick = viewModel::openTrashClick,
             )
         }
     ) {
@@ -94,6 +97,20 @@ fun MainScreen(
         )
     }
     NavigationOverlay(state)
+}
+
+@Composable
+private fun NotifyViewModelOnEditorResult(
+    viewModel: MainViewModel,
+    noteEditingResult: Route.EditNoteScreen.Result?,
+    checklistEditingResult: Route.EditChecklistScreen.Result?,
+) {
+    LaunchedEffect(noteEditingResult) {
+        viewModel.processNoteEditingResult(noteEditingResult)
+    }
+    LaunchedEffect(checklistEditingResult) {
+        viewModel.processChecklistEditingResult(checklistEditingResult)
+    }
 }
 
 @Composable
@@ -270,6 +287,16 @@ private fun NavigationOverlay(
                 .fillMaxSize()
                 .background(Color.Black.copy(alpha = animatedAlpha))
         )
+    }
+}
+
+@Composable
+private fun NotifyViewModelWhenToClearTrash(viewModel: MainViewModel) {
+    val lifecycle = LocalLifecycleOwner.current.lifecycle
+    LaunchedEffect(viewModel, lifecycle) {
+        lifecycle.repeatOnLifecycle(state = androidx.lifecycle.Lifecycle.State.RESUMED) {
+            viewModel.clearTrashOldRecords()
+        }
     }
 }
 

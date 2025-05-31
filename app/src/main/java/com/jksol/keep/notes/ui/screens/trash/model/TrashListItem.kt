@@ -10,17 +10,13 @@ sealed class TrashListItem {
 
     val compositeKey: String by lazy { this::class.simpleName + id }
 
-    abstract fun asTransitionKey(elementName: String): String
-
     @Stable
     data class TextNote(
         override val id: Long,
         override val title: String,
         val content: String,
         override val daysLeftMessage: String,
-    ) : TrashListItem() {
-        override fun asTransitionKey(elementName: String): String = "${elementName}_text_note_$id"
-    }
+    ) : TrashListItem()
 
     @Stable
     data class Checklist(
@@ -30,8 +26,5 @@ sealed class TrashListItem {
         val tickedItems: Int = 0,
         val hasTickedItems: Boolean = tickedItems > 0,
         override val daysLeftMessage: String,
-    ) : TrashListItem() {
-
-        override fun asTransitionKey(elementName: String): String = "${elementName}_checklist_$id"
-    }
+    ) : TrashListItem()
 }

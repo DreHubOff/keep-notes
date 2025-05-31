@@ -4,7 +4,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material3.DrawerState
 import androidx.compose.material3.DrawerValue
@@ -18,6 +17,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -69,7 +69,12 @@ fun MainDrawer(
         NavigationDrawerItem(
             modifier = Modifier.padding(horizontal = 16.dp),
             label = { Text(text = stringResource(R.string.trash)) },
-            icon = { Icon(imageVector = Icons.Outlined.Delete, contentDescription = null) },
+            icon = {
+                Icon(
+                    painter = painterResource(R.drawable.ic_delete),
+                    contentDescription = null
+                )
+            },
             selected = false,
             onClick = {
                 coroutineScope.launch {

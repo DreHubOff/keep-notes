@@ -16,7 +16,7 @@ import androidx.compose.ui.graphics.Color
 @Composable
 fun FabsOverlay(enabled: Boolean, onClick: () -> Unit) {
     val overlayColor by animateColorAsState(
-        targetValue = if (enabled) Color.Black.copy(alpha = 0.2f) else Color.Transparent,
+        targetValue = if (enabled) Color.Black.copy(alpha = 0.4f) else Color.Transparent,
         animationSpec = tween(durationMillis = 300),
         label = "OverlayFade"
     )

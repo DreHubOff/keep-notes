@@ -11,6 +11,7 @@ import com.jksol.keep.notes.ui.focus.ElementFocusRequest
 import com.jksol.keep.notes.ui.navigation.NavigationEventsHost
 import com.jksol.keep.notes.ui.screens.Route
 import com.jksol.keep.notes.ui.screens.edit.note.model.EditNoteScreenState
+import com.jksol.keep.notes.ui.shared.defaultTransitionAnimationDuration
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -101,6 +102,7 @@ class EditNoteViewModel @Inject constructor(
             var currentNote = textNotesRepository.getNoteById(initialNoteId)
             var requestContentFocus = false
             if (currentNote == null) {
+                delay(defaultTransitionAnimationDuration.toLong())
                 currentNote = textNotesRepository.saveTextNote(TextNote.generateEmpty())
                 requestContentFocus = true
             }
@@ -111,7 +113,8 @@ class EditNoteViewModel @Inject constructor(
                     content = currentNote.content,
                     modificationStatusMessage = buildModificationDateText(currentNote.modificationDate),
                     isPinned = currentNote.isPinned,
-                    contentFocusRequest = if (requestContentFocus) ElementFocusRequest() else null
+                    contentFocusRequest = if (requestContentFocus) ElementFocusRequest() else null,
+                    isTrashed = currentNote.isTrashed,
                 )
             }
         }

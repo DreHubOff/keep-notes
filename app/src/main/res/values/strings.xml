@@ -4,7 +4,7 @@
     <string name="empty_list_desc">List is empty</string>
     <string name="notes_you_add_appear_here">Notes you add appear here</string>
     <string name="search_notes">Search Notes</string>
-    <string name="ticked_items_counter">+ %d ticked item</string>
+    <string name="ticked_items_counter">+ %1$d ticked item</string>
     <string name="fab_add_note">Text</string>
     <string name="fab_add_text_note_desc">Add text note</string>
 
@@ -24,10 +24,10 @@
     <string name="welcome_banner_title">"Welcome to Your Notes! ✨ "</string>
     <string name="welcome_banner_content">This is where you can quickly save notes after calls — whether it’s an address, a follow-up task, or something you don’t want to forget.</string>
     <string name="edited_just_now">Edited just now</string>
-    <string name="edited_pattern">Edited %s</string>
+    <string name="edited_pattern">Edited %1$s</string>
     <string name="drag_current_item">Drag current item</string>
     <string name="add_item">Add item</string>
-    <string name="checked_item_count_pattern">%d checked item</string>
+    <string name="checked_item_count_pattern">%1$d checked item</string>
     <string name="action_add_reminder">Add Reminder</string>
     <string name="action_delete">Delete</string>
     <string name="action_share">Share</string>
@@ -43,5 +43,6 @@
     <string name="confirm_empty_trash_message">All notes in Trash will be permanently deleted.</string>
     <string name="confirm_empty_trash">Empty Trash</string>
     <string name="cancel">Cancel</string>
+    <string name="trashed_item_day_left_pattern">%1$d day left</string>
 
 </resources>

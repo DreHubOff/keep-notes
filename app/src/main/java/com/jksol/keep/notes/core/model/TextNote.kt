@@ -17,6 +17,9 @@ data class TextNote(
     override val trashedDate: OffsetDateTime?,
     override val hasReminder: Boolean,
 ) : Parcelable, ApplicationMainDataType {
+
+    override fun isEmpty(): Boolean = title.trim().isEmpty() && content.trim().isEmpty()
+
     companion object {
         fun generateEmpty() = TextNote(
             id = 0,

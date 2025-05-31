@@ -20,6 +20,10 @@ interface ChecklistDao {
     fun observeNotTrashed(): Flow<List<ChecklistWithItems>>
 
     @Transaction
+    @Query("SELECT * FROM $CHECKLIST_TABLE_NAME WHERE is_trashed = 1")
+    fun observeTrashed(): Flow<List<ChecklistWithItems>>
+
+    @Transaction
     @Query("SELECT * FROM $CHECKLIST_TABLE_NAME WHERE id = :id")
     fun observeChecklistWithItemsById(id: Long): Flow<List<ChecklistWithItems>>
 
@@ -60,6 +64,9 @@ interface ChecklistDao {
 
     @Delete
     suspend fun deleteChecklist(entity: ChecklistEntity)
+
+    @Delete
+    suspend fun deleteChecklists(entities: List<ChecklistEntity>)
 
     @Query("UPDATE $CHECKLIST_TABLE_NAME SET is_trashed = :isTrashed WHERE id = :id")
     suspend fun updateIsTrashedById(id: Long, isTrashed: Boolean)

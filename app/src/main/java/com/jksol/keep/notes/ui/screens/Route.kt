@@ -42,4 +42,7 @@ sealed class Route {
             }
         }
     }
+
+    @Serializable
+    data object TrashScreen : Route()
 }

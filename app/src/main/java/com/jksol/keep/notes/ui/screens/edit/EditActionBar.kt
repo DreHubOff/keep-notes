@@ -16,6 +16,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
@@ -37,8 +38,9 @@ fun EditActionBar(
     onBackClick: () -> Unit = {},
     onPinCheckedChange: (Boolean) -> Unit = {},
     onAddReminderClick: () -> Unit = {},
-    onDeleteClick: () -> Unit = {},
+    onMoveToTrashClick: () -> Unit = {},
     onShareClick: () -> Unit = {},
+    trashed: Boolean = false,
 ) {
     val topInsetHeight = remember {
         systemBarInset
@@ -58,29 +60,62 @@ fun EditActionBar(
             }
         },
         actions = {
-            var checked by remember(pinned) { mutableStateOf(pinned) }
-            PinCheckbox(
-                modifier = Modifier
-                    .sharedElementTransition(
-                        transitionKey = pinTransitionKey,
-                    ),
-                isChecked = checked,
-                onCheckedChange = {
-                    onPinCheckedChange(it)
-                    checked = it
-                },
-                contentDescription = stringResource(R.string.pin_this_note)
-            )
-
-            ThemedDropdownMenu(
-                actions = listOf(
-                    ThemedDropdownMenu.Action(stringResource(R.string.action_add_reminder), onClick = onAddReminderClick),
-                    ThemedDropdownMenu.Action(stringResource(R.string.action_delete), onClick = onDeleteClick),
-                    ThemedDropdownMenu.Action(stringResource(R.string.action_share), onClick = onShareClick),
+            if (!trashed) {
+                ActionsForNotTrashedItem(
+                    pinned = pinned,
+                    pinTransitionKey = pinTransitionKey,
+                    onPinCheckedChange = onPinCheckedChange,
+                    onAddReminderClick = onAddReminderClick,
+                    onMoveToTrashClick = onMoveToTrashClick,
+                    onShareClick = onShareClick
                 )
-            )
+            } else {
+                ActionsForTrashedItem()
+            }
         }
     )
+}
+
+@Composable
+private fun ActionsForNotTrashedItem(
+    pinned: Boolean,
+    pinTransitionKey: Any,
+    onPinCheckedChange: (Boolean) -> Unit,
+    onAddReminderClick: () -> Unit,
+    onMoveToTrashClick: () -> Unit,
+    onShareClick: () -> Unit,
+) {
+    var checked by remember(pinned) { mutableStateOf(pinned) }
+    PinCheckbox(
+        modifier = Modifier
+            .sharedElementTransition(
+                transitionKey = pinTransitionKey,
+            ),
+        isChecked = checked,
+        onCheckedChange = {
+            onPinCheckedChange(it)
+            checked = it
+        },
+        contentDescription = stringResource(R.string.pin_this_note)
+    )
+
+    ThemedDropdownMenu(
+        actions = listOf(
+            ThemedDropdownMenu.Action(stringResource(R.string.action_add_reminder), onClick = onAddReminderClick),
+            ThemedDropdownMenu.Action(stringResource(R.string.action_delete), onClick = onMoveToTrashClick),
+            ThemedDropdownMenu.Action(stringResource(R.string.action_share), onClick = onShareClick),
+        )
+    )
+}
+
+@Composable
+private fun ActionsForTrashedItem() {
+    IconButton(onClick = { }) {
+        Icon(
+            painter = painterResource(R.drawable.ic_delete),
+            contentDescription = stringResource(R.string.go_back),
+        )
+    }
 }
 
 @Preview

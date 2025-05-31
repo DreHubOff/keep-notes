@@ -12,6 +12,8 @@ import com.jksol.keep.notes.demo_data.MainScreenDemoData
 import com.jksol.keep.notes.ui.screens.main.model.MainScreenItem
 import com.jksol.keep.notes.ui.shared.listitem.TextNoteCard
 import com.jksol.keep.notes.ui.shared.listitem.TextNoteCardData
+import com.jksol.keep.notes.ui.shared.rememberTextNotePinToEditorTransitionKey
+import com.jksol.keep.notes.ui.shared.rememberTextNoteToEditorTransitionKey
 import com.jksol.keep.notes.ui.theme.ApplicationTheme
 
 @Composable
@@ -20,9 +22,10 @@ fun MainTextNote(
     item: MainScreenItem.TextNote,
     onClick: (() -> Unit)? = null,
 ) {
-    val cardData = remember(item) {
+    val cardTransitionKey = rememberTextNoteToEditorTransitionKey(noteId = item.id)
+    val cardData = remember(item, cardTransitionKey) {
         TextNoteCardData(
-            transitionKey = item.asTransitionKey("card"),
+            transitionKey = cardTransitionKey,
             title = item.title,
             content = item.content
         )
@@ -34,7 +37,7 @@ fun MainTextNote(
         itemStatus = {
             MainItemStatusIcons(
                 isPinned = item.isPinned,
-                pinTransitionKey = item.asTransitionKey("pin"),
+                pinTransitionKey = rememberTextNotePinToEditorTransitionKey(noteId = item.id),
                 hasScheduledReminder = item.hasScheduledReminder,
             )
         }

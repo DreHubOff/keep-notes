@@ -11,6 +11,7 @@ import androidx.compose.ui.unit.sp
 import com.jksol.keep.notes.ui.screens.trash.model.TrashListItem
 import com.jksol.keep.notes.ui.shared.listitem.TextNoteCard
 import com.jksol.keep.notes.ui.shared.listitem.TextNoteCardData
+import com.jksol.keep.notes.ui.shared.rememberTextNoteToEditorTransitionKey
 import com.jksol.keep.notes.ui.theme.ApplicationTheme
 
 @Composable
@@ -19,9 +20,10 @@ fun TrashTextNote(
     item: TrashListItem.TextNote,
     onClick: () -> Unit,
 ) {
-    val cardData = remember(item) {
+    val cardTransitionKey = rememberTextNoteToEditorTransitionKey(noteId = item.id)
+    val cardData = remember(item, cardTransitionKey) {
         TextNoteCardData(
-            transitionKey = item.asTransitionKey("card"),
+            transitionKey = cardTransitionKey,
             title = item.title,
             content = item.content,
         )

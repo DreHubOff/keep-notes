@@ -11,6 +11,7 @@ import androidx.compose.ui.unit.sp
 import com.jksol.keep.notes.ui.screens.trash.model.TrashListItem
 import com.jksol.keep.notes.ui.shared.listitem.ChecklistCard
 import com.jksol.keep.notes.ui.shared.listitem.ChecklistCardData
+import com.jksol.keep.notes.ui.shared.rememberChecklistToEditorTransitionKey
 import com.jksol.keep.notes.ui.theme.ApplicationTheme
 
 @Composable
@@ -19,9 +20,10 @@ fun TrashChecklist(
     item: TrashListItem.Checklist,
     onClick: () -> Unit,
 ) {
-    val cardData = remember(item) {
+    val cardTransitionKey = rememberChecklistToEditorTransitionKey(checklistId = item.id)
+    val cardData = remember(item, cardTransitionKey) {
         ChecklistCardData(
-            transitionKey = item.asTransitionKey("card"),
+            transitionKey = cardTransitionKey,
             title = item.title,
             items = item.items,
             tickedItemsCount = item.tickedItems,

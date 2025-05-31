@@ -160,7 +160,11 @@ private fun DisplayState(
 ) {
     when {
         state == MainScreenState.EMPTY -> {
-            MainScreenEmptyState(innerPadding = innerPadding)
+            MainScreenEmptyState(
+                innerPadding = innerPadding,
+                onToggleSearchVisibility = onToggleSearchVisibility,
+                onOpenMenuClick = onOpenMenuClick,
+            )
         }
 
         state.searchEnabled -> {

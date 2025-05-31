@@ -17,6 +17,7 @@ fun MainScreenEmptyState(
     modifier: Modifier = Modifier,
     innerPadding: PaddingValues,
     onToggleSearchVisibility: () -> Unit = {},
+    onOpenMenuClick: () -> Unit = {},
 ) {
 
     Column(
@@ -26,7 +27,8 @@ fun MainScreenEmptyState(
         MainSearchBarEntryPoint(
             innerPadding = innerPadding,
             modifier = Modifier.padding(bottom = 8.dp),
-            onClick = onToggleSearchVisibility,
+            onSearchClick = onToggleSearchVisibility,
+            onOpenMenuClick = onOpenMenuClick,
         )
     }
 }

@@ -11,6 +11,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import java.time.Duration
 import java.time.OffsetDateTime
 import javax.inject.Inject
+import kotlin.math.roundToInt
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.toKotlinDuration
 
@@ -52,7 +53,7 @@ class ApplicationMainDataTypeToTrashListItemMapper @Inject constructor(
         val maxLifetime = BuildConfig.TRASH_ITEM_MAX_LIFETIME_SECONDS.seconds
 
         val durationLeft = maxLifetime - trashedDuration
-        val daysLeft = durationLeft.inWholeDays.coerceAtLeast(0)
+        val daysLeft = durationLeft.inWholeHours.div(24.0).roundToInt().coerceAtLeast(0)
 
         return context.getString(R.string.trashed_item_day_left_pattern, daysLeft)
     }

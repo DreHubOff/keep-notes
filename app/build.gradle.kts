@@ -22,6 +22,9 @@ android {
         targetSdk = 35
         versionCode = 1
         versionName = "1.0.0"
+        val fileProviderAuthority = "${applicationId}.fileprovider"
+        buildConfigField("String", "FILE_PROVIDER_AUTHORITY", "\"${fileProviderAuthority}\"")
+        manifestPlaceholders["fileProviderAuthority"] = fileProviderAuthority
     }
 
     buildTypes {
@@ -70,4 +73,6 @@ dependencies {
     implementation(libs.kotlinx.serialization.json)
 
     implementation(libs.list.reorderable)
+
+    implementation(libs.simplypdf)
 }

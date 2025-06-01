@@ -1,5 +1,6 @@
 package com.jksol.keep.notes.ui.navigation
 
+import android.content.Intent
 import com.jksol.keep.notes.ui.screens.Route
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -14,6 +15,10 @@ class NavigationEventsHost @Inject constructor() {
 
     suspend fun navigate(route: Route) {
         _navigationRoute.emit(NavigationEvent.NavigateTo(route))
+    }
+
+    suspend fun navigate(intent: Intent) {
+        _navigationRoute.emit(NavigationEvent.SendIntent(intent = intent))
     }
 
     suspend fun navigateBack(result: Pair<String, Any>? = null) {

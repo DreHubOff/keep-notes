@@ -13,6 +13,7 @@ materialIconsExtended = "1.7.8"
 navigationCompose = "2.9.0"
 room = "2.7.1"
 reorderable = "2.4.3"
+simplypdf = "2.1.1"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -39,6 +40,7 @@ dagger-compiler = { module = "com.google.dagger:dagger-compiler", version.ref = 
 hilt-android = { module = "com.google.dagger:hilt-android", version.ref = "dagger" }
 hilt-compiler = { module = "com.google.dagger:hilt-compiler", version.ref = "dagger" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerializationJson" }
+simplypdf = { module = "com.github.wwdablu:SimplyPDF", version.ref = "simplypdf" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

@@ -20,15 +20,18 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.jksol.keep.notes.R
 import com.jksol.keep.notes.demo_data.EditChecklistDemoData
 import com.jksol.keep.notes.ui.screens.edit.EditActionBar
 import com.jksol.keep.notes.ui.screens.edit.ModificationDateOverlay
+import com.jksol.keep.notes.ui.screens.edit.ShareTypeSelectionDialog
 import com.jksol.keep.notes.ui.screens.edit.checklist.model.CheckedListItemUi
 import com.jksol.keep.notes.ui.screens.edit.checklist.model.EditChecklistScreenState
 import com.jksol.keep.notes.ui.screens.edit.checklist.model.UncheckedListItemUi
@@ -76,14 +79,12 @@ fun EditCheckListScreen() {
         onDeleteChecklistClick = { viewModel.onMoveToTrashClick() },
         onAttemptEditTrashed = viewModel::onAttemptEditTrashed,
         onSnackbarAction = viewModel::handleSnackbarAction,
+        onPermanentlyDeleteClick = viewModel::permanentlyDeleteAskConfirmation,
+        onRestoreClick = viewModel::restoreChecklist,
+        onShareClick = viewModel::onShareClick,
     )
 
-    if (state.showPermanentlyDeleteConfirmation) {
-        ConfirmPermanentlyDeleteChecklistDialog(
-            onDeleteClick = { viewModel.permanentlyDeleteNoteConfirmed() },
-            onDismiss = { viewModel.permanentlyDeleteNoteDismissed() }
-        )
-    }
+    HandleAlerts(state, viewModel)
 }
 
 @Composable
@@ -106,6 +107,9 @@ fun ScreenContent(
     onDeleteChecklistClick: () -> Unit,
     onAttemptEditTrashed: () -> Unit,
     onSnackbarAction: (SnackbarEvent.Action) -> Unit,
+    onPermanentlyDeleteClick: () -> Unit,
+    onRestoreClick: () -> Unit,
+    onShareClick: () -> Unit,
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
     HandleSnackbarState(
@@ -133,9 +137,13 @@ fun ScreenContent(
                 pinTransitionKey = rememberChecklistToEditorPinTransitionKey(state.checklistId),
                 systemBarInset = innerPadding.calculateTopPadding(),
                 pinned = state.isPinned,
+                trashed = state.isTrashed,
                 onBackClick = onBackClick,
                 onPinCheckedChange = onPinCheckedChange,
                 onMoveToTrashClick = onDeleteChecklistClick,
+                onPermanentlyDeleteClick = onPermanentlyDeleteClick,
+                onRestoreClick = onRestoreClick,
+                onShareClick = onShareClick,
             )
             Box(modifier = Modifier.fillMaxSize()) {
                 if (state !== EditChecklistScreenState.EMPTY) {
@@ -217,6 +225,27 @@ private fun Editor(
     }
 }
 
+@Composable
+private fun HandleAlerts(
+    state: EditChecklistScreenState,
+    viewModel: EditChecklistViewModel,
+) {
+    if (state.showPermanentlyDeleteConfirmation) {
+        ConfirmPermanentlyDeleteChecklistDialog(
+            onDeleteClick = { viewModel.permanentlyDeleteConfirmed() },
+            onDismiss = { viewModel.permanentlyDeleteDismissed() }
+        )
+    }
+
+    if (state.requestItemShareType) {
+        ShareTypeSelectionDialog(
+            title = stringResource(R.string.share_checklist_title),
+            onDismiss = viewModel::cancelItemShareTypeRequest,
+            onTypeSelected = viewModel::shareAs,
+        )
+    }
+}
+
 @Preview
 @Composable
 private fun Preview(@PreviewParameter(EditChecklistScreenStateProvider::class) state: EditChecklistScreenState) {
@@ -240,6 +269,9 @@ private fun Preview(@PreviewParameter(EditChecklistScreenStateProvider::class) s
             onDeleteChecklistClick = {},
             onAttemptEditTrashed = {},
             onSnackbarAction = {},
+            onPermanentlyDeleteClick = {},
+            onRestoreClick = {},
+            onShareClick = {},
         )
     }
 }

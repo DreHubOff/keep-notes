@@ -3,6 +3,7 @@
 package com.jksol.keep.notes
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -46,6 +47,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
+
+private val TAG = MainActivity::class.java.simpleName
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -121,27 +124,43 @@ class MainActivity : ComponentActivity() {
     private fun ObserveNavigationEvents(navController: NavHostController) {
         LaunchedEffect(navigationEventsHost, lifecycle) {
             repeatOnLifecycle(Lifecycle.State.CREATED) {
-                var lastBackEventTime = System.currentTimeMillis()
+                var lastNavigationEventTime = System.currentTimeMillis()
                 navigationEventsHost.navigationRoute.collectLatest { event ->
-                    withContext(Dispatchers.Main.immediate) {
-                        when (event) {
-                            is NavigationEvent.NavigateBack -> {
-                                if (System.currentTimeMillis() - lastBackEventTime < 800) {
-                                    return@withContext
-                                }
-                                event.result?.let { (key, result) ->
-                                    navController
-                                        .previousBackStackEntry
-                                        ?.savedStateHandle
-                                        ?.set(key, result)
-                                }
-                                navController.popBackStack()
-                                lastBackEventTime = System.currentTimeMillis()
-                            }
-
-                            is NavigationEvent.NavigateTo -> navController.navigate(event.route)
-                        }
+                    val currentTime = System.currentTimeMillis()
+                    if (currentTime - lastNavigationEventTime < 400) {
+                        Log.w(TAG, "Ignoring navigation event: $event")
+                        return@collectLatest
                     }
+                    lastNavigationEventTime = currentTime
+                    withContext(Dispatchers.Main.immediate) {
+                        handleNavigationEvent(event = event, navController = navController)
+                    }
+                }
+            }
+        }
+    }
+
+    private fun handleNavigationEvent(
+        event: NavigationEvent,
+        navController: NavHostController,
+    ) {
+        when (event) {
+            is NavigationEvent.NavigateBack -> {
+                event.result?.let { (key, result) ->
+                    navController
+                        .previousBackStackEntry
+                        ?.savedStateHandle
+                        ?.set(key, result)
+                }
+                navController.popBackStack()
+            }
+
+            is NavigationEvent.NavigateTo -> navController.navigate(event.route)
+            is NavigationEvent.SendIntent -> {
+                try {
+                    startActivity(event.intent)
+                } catch (error: Exception) {
+                    Log.e(TAG, "Error while sending intent", error)
                 }
             }
         }

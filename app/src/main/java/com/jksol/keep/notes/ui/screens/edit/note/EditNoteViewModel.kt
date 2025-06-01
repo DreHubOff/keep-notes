@@ -7,12 +7,16 @@ import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
 import com.jksol.keep.notes.R
 import com.jksol.keep.notes.core.interactor.BuildModificationDateTextInteractor
+import com.jksol.keep.notes.core.interactor.BuildPdfFromTextNoteInteractor
 import com.jksol.keep.notes.core.model.TextNote
 import com.jksol.keep.notes.data.TextNotesRepository
 import com.jksol.keep.notes.di.ApplicationGlobalScope
 import com.jksol.keep.notes.ui.focus.ElementFocusRequest
+import com.jksol.keep.notes.ui.intent.ShareFileIntentBuilder
+import com.jksol.keep.notes.ui.intent.ShareTextIntentBuilder
 import com.jksol.keep.notes.ui.navigation.NavigationEventsHost
 import com.jksol.keep.notes.ui.screens.Route
+import com.jksol.keep.notes.ui.screens.edit.ShareContentType
 import com.jksol.keep.notes.ui.screens.edit.note.model.EditNoteScreenState
 import com.jksol.keep.notes.ui.screens.edit.note.model.TrashSnackbarAction
 import com.jksol.keep.notes.ui.shared.SnackbarEvent
@@ -31,6 +35,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.OffsetDateTime
 import javax.inject.Inject
+import javax.inject.Provider
 
 @HiltViewModel
 class EditNoteViewModel @Inject constructor(
@@ -40,8 +45,11 @@ class EditNoteViewModel @Inject constructor(
     @ApplicationGlobalScope
     private val applicationCoroutineScope: CoroutineScope,
     private val buildModificationDateText: BuildModificationDateTextInteractor,
+    private val buildPdfFromTextNote: Provider<BuildPdfFromTextNoteInteractor>,
     private val navigationEventsHost: NavigationEventsHost,
     private val textNotesRepository: TextNotesRepository,
+    private val shareTextIntentBuilder: ShareTextIntentBuilder,
+    private val shareFileIntentBuilder: ShareFileIntentBuilder,
 ) : ViewModel() {
 
     private val initialNoteId = savedStateHandle.toRoute<Route.EditNoteScreen>().noteId ?: 0
@@ -172,6 +180,39 @@ class EditNoteViewModel @Inject constructor(
             TrashSnackbarAction.Restore -> restoreNote()
             TrashSnackbarAction.UndoNoteRestoration -> undoNoteRestoration()
         }
+    }
+
+    fun onShareClick() {
+        _state.update { it.copy(requestItemShareType = true) }
+    }
+
+    fun cancelItemShareTypeRequest() {
+        _state.update { it.copy(requestItemShareType = false) }
+    }
+
+    fun shareNoteAs(shareContentType: ShareContentType) {
+        cancelItemShareTypeRequest()
+        viewModelScope.launch(Dispatchers.Default) {
+            when (shareContentType) {
+                ShareContentType.AS_TEXT -> shareAsText()
+                ShareContentType.AS_PDF -> shareAsPdf()
+            }
+        }
+    }
+
+    private suspend fun shareAsText() {
+        val currentNote = _state.value
+        val shareIntent = shareTextIntentBuilder.build(
+            subject = currentNote.title,
+            content = currentNote.content,
+        ) ?: return
+        navigationEventsHost.navigate(intent = shareIntent)
+    }
+
+    private suspend fun shareAsPdf() {
+        val pdfFile = buildPdfFromTextNote.get().invoke(_state.value.noteId) ?: return
+        val shareIntent = shareFileIntentBuilder.build(file = pdfFile) ?: return
+        navigationEventsHost.navigate(intent = shareIntent)
     }
 
     private fun loadInitialState() {

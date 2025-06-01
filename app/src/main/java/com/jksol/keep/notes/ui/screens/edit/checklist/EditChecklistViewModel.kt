@@ -7,13 +7,18 @@ import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
 import com.jksol.keep.notes.R
 import com.jksol.keep.notes.core.interactor.BuildModificationDateTextInteractor
+import com.jksol.keep.notes.core.interactor.BuildPdfFromChecklistInteractor
+import com.jksol.keep.notes.core.interactor.BuildTextFromChecklistInteractor
 import com.jksol.keep.notes.core.model.Checklist
 import com.jksol.keep.notes.core.model.ChecklistItem
 import com.jksol.keep.notes.data.ChecklistRepository
 import com.jksol.keep.notes.di.ApplicationGlobalScope
 import com.jksol.keep.notes.ui.focus.ElementFocusRequest
+import com.jksol.keep.notes.ui.intent.ShareFileIntentBuilder
+import com.jksol.keep.notes.ui.intent.ShareTextIntentBuilder
 import com.jksol.keep.notes.ui.navigation.NavigationEventsHost
 import com.jksol.keep.notes.ui.screens.Route
+import com.jksol.keep.notes.ui.screens.edit.ShareContentType
 import com.jksol.keep.notes.ui.screens.edit.checklist.model.CheckedListItemUi
 import com.jksol.keep.notes.ui.screens.edit.checklist.model.EditChecklistScreenState
 import com.jksol.keep.notes.ui.screens.edit.checklist.model.TrashSnackbarAction
@@ -49,8 +54,12 @@ class EditChecklistViewModel @Inject constructor(
     @ApplicationGlobalScope
     private val applicationCoroutineScope: CoroutineScope,
     private val buildModificationDateText: BuildModificationDateTextInteractor,
+    private val buildPdfFromChecklist: BuildPdfFromChecklistInteractor,
+    private val buildTextFromChecklist: BuildTextFromChecklistInteractor,
     private val navigationEventsHost: NavigationEventsHost,
     private val checklistRepository: ChecklistRepository,
+    private val shareTextIntentBuilder: ShareTextIntentBuilder,
+    private val shareFileIntentBuilder: ShareFileIntentBuilder,
 ) : ViewModel() {
 
     private val initialChecklistId: Long? = navigationStateHandle.toRoute<Route.EditChecklistScreen>().checklistId
@@ -273,11 +282,11 @@ class EditChecklistViewModel @Inject constructor(
         }
     }
 
-    fun permanentlyDeleteNoteAskConfirmation() {
+    fun permanentlyDeleteAskConfirmation() {
         _state.update { it.copy(showPermanentlyDeleteConfirmation = true) }
     }
 
-    fun permanentlyDeleteNoteConfirmed() {
+    fun permanentlyDeleteConfirmed() {
         _state.update { it.copy(showPermanentlyDeleteConfirmation = false) }
         applicationCoroutineScope.launch {
             delay(defaultTransitionAnimationDuration.toLong())
@@ -286,11 +295,11 @@ class EditChecklistViewModel @Inject constructor(
         viewModelScope.launch { onBackClick() }
     }
 
-    fun permanentlyDeleteNoteDismissed() {
+    fun permanentlyDeleteDismissed() {
         _state.update { it.copy(showPermanentlyDeleteConfirmation = false) }
     }
 
-    fun restoreNote() {
+    fun restoreChecklist() {
         viewModelScope.launch {
             _state.update {
                 it.copy(
@@ -331,9 +340,45 @@ class EditChecklistViewModel @Inject constructor(
 
     fun handleSnackbarAction(action: SnackbarEvent.Action) {
         when (action.key as TrashSnackbarAction) {
-            TrashSnackbarAction.Restore -> restoreNote()
+            TrashSnackbarAction.Restore -> restoreChecklist()
             TrashSnackbarAction.UndoNoteRestoration -> undoNoteRestoration()
         }
+    }
+
+    fun onShareClick() {
+        _state.update { it.copy(requestItemShareType = true) }
+
+    }
+
+    fun cancelItemShareTypeRequest() {
+        _state.update { it.copy(requestItemShareType = false) }
+    }
+
+    fun shareAs(shareContentType: ShareContentType) {
+        cancelItemShareTypeRequest()
+        viewModelScope.launch(Dispatchers.Default) {
+            when (shareContentType) {
+                ShareContentType.AS_TEXT -> shareAsText()
+                ShareContentType.AS_PDF -> shareAsPdf()
+            }
+        }
+    }
+
+    private suspend fun shareAsText() {
+        val currentChecklist = _state.value
+        val textRepresentation = buildTextFromChecklist(currentChecklist.checklistId) ?: return
+        val shareIntent = shareTextIntentBuilder
+            .build(
+                content = textRepresentation.content,
+                subject = textRepresentation.title,
+            ) ?: return
+        navigationEventsHost.navigate(intent = shareIntent)
+    }
+
+    private suspend fun shareAsPdf() {
+        val pdfFile = buildPdfFromChecklist(_state.value.checklistId) ?: return
+        val shareIntent = shareFileIntentBuilder.build(file = pdfFile) ?: return
+        navigationEventsHost.navigate(intent = shareIntent)
     }
 
     private suspend fun loadInitialState(): EditChecklistScreenState {
@@ -351,7 +396,8 @@ class EditChecklistViewModel @Inject constructor(
             modificationStatusMessage = buildModificationDateText(checklist.modificationDate)
         ).copy(
             snackbarEvent = _state.value.snackbarEvent,
-            showPermanentlyDeleteConfirmation = _state.value.showPermanentlyDeleteConfirmation
+            showPermanentlyDeleteConfirmation = _state.value.showPermanentlyDeleteConfirmation,
+            requestItemShareType = _state.value.requestItemShareType,
         )
     }
 
@@ -372,6 +418,7 @@ class EditChecklistViewModel @Inject constructor(
                     ).copy(
                         snackbarEvent = currentState.snackbarEvent,
                         showPermanentlyDeleteConfirmation = currentState.showPermanentlyDeleteConfirmation,
+                        requestItemShareType = currentState.requestItemShareType,
                     )
                 }
             _state.emitAll(stateFlow)

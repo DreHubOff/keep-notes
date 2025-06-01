@@ -15,6 +15,7 @@ data class EditChecklistScreenState(
     val isTrashed: Boolean,
     val showPermanentlyDeleteConfirmation: Boolean,
     val snackbarEvent: SnackbarEvent?,
+    val requestItemShareType: Boolean,
 ) {
 
     companion object {
@@ -29,6 +30,7 @@ data class EditChecklistScreenState(
             isTrashed = false,
             showPermanentlyDeleteConfirmation = false,
             snackbarEvent = null,
+            requestItemShareType = false,
         )
     }
 }

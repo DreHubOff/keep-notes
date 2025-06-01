@@ -24,6 +24,7 @@ fun Checklist.toEditChecklistScreenState(
         isTrashed = isTrashed,
         showPermanentlyDeleteConfirmation = EditChecklistScreenState.EMPTY.showPermanentlyDeleteConfirmation,
         snackbarEvent = EditChecklistScreenState.EMPTY.snackbarEvent,
+        requestItemShareType = EditChecklistScreenState.EMPTY.requestItemShareType,
     )
 }
 

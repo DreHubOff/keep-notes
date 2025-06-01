@@ -14,6 +14,7 @@ data class EditNoteScreenState(
     val isTrashed: Boolean,
     val showPermanentlyDeleteConfirmation: Boolean,
     val snackbarEvent: SnackbarEvent?,
+    val requestItemShareType: Boolean,
 ) {
 
     companion object {
@@ -27,6 +28,7 @@ data class EditNoteScreenState(
             content = "",
             isTrashed = false,
             showPermanentlyDeleteConfirmation = false,
+            requestItemShareType = false,
             snackbarEvent = null,
         )
     }

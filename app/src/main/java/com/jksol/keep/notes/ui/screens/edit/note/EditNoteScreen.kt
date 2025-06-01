@@ -20,15 +20,18 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.jksol.keep.notes.R
 import com.jksol.keep.notes.demo_data.MainScreenDemoData
 import com.jksol.keep.notes.ui.screens.edit.EditActionBar
 import com.jksol.keep.notes.ui.screens.edit.ModificationDateOverlay
+import com.jksol.keep.notes.ui.screens.edit.ShareTypeSelectionDialog
 import com.jksol.keep.notes.ui.screens.edit.note.model.EditNoteScreenState
 import com.jksol.keep.notes.ui.shared.HandleSnackbarState
 import com.jksol.keep.notes.ui.shared.SnackbarEvent
@@ -68,14 +71,10 @@ fun EditNoteScreen() {
         onRestoreClick = viewModel::restoreNote,
         onAttemptEditTrashed = viewModel::onAttemptEditTrashed,
         onSnackbarAction = viewModel::handleSnackbarAction,
+        onShareClick = viewModel::onShareClick,
     )
 
-    if (state.showPermanentlyDeleteConfirmation) {
-        ConfirmPermanentlyDeleteNoteDialog(
-            onDeleteClick = { viewModel.permanentlyDeleteNoteConfirmed() },
-            onDismiss = { viewModel.permanentlyDeleteNoteDismissed() }
-        )
-    }
+    HandleAlerts(state, viewModel)
 }
 
 @Composable
@@ -90,6 +89,7 @@ fun ScreenContent(
     onPermanentlyDeleteClick: () -> Unit = {},
     onRestoreClick: () -> Unit = {},
     onAttemptEditTrashed: () -> Unit = {},
+    onShareClick: () -> Unit = {},
     onSnackbarAction: (SnackbarEvent.Action) -> Unit = {},
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
@@ -123,6 +123,7 @@ fun ScreenContent(
                 onMoveToTrashClick = onMoveToTrashClick,
                 onPermanentlyDeleteClick = onPermanentlyDeleteClick,
                 onRestoreClick = onRestoreClick,
+                onShareClick = onShareClick,
             )
             Box(modifier = Modifier.fillMaxSize()) {
                 if (state !== EditNoteScreenState.EMPTY) {
@@ -163,6 +164,27 @@ private fun Editor(
         ModificationDateOverlay(
             navigationBarPadding = innerPadding.calculateBottomPadding(),
             message = state.modificationStatusMessage,
+        )
+    }
+}
+
+@Composable
+private fun HandleAlerts(
+    state: EditNoteScreenState,
+    viewModel: EditNoteViewModel,
+) {
+    if (state.showPermanentlyDeleteConfirmation) {
+        ConfirmPermanentlyDeleteNoteDialog(
+            onDeleteClick = { viewModel.permanentlyDeleteNoteConfirmed() },
+            onDismiss = { viewModel.permanentlyDeleteNoteDismissed() }
+        )
+    }
+
+    if (state.requestItemShareType) {
+        ShareTypeSelectionDialog(
+            title = stringResource(R.string.share_note_title),
+            onDismiss = viewModel::cancelItemShareTypeRequest,
+            onTypeSelected = viewModel::shareNoteAs,
         )
     }
 }

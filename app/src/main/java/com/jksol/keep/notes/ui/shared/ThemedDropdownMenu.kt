@@ -27,6 +27,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.jksol.keep.notes.R
+import com.jksol.keep.notes.ui.theme.ApplicationTheme
 import com.jksol.keep.notes.ui.theme.themedDropdownMenuItemColors
 
 object ThemedDropdownMenu {
@@ -62,7 +63,7 @@ fun ThemedDropdownMenu(
                 onClick = {
                     dropDownMenuExpanded = false
                     onClick()
-                }
+                },
             )
         }
     }
@@ -72,7 +73,7 @@ fun ThemedDropdownMenu(
 @Composable
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 private fun ThemedDropdownMenuPreview() {
-    MaterialTheme {
+    ApplicationTheme {
         Scaffold(
             modifier = Modifier.fillMaxSize(),
             topBar = {

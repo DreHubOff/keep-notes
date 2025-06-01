@@ -1,6 +1,7 @@
 package com.jksol.keep.notes.ui.screens.edit.note.model
 
 import com.jksol.keep.notes.ui.focus.ElementFocusRequest
+import com.jksol.keep.notes.ui.shared.SnackbarEvent
 
 data class EditNoteScreenState(
     val noteId: Long,
@@ -11,6 +12,8 @@ data class EditNoteScreenState(
     val title: String,
     val content: String,
     val isTrashed: Boolean,
+    val showPermanentlyDeleteConfirmation: Boolean,
+    val snackbarEvent: SnackbarEvent?,
 ) {
 
     companion object {
@@ -23,6 +26,8 @@ data class EditNoteScreenState(
             title = "",
             content = "",
             isTrashed = false,
+            showPermanentlyDeleteConfirmation = false,
+            snackbarEvent = null,
         )
     }
 }

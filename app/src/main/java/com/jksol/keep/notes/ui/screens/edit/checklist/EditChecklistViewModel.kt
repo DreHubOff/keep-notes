@@ -1,25 +1,31 @@
 package com.jksol.keep.notes.ui.screens.edit.checklist
 
+import android.content.Context
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
+import com.jksol.keep.notes.R
 import com.jksol.keep.notes.core.interactor.BuildModificationDateTextInteractor
 import com.jksol.keep.notes.core.model.Checklist
 import com.jksol.keep.notes.core.model.ChecklistItem
 import com.jksol.keep.notes.data.ChecklistRepository
+import com.jksol.keep.notes.di.ApplicationGlobalScope
 import com.jksol.keep.notes.ui.focus.ElementFocusRequest
 import com.jksol.keep.notes.ui.navigation.NavigationEventsHost
 import com.jksol.keep.notes.ui.screens.Route
 import com.jksol.keep.notes.ui.screens.edit.checklist.model.CheckedListItemUi
 import com.jksol.keep.notes.ui.screens.edit.checklist.model.EditChecklistScreenState
+import com.jksol.keep.notes.ui.screens.edit.checklist.model.TrashSnackbarAction
 import com.jksol.keep.notes.ui.screens.edit.checklist.model.UncheckedListItemUi
+import com.jksol.keep.notes.ui.shared.SnackbarEvent
 import com.jksol.keep.notes.ui.shared.defaultTransitionAnimationDuration
 import com.jksol.keep.notes.util.moveItem
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -38,6 +44,10 @@ import javax.inject.Inject
 @HiltViewModel
 class EditChecklistViewModel @Inject constructor(
     navigationStateHandle: SavedStateHandle,
+    @ApplicationContext
+    private val context: Context,
+    @ApplicationGlobalScope
+    private val applicationCoroutineScope: CoroutineScope,
     private val buildModificationDateText: BuildModificationDateTextInteractor,
     private val navigationEventsHost: NavigationEventsHost,
     private val checklistRepository: ChecklistRepository,
@@ -249,18 +259,80 @@ class EditChecklistViewModel @Inject constructor(
         }
     }
 
-    fun onDeleteChecklistClick() {
+    fun onMoveToTrashClick() {
+        val checklistId = _state.value.checklistId
+        applicationCoroutineScope.launch {
+            delay(defaultTransitionAnimationDuration.toLong())
+            checklistRepository.moveToTrash(checklistId = checklistId)
+        }
         viewModelScope.launch(Dispatchers.Default) {
-            val checklistId = _state.value.checklistId
-            coroutineScope {
-                launch { checklistRepository.moveToTrash(checklistId = checklistId) }
-                launch {
-                    navigationEventsHost.navigateBack(
-                        result = Route.EditChecklistScreen.Result.KEY to
-                                Route.EditChecklistScreen.Result.Trashed(checklistId = checklistId)
+            navigationEventsHost.navigateBack(
+                result = Route.EditChecklistScreen.Result.KEY to
+                        Route.EditChecklistScreen.Result.Trashed(checklistId = checklistId)
+            )
+        }
+    }
+
+    fun permanentlyDeleteNoteAskConfirmation() {
+        _state.update { it.copy(showPermanentlyDeleteConfirmation = true) }
+    }
+
+    fun permanentlyDeleteNoteConfirmed() {
+        _state.update { it.copy(showPermanentlyDeleteConfirmation = false) }
+        applicationCoroutineScope.launch {
+            delay(defaultTransitionAnimationDuration.toLong())
+            checklistRepository.delete(checklistId = _state.value.checklistId)
+        }
+        viewModelScope.launch { onBackClick() }
+    }
+
+    fun permanentlyDeleteNoteDismissed() {
+        _state.update { it.copy(showPermanentlyDeleteConfirmation = false) }
+    }
+
+    fun restoreNote() {
+        viewModelScope.launch {
+            _state.update {
+                it.copy(
+                    isTrashed = false,
+                    snackbarEvent = SnackbarEvent(
+                        message = context.getString(R.string.note_restored),
+                        action = SnackbarEvent.Action(
+                            label = context.getString(R.string.undo),
+                            key = TrashSnackbarAction.UndoNoteRestoration,
+                        ),
                     )
-                }
+                )
             }
+            checklistRepository.restoreChecklist(checklistId = _state.value.checklistId)
+        }
+    }
+
+    private fun undoNoteRestoration() {
+        viewModelScope.launch {
+            _state.update { it.copy(isTrashed = true) }
+            checklistRepository.moveToTrash(checklistId = _state.value.checklistId)
+        }
+    }
+
+    fun onAttemptEditTrashed() {
+        _state.update {
+            it.copy(
+                snackbarEvent = SnackbarEvent(
+                    message = context.getString(R.string.cannot_edit_in_trash),
+                    action = SnackbarEvent.Action(
+                        label = context.getString(R.string.restore),
+                        key = TrashSnackbarAction.Restore,
+                    ),
+                )
+            )
+        }
+    }
+
+    fun handleSnackbarAction(action: SnackbarEvent.Action) {
+        when (action.key as TrashSnackbarAction) {
+            TrashSnackbarAction.Restore -> restoreNote()
+            TrashSnackbarAction.UndoNoteRestoration -> undoNoteRestoration()
         }
     }
 
@@ -277,6 +349,9 @@ class EditChecklistViewModel @Inject constructor(
             focusRequest = lastFocusRequest,
             showCheckedItems = false,
             modificationStatusMessage = buildModificationDateText(checklist.modificationDate)
+        ).copy(
+            snackbarEvent = _state.value.snackbarEvent,
+            showPermanentlyDeleteConfirmation = _state.value.showPermanentlyDeleteConfirmation
         )
     }
 
@@ -294,6 +369,9 @@ class EditChecklistViewModel @Inject constructor(
                         focusRequest = lastFocusRequest,
                         showCheckedItems = currentState.showCheckedItems,
                         modificationStatusMessage = buildModificationDateText(checklist.modificationDate)
+                    ).copy(
+                        snackbarEvent = currentState.snackbarEvent,
+                        showPermanentlyDeleteConfirmation = currentState.showPermanentlyDeleteConfirmation,
                     )
                 }
             _state.emitAll(stateFlow)

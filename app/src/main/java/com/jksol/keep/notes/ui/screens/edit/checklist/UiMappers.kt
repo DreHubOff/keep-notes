@@ -20,7 +20,10 @@ fun Checklist.toEditChecklistScreenState(
         modificationStatusMessage = modificationStatusMessage,
         uncheckedItems = items.toUncheckedListItemsUi(focusedItemIndex = focusedItemIndex, focusRequest = focusRequest),
         checkedItems = items.toCheckedListItemsUi(),
-        showCheckedItems = showCheckedItems
+        showCheckedItems = showCheckedItems,
+        isTrashed = isTrashed,
+        showPermanentlyDeleteConfirmation = EditChecklistScreenState.EMPTY.showPermanentlyDeleteConfirmation,
+        snackbarEvent = EditChecklistScreenState.EMPTY.snackbarEvent,
     )
 }
 

@@ -7,6 +7,7 @@ import com.jksol.keep.notes.core.interactor.PermanentlyDeleteApplicationMainData
 import com.jksol.keep.notes.core.interactor.PermanentlyDeleteOldTrashRecordsInteractor
 import com.jksol.keep.notes.core.model.ApplicationMainDataType
 import com.jksol.keep.notes.ui.navigation.NavigationEventsHost
+import com.jksol.keep.notes.ui.screens.Route
 import com.jksol.keep.notes.ui.screens.trash.mapper.ApplicationMainDataTypeToTrashListItemMapper
 import com.jksol.keep.notes.ui.screens.trash.model.TrashScreenState
 import com.jksol.keep.notes.ui.screens.trash.model.UiIntent
@@ -51,11 +52,15 @@ class TrashViewModel @Inject constructor(
     }
 
     private fun onOpenTextNoteScreen(intent: UiIntent.OpenTextNoteScreen) {
-        TODO("[onOpenTextNoteScreen=$intent] Not yet implemented")
+        viewModelScope.launch {
+            navigationEventsHost.navigate(Route.EditNoteScreen(noteId = intent.item.id))
+        }
     }
 
     private fun onOpenChecklistScreen(intent: UiIntent.OpenChecklistScreen) {
-        TODO("[onOpenChecklistScreen$intent] Not yet implemented")
+        viewModelScope.launch {
+            navigationEventsHost.navigate(Route.EditChecklistScreen(checklistId = intent.item.id))
+        }
     }
 
     private fun onEmptyTrashRequested() {

@@ -40,4 +40,7 @@ interface ChecklistItemDao {
 
     @Delete
     suspend fun deleteItems(items: List<ChecklistItemEntity>)
+
+    @Query("DELETE FROM $CHECKLIST_ITEMS_TABLE_NAME WHERE checklist_id = :checklistId")
+    suspend fun deleteItemsForChecklist(checklistId: Long)
 }

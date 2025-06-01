@@ -73,4 +73,7 @@ interface ChecklistDao {
 
     @Query("UPDATE $CHECKLIST_TABLE_NAME SET trashed_date = :date WHERE id = :id")
     suspend fun updateTrashedDateById(id: Long, date: OffsetDateTime?)
+
+    @Query("DELETE FROM $CHECKLIST_TABLE_NAME WHERE id = :checklistId")
+    suspend fun deleteChecklistById(checklistId: Long)
 }

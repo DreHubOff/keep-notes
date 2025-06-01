@@ -1,16 +1,19 @@
-@file:OptIn(ExperimentalSharedTransitionApi::class)
-
 package com.jksol.keep.notes.ui.screens.edit.checklist
 
 import androidx.activity.compose.BackHandler
-import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBars
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -29,6 +32,8 @@ import com.jksol.keep.notes.ui.screens.edit.ModificationDateOverlay
 import com.jksol.keep.notes.ui.screens.edit.checklist.model.CheckedListItemUi
 import com.jksol.keep.notes.ui.screens.edit.checklist.model.EditChecklistScreenState
 import com.jksol.keep.notes.ui.screens.edit.checklist.model.UncheckedListItemUi
+import com.jksol.keep.notes.ui.shared.HandleSnackbarState
+import com.jksol.keep.notes.ui.shared.SnackbarEvent
 import com.jksol.keep.notes.ui.shared.mainItemCardTransition
 import com.jksol.keep.notes.ui.shared.rememberChecklistToEditorPinTransitionKey
 import com.jksol.keep.notes.ui.shared.rememberChecklistToEditorTitleTransitionKey
@@ -68,8 +73,17 @@ fun EditCheckListScreen() {
         onTitleNextClick = viewModel::onTitleNextClick,
         onMoveCompleted = viewModel::onMoveCompleted,
         onItemFocused = viewModel::onItemFocused,
-        onDeleteChecklistClick = { viewModel.onDeleteChecklistClick() },
+        onDeleteChecklistClick = { viewModel.onMoveToTrashClick() },
+        onAttemptEditTrashed = viewModel::onAttemptEditTrashed,
+        onSnackbarAction = viewModel::handleSnackbarAction,
     )
+
+    if (state.showPermanentlyDeleteConfirmation) {
+        ConfirmPermanentlyDeleteChecklistDialog(
+            onDeleteClick = { viewModel.permanentlyDeleteNoteConfirmed() },
+            onDismiss = { viewModel.permanentlyDeleteNoteDismissed() }
+        )
+    }
 }
 
 @Composable
@@ -90,12 +104,26 @@ fun ScreenContent(
     onMoveCompleted: () -> Unit,
     onItemFocused: (UncheckedListItemUi) -> Unit,
     onDeleteChecklistClick: () -> Unit,
+    onAttemptEditTrashed: () -> Unit,
+    onSnackbarAction: (SnackbarEvent.Action) -> Unit,
 ) {
+    val snackbarHostState = remember { SnackbarHostState() }
+    HandleSnackbarState(
+        snackbarHostState = snackbarHostState,
+        snackbarEvent = state.snackbarEvent,
+        onActionExecuted = onSnackbarAction,
+    )
     Scaffold(
         modifier = Modifier
             .fillMaxSize()
             .mainItemCardTransition(rememberChecklistToEditorTransitionKey(state.checklistId)),
         contentWindowInsets = WindowInsets.systemBars,
+        snackbarHost = {
+            SnackbarHost(
+                hostState = snackbarHostState,
+                modifier = Modifier.padding(bottom = 24.dp)
+            )
+        },
     ) { innerPadding ->
         Column(
             modifier = Modifier
@@ -109,23 +137,33 @@ fun ScreenContent(
                 onPinCheckedChange = onPinCheckedChange,
                 onMoveToTrashClick = onDeleteChecklistClick,
             )
-            if (state !== EditChecklistScreenState.EMPTY) {
-                Editor(
-                    innerPadding,
-                    state,
-                    onTitleChanged,
-                    onAddChecklistItemClick,
-                    toggleCheckedItemsVisibility,
-                    onItemUnchecked,
-                    onItemChecked,
-                    onItemTextChanged,
-                    onDoneClicked,
-                    onDeleteClick,
-                    onMoveItems,
-                    onTitleNextClick,
-                    onMoveCompleted,
-                    onItemFocused
-                )
+            Box(modifier = Modifier.fillMaxSize()) {
+                if (state !== EditChecklistScreenState.EMPTY) {
+                    Editor(
+                        innerPadding,
+                        state,
+                        onTitleChanged,
+                        onAddChecklistItemClick,
+                        toggleCheckedItemsVisibility,
+                        onItemUnchecked,
+                        onItemChecked,
+                        onItemTextChanged,
+                        onDoneClicked,
+                        onDeleteClick,
+                        onMoveItems,
+                        onTitleNextClick,
+                        onMoveCompleted,
+                        onItemFocused
+                    )
+                }
+                if (state.isTrashed) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(color = MaterialTheme.colorScheme.background.copy(alpha = 0.2f))
+                            .clickable(onClick = onAttemptEditTrashed)
+                    )
+                }
             }
         }
     }
@@ -200,6 +238,8 @@ private fun Preview(@PreviewParameter(EditChecklistScreenStateProvider::class) s
             onMoveCompleted = {},
             onItemFocused = {},
             onDeleteChecklistClick = {},
+            onAttemptEditTrashed = {},
+            onSnackbarAction = {},
         )
     }
 }
@@ -207,22 +247,22 @@ private fun Preview(@PreviewParameter(EditChecklistScreenStateProvider::class) s
 private class EditChecklistScreenStateProvider : PreviewParameterProvider<EditChecklistScreenState> {
     override val values: Sequence<EditChecklistScreenState>
         get() = sequenceOf(
-            EditChecklistScreenState(),
-            EditChecklistScreenState(isPinned = true),
-            EditChecklistScreenState(
+            EditChecklistScreenState.EMPTY,
+            EditChecklistScreenState.EMPTY.copy(isPinned = true),
+            EditChecklistScreenState.EMPTY.copy(
                 title = "Travel Checklist",
                 isPinned = true,
                 uncheckedItems = EditChecklistDemoData.uncheckedChecklistItems,
                 checkedItems = EditChecklistDemoData.checkedChecklistItems,
             ),
-            EditChecklistScreenState(
+            EditChecklistScreenState.EMPTY.copy(
                 title = "Travel Checklist",
                 isPinned = true,
                 checkedItems = EditChecklistDemoData.checkedChecklistItems,
                 showCheckedItems = true,
                 modificationStatusMessage = "Checklist modified"
             ),
-            EditChecklistScreenState(
+            EditChecklistScreenState.EMPTY.copy(
                 title = "Travel Checklist",
                 checkedItems = EditChecklistDemoData.checkedChecklistItems,
                 uncheckedItems = EditChecklistDemoData.uncheckedChecklistItems,

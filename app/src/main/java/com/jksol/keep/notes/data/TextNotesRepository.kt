@@ -34,6 +34,12 @@ class TextNotesRepository @Inject constructor(
         return textNote.copy(id = id)
     }
 
+    suspend fun delete(noteId: Long) {
+        withContext(NonCancellable) {
+            textNoteDao.deleteById(noteId)
+        }
+    }
+
     suspend fun delete(textNote: TextNote) = delete(listOf(textNote))
 
     suspend fun delete(textNotes: List<TextNote>) {

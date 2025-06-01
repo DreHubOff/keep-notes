@@ -51,6 +51,9 @@ interface TextNoteDao {
     @Delete
     suspend fun delete(textNotes: List<TextNoteEntity>)
 
+    @Query("DELETE FROM $TEXT_NOTE_TABLE_NAME WHERE id = :noteId")
+    suspend fun deleteById(noteId: Long)
+
     @Query("UPDATE $TEXT_NOTE_TABLE_NAME SET is_trashed = :isTrashed WHERE id = :id")
     suspend fun updateIsTrashedById(id: Long, isTrashed: Boolean)
 

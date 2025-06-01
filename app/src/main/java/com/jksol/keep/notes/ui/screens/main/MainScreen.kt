@@ -18,10 +18,8 @@ import androidx.compose.material3.FabPosition
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -48,10 +46,10 @@ import com.jksol.keep.notes.ui.screens.main.drawer.MainDrawer
 import com.jksol.keep.notes.ui.screens.main.fab.MainFabContainer
 import com.jksol.keep.notes.ui.screens.main.model.MainScreenItem
 import com.jksol.keep.notes.ui.screens.main.model.MainScreenState
+import com.jksol.keep.notes.ui.shared.HandleSnackbarState
 import com.jksol.keep.notes.ui.shared.SnackbarEvent
 import com.jksol.keep.notes.ui.shared.defaultTransitionAnimationDuration
 import com.jksol.keep.notes.ui.theme.ApplicationTheme
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -64,7 +62,7 @@ fun MainScreen(
     NotifyViewModelOnEditorResult(
         viewModel = viewModel,
         noteEditingResult = noteEditingResult,
-        checklistEditingResult = checklistEditingResult
+        checklistEditingResult = checklistEditingResult,
     )
     NotifyViewModelWhenToClearTrash(viewModel)
 
@@ -125,12 +123,10 @@ private fun ScreenContent(
     onOpenMenuClick: () -> Unit = {},
 ) {
     val showOverlay = state.addItemsMode
-    val coroutineScope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
-    handleSnackbarState(
-        coroutineScope = coroutineScope,
+    HandleSnackbarState(
         snackbarHostState = snackbarHostState,
-        state = state,
+        snackbarEvent = state.snackbarEvent,
         onActionExecuted = onSnackbarAction,
     )
     Scaffold(
@@ -227,28 +223,6 @@ private fun SystemBarBackground(innerPadding: PaddingValues) {
             .height(innerPadding.calculateTopPadding() + 4.dp)
             .background(MaterialTheme.colorScheme.background.copy(alpha = 0.8f))
     )
-}
-
-private fun handleSnackbarState(
-    coroutineScope: CoroutineScope,
-    snackbarHostState: SnackbarHostState,
-    state: MainScreenState,
-    onActionExecuted: (SnackbarEvent.Action) -> Unit,
-) {
-    val snackbarEvent = state.snackbarEvent ?: return
-    val action: SnackbarEvent.Action? = snackbarEvent.action
-    snackbarEvent.consume()?.let { message ->
-        coroutineScope.launch {
-            val executionResult = snackbarHostState.showSnackbar(
-                message = message,
-                actionLabel = snackbarEvent.action?.label,
-                duration = if (action != null) SnackbarDuration.Long else SnackbarDuration.Short
-            )
-            if (action != null && executionResult == SnackbarResult.ActionPerformed) {
-                onActionExecuted(action)
-            }
-        }
-    }
 }
 
 @Composable

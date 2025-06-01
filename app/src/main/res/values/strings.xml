@@ -40,9 +40,15 @@
     <string name="action_empty_trash">Empty Trash</string>
     <string name="no_notes_in_trash">No notes in Trash</string>
     <string name="dialog_title_empty_trash">Empty Trash?</string>
+    <string name="dialog_title_delete_forever">Delete Forever?</string>
     <string name="confirm_empty_trash_message">All notes in Trash will be permanently deleted.</string>
+    <string name="confirm_permanently_delete_note">Are you sure want to delete this note forever?</string>
+    <string name="confirm_permanently_delete_checklist">Are you sure want to delete this checklist forever?</string>
     <string name="confirm_empty_trash">Empty Trash</string>
     <string name="cancel">Cancel</string>
     <string name="trashed_item_day_left_pattern">%1$d day left</string>
+    <string name="restore">Restore</string>
+    <string name="cannot_edit_in_trash">Can\'t edit in Trash</string>
+    <string name="note_restored">Note restored</string>
 
 </resources>

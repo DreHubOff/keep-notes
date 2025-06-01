@@ -109,6 +109,15 @@ class ChecklistRepository @Inject constructor(
         }
     }
 
+    suspend fun delete(checklistId: Long) {
+        withContext(NonCancellable) {
+            database.withTransaction {
+                checklistItemDao.deleteItemsForChecklist(checklistId = checklistId)
+                checklistDao.deleteChecklistById(checklistId = checklistId)
+            }
+        }
+    }
+
     suspend fun delete(checklist: Checklist) = delete(listOf(checklist))
 
     suspend fun delete(checklists: List<Checklist>) {

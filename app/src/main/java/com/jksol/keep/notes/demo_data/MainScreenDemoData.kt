@@ -14,6 +14,7 @@ object MainScreenDemoData {
                 transitionKey = Unit,
                 title = title,
                 content = content,
+                isSelected = isSelected,
             )
         }
 

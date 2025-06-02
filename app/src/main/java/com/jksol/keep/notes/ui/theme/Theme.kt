@@ -2,7 +2,10 @@
 
 package com.jksol.keep.notes.ui.theme
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.material3.CardColors
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CheckboxColors
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
@@ -30,7 +33,7 @@ private val LightColorScheme = lightColorScheme(
     onSurface = SemiGray,
     surfaceVariant = IceBlue,
     onSurfaceVariant = Color.Black,
-    error = BloodRed
+    error = BloodRed,
 )
 
 @Composable
@@ -78,6 +81,22 @@ fun themedTopAppBarColors(): TopAppBarColors {
             actionIconContentColor = onSurfaceVariant,
         )
     }
+}
+
+@Composable
+fun themedCardColors(isSelected: Boolean): CardColors {
+    return CardDefaults.outlinedCardColors().copy(
+        containerColor = if (isSelected) LightBlueOverlay else MaterialTheme.colorScheme.background,
+    )
+}
+
+@Composable
+fun themedCardBorder(isSelected: Boolean): BorderStroke {
+    val defaults = CardDefaults.outlinedCardBorder()
+    return BorderStroke(
+        width = if (isSelected) defaults.width * 2 else defaults.width,
+        color = if (isSelected) VividBlue else MorningFog
+    )
 }
 
 @Composable

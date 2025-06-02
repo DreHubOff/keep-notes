@@ -5,4 +5,5 @@ data class ChecklistCardData(
     val title: String,
     val items: List<String>,
     val tickedItemsCount: Int,
+    val isSelected: Boolean,
 )

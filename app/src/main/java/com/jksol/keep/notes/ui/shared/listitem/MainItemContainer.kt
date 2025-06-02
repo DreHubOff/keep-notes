@@ -3,7 +3,7 @@
 package com.jksol.keep.notes.ui.shared.listitem
 
 import androidx.compose.animation.ExperimentalSharedTransitionApi
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Arrangement.Absolute.spacedBy
@@ -23,6 +23,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -31,24 +33,30 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.jksol.keep.notes.R
 import com.jksol.keep.notes.ui.shared.sharedBoundsTransition
+import com.jksol.keep.notes.ui.theme.ApplicationTheme
+import com.jksol.keep.notes.ui.theme.themedCardBorder
+import com.jksol.keep.notes.ui.theme.themedCardColors
 
 @Composable
 fun MainItemContainer(
     modifier: Modifier = Modifier,
     cardTransitionKey: Any,
     title: String,
+    isSelected: Boolean = false,
     maxTitleLines: Int = 5,
-    onClick: (() -> Unit)?,
+    onClick: (() -> Unit)? = null,
+    onLongClick: (() -> Unit)? = null,
     itemStatus: (@Composable RowScope.() -> Unit)?,
     content: @Composable (Modifier) -> Unit,
 ) {
+    val haptic = LocalHapticFeedback.current
     OutlinedCard(
         modifier = modifier
             .fillMaxWidth()
             .wrapContentHeight()
             .sharedBoundsTransition(transitionKey = cardTransitionKey),
-        enabled = onClick != null,
-        onClick = { onClick?.invoke() },
+        colors = themedCardColors(isSelected = isSelected),
+        border = themedCardBorder(isSelected = isSelected),
     ) {
         Box {
             if (title.isNotEmpty()) {
@@ -64,15 +72,22 @@ fun MainItemContainer(
                     content = content,
                 )
             }
-            Box(modifier = Modifier
-                .matchParentSize()
-                .clickable(
-                    interactionSource = remember { MutableInteractionSource() },
-                    indication = ripple(),
-                    enabled = onClick != null
-                ) {
-                    onClick?.invoke()
-                }) {
+            Box(
+                modifier = Modifier
+                    .matchParentSize()
+                    .combinedClickable(
+                        interactionSource = remember { MutableInteractionSource() },
+                        indication = ripple(),
+                        enabled = onClick != null,
+                        onClick = { onClick?.invoke() },
+                        onLongClick = onLongClick?.let {
+                            {
+                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                onLongClick()
+                            }
+                        },
+                    )
+            ) {
             }
         }
     }
@@ -145,7 +160,7 @@ private fun TitleText(modifier: Modifier, title: String, mixLines: Int) {
 @Preview(showBackground = true)
 @Composable
 private fun PreviewWithStatusText() {
-    MaterialTheme {
+    ApplicationTheme {
         MainItemContainer(
             cardTransitionKey = Unit,
             title = "Deleted Note",
@@ -172,11 +187,12 @@ private fun PreviewWithStatusText() {
 @Preview(showBackground = true)
 @Composable
 private fun WithIconStatusPreview() {
-    MaterialTheme {
+    ApplicationTheme {
         MainItemContainer(
             cardTransitionKey = "preview_card_icon",
             title = "Trashed Reminder",
             maxTitleLines = 1,
+            isSelected = true,
             onClick = {},
             itemStatus = {
                 Icon(

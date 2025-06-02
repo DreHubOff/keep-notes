@@ -21,6 +21,7 @@ fun MainChecklist(
     modifier: Modifier,
     item: MainScreenItem.Checklist,
     onClick: () -> Unit = {},
+    onLongClick: (() -> Unit)? = null,
 ) {
     val cardTransitionKey = rememberChecklistToEditorTransitionKey(checklistId = item.id)
     val rememberChecklistCardData = remember(item, cardTransitionKey) {
@@ -29,12 +30,14 @@ fun MainChecklist(
             title = item.title,
             items = item.items.map { it.text },
             tickedItemsCount = item.tickedItems,
+            isSelected = item.isSelected,
         )
     }
     ChecklistCard(
         modifier = modifier,
         item = rememberChecklistCardData,
         onClick = if (item.interactive) onClick else null,
+        onLongClick = if (item.interactive) onLongClick else null,
         itemStatus = {
             MainItemStatusIcons(
                 isPinned = item.isPinned,

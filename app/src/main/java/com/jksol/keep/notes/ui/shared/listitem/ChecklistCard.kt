@@ -20,13 +20,16 @@ fun ChecklistCard(
     modifier: Modifier,
     item: ChecklistCardData,
     onClick: (() -> Unit)? = {},
+    onLongClick: (() -> Unit)? = null,
     itemStatus: (@Composable RowScope.() -> Unit)?,
 ) {
     MainItemContainer(
         modifier = modifier,
         cardTransitionKey = item.transitionKey,
         title = item.title,
+        isSelected = item.isSelected,
         onClick = onClick,
+        onLongClick = onLongClick,
         itemStatus = itemStatus,
     ) { contentModifier ->
         if (item.items.isNotEmpty() || item.tickedItemsCount > 0) {

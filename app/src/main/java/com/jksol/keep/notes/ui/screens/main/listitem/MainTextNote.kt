@@ -21,19 +21,22 @@ fun MainTextNote(
     modifier: Modifier,
     item: MainScreenItem.TextNote,
     onClick: (() -> Unit)? = null,
+    onLongClick: (() -> Unit)? = null,
 ) {
     val cardTransitionKey = rememberTextNoteToEditorTransitionKey(noteId = item.id)
     val cardData = remember(item, cardTransitionKey) {
         TextNoteCardData(
             transitionKey = cardTransitionKey,
             title = item.title,
-            content = item.content
+            content = item.content,
+            isSelected = item.isSelected,
         )
     }
     TextNoteCard(
         modifier = modifier,
         item = cardData,
-        onClick = onClick,
+        onClick = if (item.interactive) onClick else null,
+        onLongClick = if (item.interactive) onLongClick else null,
         itemStatus = {
             MainItemStatusIcons(
                 isPinned = item.isPinned,

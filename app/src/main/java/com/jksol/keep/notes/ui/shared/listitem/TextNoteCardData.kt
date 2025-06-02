@@ -4,4 +4,5 @@ data class TextNoteCardData(
     val transitionKey: Any,
     val title: String,
     val content: String,
+    val isSelected: Boolean,
 )

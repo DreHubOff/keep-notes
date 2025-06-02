@@ -9,6 +9,7 @@ sealed class MainScreenItem {
     abstract val hasScheduledReminder: Boolean
     abstract val title: String
     abstract val interactive: Boolean
+    abstract val isSelected: Boolean
 
     val compositeKey: String by lazy { this::class.simpleName + id }
 
@@ -20,6 +21,7 @@ sealed class MainScreenItem {
         override val isPinned: Boolean = false,
         override val hasScheduledReminder: Boolean = false,
         override val interactive: Boolean = true,
+        override val isSelected: Boolean = false,
     ) : MainScreenItem()
 
     @Stable
@@ -32,6 +34,7 @@ sealed class MainScreenItem {
         override val isPinned: Boolean = false,
         override val hasScheduledReminder: Boolean = false,
         override val interactive: Boolean = true,
+        override val isSelected: Boolean = false,
     ) : MainScreenItem() {
 
         @Stable

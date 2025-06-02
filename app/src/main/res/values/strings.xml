@@ -55,4 +55,5 @@
     <string name="share_as_pdf">Share as PDF</string>
     <string name="share_note_title">Share Note</string>
     <string name="share_checklist_title">Share Checklist</string>
+    <string name="selected_count_pattern">%1$d Selected</string>
 </resources>

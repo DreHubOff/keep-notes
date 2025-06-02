@@ -166,6 +166,14 @@ class MainViewModel @Inject constructor(
         }
     }
 
+    fun onChecklistLongClick(checklist: MainScreenItem.Checklist) {
+        TODO("Not yet implemented")
+    }
+
+    fun onTextNoteLongClick(textNote: MainScreenItem.TextNote) {
+        TODO("Not yet implemented")
+    }
+
     private suspend fun validateNoteEditingResult(result: Route.EditNoteScreen.Result): SnackbarEvent? {
         return when (result) {
             is Route.EditNoteScreen.Result.Edited -> onTextNoteEdited(result.noteId)

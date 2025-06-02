@@ -27,6 +27,7 @@ fun TrashChecklist(
             title = item.title,
             items = item.items,
             tickedItemsCount = item.tickedItems,
+            isSelected = false,
         )
     }
     ChecklistCard(

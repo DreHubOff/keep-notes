@@ -30,7 +30,9 @@ fun MainScreenStateIdle(
     listItems: List<MainScreenItem>,
     onToggleSearchVisibility: () -> Unit = {},
     openTextNoteEditor: (MainScreenItem.TextNote?) -> Unit = {},
-    openCheckListEditor: (MainScreenItem.Checklist?) -> Unit = {},
+    openChecklistEditor: (MainScreenItem.Checklist?) -> Unit = {},
+    onTextNoteLongClick: (MainScreenItem.TextNote) -> Unit = {},
+    onChecklistLongClick: (MainScreenItem.Checklist) -> Unit = {},
     onOpenMenuClick: () -> Unit = {},
 ) {
     val scrollState = rememberLazyListState()
@@ -82,7 +84,8 @@ fun MainScreenStateIdle(
                             .animateItem()
                             .padding(horizontal = 8.dp),
                         item = item,
-                        onClick = { openCheckListEditor(item) }
+                        onClick = { openChecklistEditor(item) },
+                        onLongClick = { onChecklistLongClick(item) }
                     )
 
                 is MainScreenItem.TextNote ->
@@ -91,7 +94,8 @@ fun MainScreenStateIdle(
                             .animateItem()
                             .padding(horizontal = 8.dp),
                         item = item,
-                        onClick = { openTextNoteEditor(item) }
+                        onClick = { openTextNoteEditor(item) },
+                        onLongClick = { onTextNoteLongClick(item) },
                     )
             }
         }
@@ -106,7 +110,7 @@ private fun Preview() {
             innerPadding = PaddingValues(20.dp),
             listItems = MainScreenDemoData.notesList(),
             openTextNoteEditor = {},
-            openCheckListEditor = {},
+            openChecklistEditor = {},
         )
     }
 }

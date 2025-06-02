@@ -22,13 +22,16 @@ fun TextNoteCard(
     modifier: Modifier,
     item: TextNoteCardData,
     onClick: (() -> Unit)? = null,
+    onLongClick: (() -> Unit)? = null,
     itemStatus: @Composable (RowScope.() -> Unit)? = null,
 ) {
     MainItemContainer(
         modifier = modifier,
         cardTransitionKey = item.transitionKey,
         title = item.title,
+        isSelected = item.isSelected,
         onClick = onClick,
+        onLongClick = onLongClick,
         itemStatus = itemStatus,
         content = { contentModifier ->
             if (item.content.isNotEmpty()) {

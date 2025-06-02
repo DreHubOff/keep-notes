@@ -26,6 +26,7 @@ fun TrashTextNote(
             transitionKey = cardTransitionKey,
             title = item.title,
             content = item.content,
+            isSelected = false,
         )
     }
     TextNoteCard(

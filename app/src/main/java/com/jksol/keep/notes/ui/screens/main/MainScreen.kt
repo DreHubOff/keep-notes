@@ -91,7 +91,9 @@ fun MainScreen(
                 coroutineScope.launch {
                     drawerState.open()
                 }
-            }
+            },
+            onTextNoteLongClick = viewModel::onTextNoteLongClick,
+            onChecklistLongClick = viewModel::onChecklistLongClick,
         )
     }
     NavigationOverlay(state)
@@ -121,6 +123,8 @@ private fun ScreenContent(
     onNewSearchPrompt: (String) -> Unit = {},
     onSnackbarAction: (SnackbarEvent.Action) -> Unit = {},
     onOpenMenuClick: () -> Unit = {},
+    onTextNoteLongClick: (MainScreenItem.TextNote) -> Unit = {},
+    onChecklistLongClick: (MainScreenItem.Checklist) -> Unit = {},
 ) {
     val showOverlay = state.addItemsMode
     val snackbarHostState = remember { SnackbarHostState() }
@@ -155,6 +159,8 @@ private fun ScreenContent(
                 openTextNoteEditor = openTextNoteEditor,
                 openCheckListEditor = openCheckListEditor,
                 onOpenMenuClick = onOpenMenuClick,
+                onTextNoteLongClick = onTextNoteLongClick,
+                onChecklistLongClick = onChecklistLongClick,
             )
             FabsOverlay(enabled = showOverlay, onClick = { toggleAddModeSelection() })
         }
@@ -170,6 +176,8 @@ private fun DisplayState(
     openTextNoteEditor: (MainScreenItem.TextNote?) -> Unit,
     openCheckListEditor: (MainScreenItem.Checklist?) -> Unit,
     onOpenMenuClick: () -> Unit,
+    onTextNoteLongClick: (MainScreenItem.TextNote) -> Unit,
+    onChecklistLongClick: (MainScreenItem.Checklist) -> Unit,
 ) {
     when {
         state == MainScreenState.EMPTY -> {
@@ -207,8 +215,10 @@ private fun DisplayState(
                 listItems = state.screenItems,
                 onToggleSearchVisibility = onToggleSearchVisibility,
                 openTextNoteEditor = openTextNoteEditor,
-                openCheckListEditor = openCheckListEditor,
+                openChecklistEditor = openCheckListEditor,
                 onOpenMenuClick = onOpenMenuClick,
+                onTextNoteLongClick = onTextNoteLongClick,
+                onChecklistLongClick = onChecklistLongClick,
             )
             SystemBarBackground(innerPadding)
         }

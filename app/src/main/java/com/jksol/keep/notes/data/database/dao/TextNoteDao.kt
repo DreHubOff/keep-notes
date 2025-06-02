@@ -19,28 +19,22 @@ interface TextNoteDao {
     fun observeTrashed(): Flow<List<TextNoteEntity>>
 
     @Query("SELECT * FROM $TEXT_NOTE_TABLE_NAME WHERE id = :id LIMIT 1")
-    suspend fun getById(id: String): TextNoteEntity?
+    fun observeById(id: Long): Flow<TextNoteEntity?>
+
+    @Query("SELECT * FROM $TEXT_NOTE_TABLE_NAME WHERE id = :id LIMIT 1")
+    suspend fun getById(id: Long): TextNoteEntity?
 
     @Query("UPDATE $TEXT_NOTE_TABLE_NAME SET pinned = :pinned WHERE id = :id")
-    suspend fun updatePinnedStateById(id: Long, pinned: Int)
+    suspend fun updatePinnedStateById(id: Long, pinned: Boolean)
 
-    @Query(
-        """
-        UPDATE $TEXT_NOTE_TABLE_NAME 
-        SET modification_date = :updateTime,
-            title = :title,
-            content = :content,
-            pinned = :isPinned 
-        WHERE id = :id
-        """
-    )
-    suspend fun updateNoteContent(
-        id: Long,
-        updateTime: OffsetDateTime,
-        title: String,
-        content: String,
-        isPinned: Boolean,
-    )
+    @Query("UPDATE $TEXT_NOTE_TABLE_NAME SET title = :newTitle WHERE id = :id")
+    suspend fun updateTitleById(id: Long, newTitle: String)
+
+    @Query("UPDATE $TEXT_NOTE_TABLE_NAME SET content = :newContent WHERE id = :id")
+    suspend fun updateContentById(id: Long, newContent: String)
+
+    @Query("UPDATE $TEXT_NOTE_TABLE_NAME SET modification_date = :newDate WHERE id = :id")
+    suspend fun updateModificationDateById(id: Long, newDate: OffsetDateTime)
 
     @Insert
     suspend fun insertTextNote(textNote: TextNoteEntity): Long

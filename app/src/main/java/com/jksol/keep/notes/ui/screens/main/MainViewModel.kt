@@ -146,7 +146,7 @@ class MainViewModel @Inject constructor(
                     checklistRepository.restoreChecklist(actionKey.checklistId)
 
                 is MainSnackbarActionKey.UndoTrashedNote ->
-                    textNotesRepository.restoreNote(actionKey.noteId)
+                    textNotesRepository.restoreItemFromTrash(actionKey.noteId)
             }
         }
     }
@@ -186,7 +186,7 @@ class MainViewModel @Inject constructor(
     private suspend fun onTextNoteEdited(noteId: Long): SnackbarEvent? {
         val createdNote = textNotesRepository.getNoteById(noteId) ?: return null
         if (createdNote.isEmpty()) {
-            textNotesRepository.delete(createdNote)
+            textNotesRepository.permanentlyDelete(createdNote)
             return SnackbarEvent(context.getString(R.string.empty_notes_discarded))
         }
         return null

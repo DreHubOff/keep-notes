@@ -76,12 +76,12 @@ fun EditCheckListScreen() {
         onTitleNextClick = viewModel::onTitleNextClick,
         onMoveCompleted = viewModel::onMoveCompleted,
         onItemFocused = viewModel::onItemFocused,
-        onDeleteChecklistClick = { viewModel.onMoveToTrashClick() },
+        onDeleteChecklistClick = { viewModel.moveToTrash() },
         onAttemptEditTrashed = viewModel::onAttemptEditTrashed,
         onSnackbarAction = viewModel::handleSnackbarAction,
-        onPermanentlyDeleteClick = viewModel::permanentlyDeleteAskConfirmation,
-        onRestoreClick = viewModel::restoreChecklist,
-        onShareClick = viewModel::onShareClick,
+        onPermanentlyDeleteClick = viewModel::askConfirmationToPermanentlyDeleteItem,
+        onRestoreClick = viewModel::restoreItemFromTrash,
+        onShareClick = viewModel::onShareCurrentItemClick,
     )
 
     HandleAlerts(state, viewModel)
@@ -120,7 +120,7 @@ fun ScreenContent(
     Scaffold(
         modifier = Modifier
             .fillMaxSize()
-            .mainItemCardTransition(rememberChecklistToEditorTransitionKey(state.checklistId)),
+            .mainItemCardTransition(rememberChecklistToEditorTransitionKey(state.itemId)),
         contentWindowInsets = WindowInsets.systemBars,
         snackbarHost = {
             SnackbarHost(
@@ -134,7 +134,7 @@ fun ScreenContent(
                 .fillMaxSize(),
         ) {
             EditActionBar(
-                pinTransitionKey = rememberChecklistToEditorPinTransitionKey(state.checklistId),
+                pinTransitionKey = rememberChecklistToEditorPinTransitionKey(state.itemId),
                 systemBarInset = innerPadding.calculateTopPadding(),
                 pinned = state.isPinned,
                 trashed = state.isTrashed,
@@ -201,7 +201,7 @@ private fun Editor(
                 .fillMaxSize(),
             contentPaddingBottom = paddingBottom,
             title = state.title,
-            titleTransitionKey = rememberChecklistToEditorTitleTransitionKey(state.checklistId),
+            titleTransitionKey = rememberChecklistToEditorTitleTransitionKey(state.itemId),
             checkedItems = state.checkedItems,
             uncheckedItems = state.uncheckedItems,
             onTitleChanged = onTitleChanged,
@@ -232,8 +232,8 @@ private fun HandleAlerts(
 ) {
     if (state.showPermanentlyDeleteConfirmation) {
         ConfirmPermanentlyDeleteChecklistDialog(
-            onDeleteClick = { viewModel.permanentlyDeleteConfirmed() },
-            onDismiss = { viewModel.permanentlyDeleteDismissed() }
+            onDeleteClick = { viewModel.permanentlyDeleteItemWhenConfirmed() },
+            onDismiss = { viewModel.dismissPermanentlyDeleteConfirmation() }
         )
     }
 
@@ -241,7 +241,7 @@ private fun HandleAlerts(
         ShareTypeSelectionDialog(
             title = stringResource(R.string.share_checklist_title),
             onDismiss = viewModel::cancelItemShareTypeRequest,
-            onTypeSelected = viewModel::shareAs,
+            onTypeSelected = viewModel::shareItemAs,
         )
     }
 }

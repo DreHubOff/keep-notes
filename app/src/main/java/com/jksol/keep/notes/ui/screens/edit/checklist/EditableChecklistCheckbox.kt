@@ -52,7 +52,7 @@ import com.jksol.keep.notes.ui.theme.ApplicationTheme
 import com.jksol.keep.notes.ui.theme.themedCheckboxColors
 import kotlinx.coroutines.delay
 
-private val textFieldTranslationX = (-14).dp
+private val textFieldTranslationX = (-10).dp
 
 @Composable
 fun EditableChecklistCheckbox(
@@ -122,7 +122,7 @@ fun EditableChecklistCheckbox(
                 modifier = Modifier
                     .weight(1f)
                     .wrapContentHeight()
-                    .graphicsLayer { this.translationX = translationX }
+                    .graphicsLayer { this.translationX = textFieldTranslationX.toPx() }
                     .focusRequester(focusRequester)
                     .onFocusChanged { focusState ->
                         isTextFieldFocused = focusState.isFocused

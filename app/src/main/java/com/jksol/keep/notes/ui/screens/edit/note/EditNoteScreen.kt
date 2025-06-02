@@ -67,11 +67,11 @@ fun EditNoteScreen() {
         onPinCheckedChange = viewModel::onPinCheckedChange,
         onTitleNextClick = viewModel::onTitleNextClick,
         onMoveToTrashClick = viewModel::moveToTrash,
-        onPermanentlyDeleteClick = viewModel::permanentlyDeleteNoteAskConfirmation,
-        onRestoreClick = viewModel::restoreNote,
+        onPermanentlyDeleteClick = viewModel::askConfirmationToPermanentlyDeleteItem,
+        onRestoreClick = viewModel::restoreItemFromTrash,
         onAttemptEditTrashed = viewModel::onAttemptEditTrashed,
         onSnackbarAction = viewModel::handleSnackbarAction,
-        onShareClick = viewModel::onShareClick,
+        onShareClick = viewModel::onShareCurrentItemClick,
     )
 
     HandleAlerts(state, viewModel)
@@ -101,7 +101,7 @@ fun ScreenContent(
     Scaffold(
         modifier = Modifier
             .fillMaxSize()
-            .mainItemCardTransition(rememberTextNoteToEditorTransitionKey(state.noteId)),
+            .mainItemCardTransition(rememberTextNoteToEditorTransitionKey(state.itemId)),
         contentWindowInsets = WindowInsets.systemBars,
         snackbarHost = {
             SnackbarHost(
@@ -114,7 +114,7 @@ fun ScreenContent(
             modifier = Modifier.fillMaxSize()
         ) {
             EditActionBar(
-                pinTransitionKey = rememberTextNotePinToEditorTransitionKey(state.noteId),
+                pinTransitionKey = rememberTextNotePinToEditorTransitionKey(state.itemId),
                 systemBarInset = innerPadding.calculateTopPadding(),
                 pinned = state.isPinned,
                 trashed = state.isTrashed,
@@ -154,7 +154,7 @@ private fun Editor(
         NoteBody(
             modifier = Modifier,
             title = state.title,
-            titleTransitionKey = rememberTextNoteToEditorTitleTransitionKey(state.noteId),
+            titleTransitionKey = rememberTextNoteToEditorTitleTransitionKey(state.itemId),
             content = state.content,
             contentFocusRequest = state.contentFocusRequest,
             onTitleChanged = onTitleChanged,
@@ -175,8 +175,8 @@ private fun HandleAlerts(
 ) {
     if (state.showPermanentlyDeleteConfirmation) {
         ConfirmPermanentlyDeleteNoteDialog(
-            onDeleteClick = { viewModel.permanentlyDeleteNoteConfirmed() },
-            onDismiss = { viewModel.permanentlyDeleteNoteDismissed() }
+            onDeleteClick = { viewModel.permanentlyDeleteItemWhenConfirmed() },
+            onDismiss = { viewModel.dismissPermanentlyDeleteConfirmation() }
         )
     }
 
@@ -184,7 +184,7 @@ private fun HandleAlerts(
         ShareTypeSelectionDialog(
             title = stringResource(R.string.share_note_title),
             onDismiss = viewModel::cancelItemShareTypeRequest,
-            onTypeSelected = viewModel::shareNoteAs,
+            onTypeSelected = viewModel::shareItemAs,
         )
     }
 }
@@ -201,17 +201,17 @@ private class EditNoteScreenStateProvider : PreviewParameterProvider<EditNoteScr
     override val values: Sequence<EditNoteScreenState>
         get() = sequenceOf(
             EditNoteScreenState.EMPTY.copy(
-                noteId = 0,
+                itemId = 0,
                 title = MainScreenDemoData.TextNotes.welcomeBanner.title,
                 content = MainScreenDemoData.TextNotes.welcomeBanner.content,
                 modificationStatusMessage = "Edited 09:48 am",
             ),
             EditNoteScreenState.EMPTY.copy(
-                noteId = 1,
+                itemId = 1,
                 modificationStatusMessage = "Edited 09:48 am",
             ),
             EditNoteScreenState.EMPTY.copy(
-                noteId = 1,
+                itemId = 1,
                 isPinned = true,
                 modificationStatusMessage = "Edited 09:48 am",
             ),

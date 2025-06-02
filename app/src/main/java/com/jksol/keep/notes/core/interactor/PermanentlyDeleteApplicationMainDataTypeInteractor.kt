@@ -24,7 +24,7 @@ class PermanentlyDeleteApplicationMainDataTypeInteractor @Inject constructor(
             }
         }
         supervisorScope {
-            launch { textNotesRepository.delete(textNotes) }
+            launch { textNotesRepository.permanentlyDelete(textNotes) }
             launch { checklistRepository.delete(checklists) }
         }
     }

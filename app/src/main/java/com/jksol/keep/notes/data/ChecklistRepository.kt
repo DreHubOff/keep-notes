@@ -1,6 +1,7 @@
 package com.jksol.keep.notes.data
 
 import androidx.room.withTransaction
+import com.jksol.keep.notes.core.MainTypeEditorFacade
 import com.jksol.keep.notes.core.model.Checklist
 import com.jksol.keep.notes.core.model.ChecklistItem
 import com.jksol.keep.notes.data.database.AppDatabase
@@ -21,7 +22,7 @@ class ChecklistRepository @Inject constructor(
     private val database: AppDatabase,
     private val checklistDao: ChecklistDao,
     private val checklistItemDao: ChecklistItemDao,
-) {
+) : MainTypeEditorFacade {
 
     suspend fun getChecklistById(id: Long): Checklist? =
         checklistDao.getChecklistWithItemsById(id)?.toDomain()
@@ -52,6 +53,10 @@ class ChecklistRepository @Inject constructor(
     fun observeTrashedChecklists(): Flow<List<Checklist>> =
         checklistDao.observeTrashed().map { list -> list.map { checklist -> checklist.toDomain() } }
 
+    override suspend fun storeNewTitle(title: String, itemId: Long) {
+        updateChecklistTitle(checklistId = itemId, title = title)
+    }
+
     suspend fun updateChecklistTitle(checklistId: Long, title: String) {
         withContext(NonCancellable) {
             checklistDao.updateChecklistTitleById(
@@ -62,10 +67,10 @@ class ChecklistRepository @Inject constructor(
         }
     }
 
-    suspend fun updatePinnedState(checklistId: Long, isPinned: Boolean) {
+    override suspend fun storePinnedSate(pinned: Boolean, itemId: Long) {
         withContext(NonCancellable) {
             // Does not effect modification date
-            checklistDao.updatePinnedStateById(checklistId, isPinned)
+            checklistDao.updatePinnedStateById(itemId, pinned)
         }
     }
 
@@ -109,11 +114,11 @@ class ChecklistRepository @Inject constructor(
         }
     }
 
-    suspend fun delete(checklistId: Long) {
+    override suspend fun permanentlyDelete(itemId: Long) {
         withContext(NonCancellable) {
             database.withTransaction {
-                checklistItemDao.deleteItemsForChecklist(checklistId = checklistId)
-                checklistDao.deleteChecklistById(checklistId = checklistId)
+                checklistItemDao.deleteItemsForChecklist(checklistId = itemId)
+                checklistDao.deleteChecklistById(checklistId = itemId)
             }
         }
     }
@@ -182,14 +187,18 @@ class ChecklistRepository @Inject constructor(
         }
     }
 
-    suspend fun moveToTrash(checklistId: Long) {
+    override suspend fun moveToTrash(itemId: Long) {
         withContext(NonCancellable) {
             database.withTransaction {
-                checklistDao.updateIsTrashedById(id = checklistId, isTrashed = true)
-                checklistDao.updateTrashedDateById(id = checklistId, date = OffsetDateTime.now())
-                checklistDao.updatePinnedStateById(id = checklistId, isPinned = false)
+                checklistDao.updateIsTrashedById(id = itemId, isTrashed = true)
+                checklistDao.updateTrashedDateById(id = itemId, date = OffsetDateTime.now())
+                checklistDao.updatePinnedStateById(id = itemId, isPinned = false)
             }
         }
+    }
+
+    override suspend fun restoreItemFromTrash(itemId: Long) {
+        restoreChecklist(checklistId = itemId)
     }
 
     suspend fun restoreChecklist(checklistId: Long) {

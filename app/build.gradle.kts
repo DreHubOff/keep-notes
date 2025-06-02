@@ -25,6 +25,7 @@ android {
         val fileProviderAuthority = "${applicationId}.fileprovider"
         buildConfigField("String", "FILE_PROVIDER_AUTHORITY", "\"${fileProviderAuthority}\"")
         manifestPlaceholders["fileProviderAuthority"] = fileProviderAuthority
+        buildConfigField("int", "TRASH_ITEM_MAX_LIFETIME_SECONDS", "60 * 60 * 24 * 7") // 7 days
     }
 
     buildTypes {
@@ -35,7 +36,6 @@ android {
             signingConfig = signingConfigs.getByName("debug")
             isMinifyEnabled = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
-            buildConfigField("int", "TRASH_ITEM_MAX_LIFETIME_SECONDS", "60 * 60 * 24 * 7") // 7 days
         }
     }
     buildFeatures {

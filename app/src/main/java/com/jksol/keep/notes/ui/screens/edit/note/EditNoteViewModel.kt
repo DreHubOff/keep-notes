@@ -2,12 +2,12 @@ package com.jksol.keep.notes.ui.screens.edit.note
 
 import android.content.Context
 import androidx.lifecycle.SavedStateHandle
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
 import com.jksol.keep.notes.R
 import com.jksol.keep.notes.core.interactor.BuildModificationDateTextInteractor
 import com.jksol.keep.notes.core.interactor.BuildPdfFromTextNoteInteractor
+import com.jksol.keep.notes.core.model.MainTypeTextRepresentation
 import com.jksol.keep.notes.core.model.TextNote
 import com.jksol.keep.notes.data.TextNotesRepository
 import com.jksol.keep.notes.di.ApplicationGlobalScope
@@ -16,11 +16,10 @@ import com.jksol.keep.notes.ui.intent.ShareFileIntentBuilder
 import com.jksol.keep.notes.ui.intent.ShareTextIntentBuilder
 import com.jksol.keep.notes.ui.navigation.NavigationEventsHost
 import com.jksol.keep.notes.ui.screens.Route
-import com.jksol.keep.notes.ui.screens.edit.ShareContentType
+import com.jksol.keep.notes.ui.screens.edit.core.EditScreenViewModel
 import com.jksol.keep.notes.ui.screens.edit.note.model.EditNoteScreenState
-import com.jksol.keep.notes.ui.screens.edit.note.model.TrashSnackbarAction
-import com.jksol.keep.notes.ui.shared.SnackbarEvent
 import com.jksol.keep.notes.ui.shared.defaultTransitionAnimationDuration
+import dagger.Lazy
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
@@ -28,236 +27,103 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import java.time.OffsetDateTime
+import java.io.File
 import javax.inject.Inject
 import javax.inject.Provider
 
 @HiltViewModel
 class EditNoteViewModel @Inject constructor(
-    savedStateHandle: SavedStateHandle,
+    shareFileIntentBuilder: Provider<ShareFileIntentBuilder>,
+    shareTextIntentBuilder: Provider<ShareTextIntentBuilder>,
+    buildModificationDateText: Lazy<BuildModificationDateTextInteractor>,
+    private val savedStateHandle: SavedStateHandle,
     @ApplicationContext
     private val context: Context,
     @ApplicationGlobalScope
     private val applicationCoroutineScope: CoroutineScope,
-    private val buildModificationDateText: BuildModificationDateTextInteractor,
     private val buildPdfFromTextNote: Provider<BuildPdfFromTextNoteInteractor>,
     private val navigationEventsHost: NavigationEventsHost,
     private val textNotesRepository: TextNotesRepository,
-    private val shareTextIntentBuilder: ShareTextIntentBuilder,
-    private val shareFileIntentBuilder: ShareFileIntentBuilder,
-) : ViewModel() {
+) : EditScreenViewModel<EditNoteScreenState, TextNote>(
+    navigationEventsHost = navigationEventsHost,
+    editorFacade = textNotesRepository,
+    applicationCoroutineScope = applicationCoroutineScope,
+    context = context,
+    buildModificationDateText = buildModificationDateText,
+    shareTextIntentBuilder = shareTextIntentBuilder,
+    shareFileIntentBuilder = shareFileIntentBuilder,
+) {
 
-    private val initialNoteId = savedStateHandle.toRoute<Route.EditNoteScreen>().noteId ?: 0
+    override val itemRestoredMessageRes: Int = R.string.note_restored
 
-    private val _state = MutableStateFlow(EditNoteScreenState.EMPTY)
-    val state: Flow<EditNoteScreenState> = _state
-        .asStateFlow()
-        .onStart { loadInitialState() }
+    override fun getCurrentIdFromNavigationArgs(): Long =
+        savedStateHandle.toRoute<Route.EditNoteScreen>().noteId ?: 0
 
-    private var titleModificationJob: Job? = null
-    private var contentModificationJob: Job? = null
+    override fun itemUpdatesFlow(itemId: Long): Flow<TextNote> =
+        textNotesRepository.observeNoteById(itemId)
 
-    fun onTitleChanged(title: String) {
-        titleModificationJob?.cancel()
-        titleModificationJob = viewModelScope.launch {
-            contentModificationJob?.join()
-            delay(600)
-            val currentState = _state.value
-            updateNote(state = currentState, title = title)
-        }
+    override fun getEmptyState(): EditNoteScreenState = EditNoteScreenState.EMPTY
+
+    override fun fillWithScreenSpesificData(
+        oldState: EditNoteScreenState,
+        newState: EditNoteScreenState,
+        updatedItem: TextNote,
+    ): EditNoteScreenState {
+        return newState.copy(
+            content = updatedItem.content,
+            contentFocusRequest = oldState.contentFocusRequest,
+        )
     }
+
+    private var contentModificationJob: Job? = null
 
     fun onContentChanged(content: String) {
         contentModificationJob?.cancel()
-        contentModificationJob = viewModelScope.launch {
-            titleModificationJob?.join()
+        contentModificationJob = applicationCoroutineScope.launch {
             delay(600)
             val currentState = _state.value
-            updateNote(state = currentState, content = content)
+            textNotesRepository.storeNewContent(content = content, itemId = currentState.itemId)
         }
     }
 
     fun onBackClicked() {
+        navigateBack(itemId = _state.value.itemId, isTrashed = false)
+    }
+
+    override fun navigateBack(itemId: Long, isTrashed: Boolean) {
         viewModelScope.launch(Dispatchers.Default) {
-            contentModificationJob?.join()
-            titleModificationJob?.join()
-            val currentState = _state.value
-            navigationEventsHost.navigateBack(
-                Route.EditNoteScreen.Result.KEY to
-                        Route.EditNoteScreen.Result.Edited(noteId = currentState.noteId)
-            )
+            val result = if (isTrashed) {
+                Route.EditNoteScreen.Result.Trashed(noteId = itemId)
+            } else {
+                Route.EditNoteScreen.Result.Edited(noteId = itemId)
+            }
+            navigationEventsHost.navigateBack(Route.EditNoteScreen.Result.KEY to result)
         }
     }
 
-    fun onPinCheckedChange(pinned: Boolean) {
-        viewModelScope.launch(Dispatchers.Default) {
-            val currentState = _state.value
-            updateNote(state = currentState, isPinned = pinned)
-        }
-    }
+    override suspend fun getPdfRepresentation(state: EditNoteScreenState): File? =
+        buildPdfFromTextNote.get().invoke(state.itemId)
+
+    override suspend fun getTextRepresentation(state: EditNoteScreenState): MainTypeTextRepresentation =
+        MainTypeTextRepresentation(title = state.title, content = state.content)
 
     fun onTitleNextClick() {
         _state.update { state -> state.copy(contentFocusRequest = ElementFocusRequest()) }
     }
 
-    fun moveToTrash() {
-        val currentState = _state.value
-        applicationCoroutineScope.launch {
+    override suspend fun loadFirstItem(itemIdFromNavArgs: Long): TextNote {
+        var currentNote = textNotesRepository.getNoteById(itemIdFromNavArgs)
+        var requestContentFocus = false
+        if (currentNote == null) {
             delay(defaultTransitionAnimationDuration.toLong())
-            textNotesRepository.moveToTrash(currentState.noteId)
+            currentNote = textNotesRepository.saveTextNote(TextNote.generateEmpty())
+            requestContentFocus = true
         }
-        viewModelScope.launch(Dispatchers.Default) {
-            navigationEventsHost.navigateBack(
-                result = Route.EditNoteScreen.Result.KEY to
-                        Route.EditNoteScreen.Result.Trashed(noteId = currentState.noteId)
-            )
+        _state.update { state ->
+            state.copy(contentFocusRequest = if (requestContentFocus) ElementFocusRequest() else null)
         }
-    }
-
-    fun permanentlyDeleteNoteAskConfirmation() {
-        _state.update { it.copy(showPermanentlyDeleteConfirmation = true) }
-    }
-
-    fun permanentlyDeleteNoteConfirmed() {
-        _state.update { it.copy(showPermanentlyDeleteConfirmation = false) }
-        applicationCoroutineScope.launch {
-            delay(defaultTransitionAnimationDuration.toLong())
-            textNotesRepository.delete(noteId = _state.value.noteId)
-        }
-        viewModelScope.launch { onBackClicked() }
-    }
-
-    fun permanentlyDeleteNoteDismissed() {
-        _state.update { it.copy(showPermanentlyDeleteConfirmation = false) }
-    }
-
-    fun restoreNote() {
-        viewModelScope.launch {
-            _state.update {
-                it.copy(
-                    isTrashed = false,
-                    snackbarEvent = SnackbarEvent(
-                        message = context.getString(R.string.note_restored),
-                        action = SnackbarEvent.Action(
-                            label = context.getString(R.string.undo),
-                            key = TrashSnackbarAction.UndoNoteRestoration,
-                        ),
-                    )
-                )
-            }
-            textNotesRepository.restoreNote(_state.value.noteId)
-        }
-    }
-
-    private fun undoNoteRestoration() {
-        viewModelScope.launch {
-            _state.update { it.copy(isTrashed = true) }
-            textNotesRepository.moveToTrash(_state.value.noteId)
-        }
-    }
-
-    fun onAttemptEditTrashed() {
-        _state.update {
-            it.copy(
-                snackbarEvent = SnackbarEvent(
-                    message = context.getString(R.string.cannot_edit_in_trash),
-                    action = SnackbarEvent.Action(
-                        label = context.getString(R.string.restore),
-                        key = TrashSnackbarAction.Restore,
-                    ),
-                )
-            )
-        }
-    }
-
-    fun handleSnackbarAction(action: SnackbarEvent.Action) {
-        when (action.key as TrashSnackbarAction) {
-            TrashSnackbarAction.Restore -> restoreNote()
-            TrashSnackbarAction.UndoNoteRestoration -> undoNoteRestoration()
-        }
-    }
-
-    fun onShareClick() {
-        _state.update { it.copy(requestItemShareType = true) }
-    }
-
-    fun cancelItemShareTypeRequest() {
-        _state.update { it.copy(requestItemShareType = false) }
-    }
-
-    fun shareNoteAs(shareContentType: ShareContentType) {
-        cancelItemShareTypeRequest()
-        viewModelScope.launch(Dispatchers.Default) {
-            when (shareContentType) {
-                ShareContentType.AS_TEXT -> shareAsText()
-                ShareContentType.AS_PDF -> shareAsPdf()
-            }
-        }
-    }
-
-    private suspend fun shareAsText() {
-        val currentNote = _state.value
-        val shareIntent = shareTextIntentBuilder.build(
-            subject = currentNote.title,
-            content = currentNote.content,
-        ) ?: return
-        navigationEventsHost.navigate(intent = shareIntent)
-    }
-
-    private suspend fun shareAsPdf() {
-        val pdfFile = buildPdfFromTextNote.get().invoke(_state.value.noteId) ?: return
-        val shareIntent = shareFileIntentBuilder.build(file = pdfFile) ?: return
-        navigationEventsHost.navigate(intent = shareIntent)
-    }
-
-    private fun loadInitialState() {
-        viewModelScope.launch(Dispatchers.Default) {
-            var currentNote = textNotesRepository.getNoteById(initialNoteId)
-            var requestContentFocus = false
-            if (currentNote == null) {
-                delay(defaultTransitionAnimationDuration.toLong())
-                currentNote = textNotesRepository.saveTextNote(TextNote.generateEmpty())
-                requestContentFocus = true
-            }
-            _state.update {
-                it.copy(
-                    noteId = currentNote.id,
-                    title = currentNote.title,
-                    content = currentNote.content,
-                    modificationStatusMessage = buildModificationDateText(currentNote.modificationDate),
-                    isPinned = currentNote.isPinned,
-                    contentFocusRequest = if (requestContentFocus) ElementFocusRequest() else null,
-                    isTrashed = currentNote.isTrashed,
-                )
-            }
-        }
-    }
-
-    private suspend fun updateNote(
-        state: EditNoteScreenState,
-        title: String = state.title,
-        content: String = state.content,
-        isPinned: Boolean = state.isPinned,
-    ) {
-        val newDate = OffsetDateTime.now()
-        textNotesRepository.updateNoteContent(
-            noteId = state.noteId,
-            updateTime = newDate,
-            title = title,
-            content = content,
-            isPinned = isPinned
-        )
-        val newState = state.copy(
-            title = title,
-            content = content,
-            modificationStatusMessage = buildModificationDateText(newDate),
-            isPinned = isPinned
-        )
-        _state.emit(newState)
+        return currentNote
     }
 }

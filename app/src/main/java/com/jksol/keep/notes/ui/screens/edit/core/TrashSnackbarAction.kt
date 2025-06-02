@@ -1,4 +1,4 @@
-package com.jksol.keep.notes.ui.screens.edit.note.model
+package com.jksol.keep.notes.ui.screens.edit.core
 
 sealed class TrashSnackbarAction {
 

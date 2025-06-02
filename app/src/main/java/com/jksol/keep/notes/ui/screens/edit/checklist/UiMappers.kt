@@ -1,32 +1,9 @@
 package com.jksol.keep.notes.ui.screens.edit.checklist
 
-import com.jksol.keep.notes.core.model.Checklist
 import com.jksol.keep.notes.core.model.ChecklistItem
 import com.jksol.keep.notes.ui.focus.ElementFocusRequest
 import com.jksol.keep.notes.ui.screens.edit.checklist.model.CheckedListItemUi
-import com.jksol.keep.notes.ui.screens.edit.checklist.model.EditChecklistScreenState
 import com.jksol.keep.notes.ui.screens.edit.checklist.model.UncheckedListItemUi
-
-fun Checklist.toEditChecklistScreenState(
-    focusedItemIndex: Int?,
-    focusRequest: ElementFocusRequest?,
-    showCheckedItems: Boolean,
-    modificationStatusMessage: String,
-): EditChecklistScreenState {
-    return EditChecklistScreenState(
-        checklistId = id,
-        title = title,
-        isPinned = isPinned,
-        modificationStatusMessage = modificationStatusMessage,
-        uncheckedItems = items.toUncheckedListItemsUi(focusedItemIndex = focusedItemIndex, focusRequest = focusRequest),
-        checkedItems = items.toCheckedListItemsUi(),
-        showCheckedItems = showCheckedItems,
-        isTrashed = isTrashed,
-        showPermanentlyDeleteConfirmation = EditChecklistScreenState.EMPTY.showPermanentlyDeleteConfirmation,
-        snackbarEvent = EditChecklistScreenState.EMPTY.snackbarEvent,
-        requestItemShareType = EditChecklistScreenState.EMPTY.requestItemShareType,
-    )
-}
 
 fun ChecklistItem.toUncheckedListItemUi(focusRequest: ElementFocusRequest? = null): UncheckedListItemUi {
     return UncheckedListItemUi(

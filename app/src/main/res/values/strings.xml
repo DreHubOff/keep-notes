@@ -50,6 +50,7 @@
     <string name="restore">Restore</string>
     <string name="cannot_edit_in_trash">Can\'t edit in Trash</string>
     <string name="note_restored">Note restored</string>
+    <string name="checklist_restored">Checklist restored</string>
     <string name="share_as_text">Share as Text</string>
     <string name="share_as_pdf">Share as PDF</string>
     <string name="share_note_title">Share Note</string>

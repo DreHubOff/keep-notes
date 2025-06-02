@@ -1,6 +1,6 @@
 package com.jksol.keep.notes.core.model
 
-data class ChecklistTextRepresentation(
+data class MainTypeTextRepresentation(
     val title: String,
     val content: String,
 )

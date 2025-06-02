@@ -13,14 +13,21 @@ class BuildModificationDateTextInteractor @Inject constructor(
     @ApplicationContext private val context: Context,
 ) {
     private val timeFormat by lazy { DateTimeFormatter.ofPattern("h:mm a", Locale.getDefault()) }
-    private val dateFormat by lazy { DateTimeFormatter.ofPattern("MMM d", Locale.getDefault()) }
+    private val dateShortFormat by lazy { DateTimeFormatter.ofPattern("MMM d", Locale.getDefault()) }
+    private val dateLongFormat by lazy { DateTimeFormatter.ofPattern("MMM d, yyyy", Locale.getDefault()) }
 
     operator fun invoke(modificationDate: OffsetDateTime): String {
         val currentTime = OffsetDateTime.now()
         val duration = Duration.between(modificationDate, currentTime)
+
         return when {
-            duration.toDays() >= 1L -> {
-                val time = modificationDate.toLocalDate().format(dateFormat)
+            modificationDate.year != currentTime.year -> {
+                val time = modificationDate.toLocalDate().format(dateLongFormat)
+                context.getString(R.string.edited_pattern).format(time).lowercase()
+            }
+
+            modificationDate.dayOfYear != currentTime.dayOfYear -> {
+                val time = modificationDate.toLocalDate().format(dateShortFormat)
                 context.getString(R.string.edited_pattern).format(time)
             }
 

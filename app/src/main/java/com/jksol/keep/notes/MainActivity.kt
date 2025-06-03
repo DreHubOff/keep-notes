@@ -152,7 +152,11 @@ class MainActivity : ComponentActivity() {
                         ?.savedStateHandle
                         ?.set(key, result)
                 }
-                navController.popBackStack()
+                if (navController.previousBackStackEntry == null) {
+                    finish()
+                } else {
+                    navController.popBackStack()
+                }
             }
 
             is NavigationEvent.NavigateTo -> navController.navigate(event.route)

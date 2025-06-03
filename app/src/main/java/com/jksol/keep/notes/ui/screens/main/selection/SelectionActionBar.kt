@@ -44,6 +44,7 @@ import com.jksol.keep.notes.ui.theme.ApplicationTheme
 fun SelectionActionBar(
     innerPadding: PaddingValues,
     selectedItemCount: Int,
+    isPinned: Boolean,
     onExitSelectionMode: () -> Unit = {},
     onMoveToTrashClick: () -> Unit = {},
     onPinnedStateChanged: (Boolean) -> Unit = {},
@@ -98,6 +99,7 @@ fun SelectionActionBar(
             ActionBarContent(
                 value = selectionText,
                 modifier = Modifier.padding(horizontalPad),
+                isPinned = isPinned,
                 onCancelClick = {
                     showActionBar = false
                     onExitSelectionMode()
@@ -169,6 +171,7 @@ private fun Preview() {
         SelectionActionBar(
             innerPadding = PaddingValues(10.dp),
             selectedItemCount = 1,
+            isPinned = true,
         )
     }
 }

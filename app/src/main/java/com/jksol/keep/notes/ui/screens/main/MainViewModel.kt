@@ -9,6 +9,7 @@ import com.jksol.keep.notes.core.interactor.PermanentlyDeleteOldTrashRecordsInte
 import com.jksol.keep.notes.data.ChecklistRepository
 import com.jksol.keep.notes.data.TextNotesRepository
 import com.jksol.keep.notes.data.preferences.UserPreferences
+import com.jksol.keep.notes.di.ApplicationGlobalScope
 import com.jksol.keep.notes.ui.focus.ElementFocusRequest
 import com.jksol.keep.notes.ui.navigation.NavigationEventsHost
 import com.jksol.keep.notes.ui.screens.Route
@@ -20,6 +21,7 @@ import com.jksol.keep.notes.ui.shared.SnackbarEvent
 import com.jksol.keep.notes.ui.shared.defaultTransitionAnimationDuration
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -31,6 +33,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.supervisorScope
 import kotlinx.coroutines.withContext
 import java.time.Duration
 import java.time.OffsetDateTime
@@ -40,6 +43,8 @@ import javax.inject.Inject
 class MainViewModel @Inject constructor(
     @ApplicationContext
     private val context: Context,
+    @ApplicationGlobalScope
+    private val applicationScope: CoroutineScope,
     private val navigationEventsHost: NavigationEventsHost,
     private val textNotesRepository: TextNotesRepository,
     private val observeApplicationMainType: ObserveApplicationMainTypeInteractor,
@@ -61,6 +66,20 @@ class MainViewModel @Inject constructor(
                 .map { items -> items.map { item -> item.toMainScreenItem() } }
                 .map { items -> mainScreenStateFromItems(items, searchPrompt) }
             _uiState.emitAll(stateFlow)
+        }
+    }
+
+    fun navigateBack() {
+        viewModelScope.launch {
+            if (_uiState.value.isSelectionMode) {
+                onExitSelectionMode()
+                return@launch
+            }
+            if (_uiState.value.searchEnabled) {
+                onToggleSearchVisibility()
+                return@launch
+            }
+            navigationEventsHost.navigateBack()
         }
     }
 
@@ -147,6 +166,22 @@ class MainViewModel @Inject constructor(
 
                 is MainSnackbarActionKey.UndoTrashedNote ->
                     textNotesRepository.restoreItemFromTrash(actionKey.noteId)
+
+                is MainSnackbarActionKey.UndoTrashedItemList ->
+                    undoTrashedItems(actionKey.items)
+            }
+        }
+    }
+
+    private fun undoTrashedItems(items: List<MainScreenItem>) {
+        applicationScope.launch {
+            supervisorScope {
+                items.forEach { item ->
+                    when (item) {
+                        is MainScreenItem.Checklist -> launch { checklistRepository.restoreChecklist(item.id) }
+                        is MainScreenItem.TextNote -> launch { textNotesRepository.restoreItemFromTrash(item.id) }
+                    }
+                }
             }
         }
     }
@@ -167,11 +202,82 @@ class MainViewModel @Inject constructor(
     }
 
     fun onChecklistLongClick(checklist: MainScreenItem.Checklist) {
-        TODO("Not yet implemented")
+        changeItemSelectionState(selectedItem = checklist)
     }
 
     fun onTextNoteLongClick(textNote: MainScreenItem.TextNote) {
-        TODO("Not yet implemented")
+        changeItemSelectionState(selectedItem = textNote)
+    }
+
+    fun onExitSelectionMode() {
+        _uiState.update { state ->
+            val listItems = state.screenItems.map { item ->
+                if (item.isSelected) item.withSelection(isSelected = false) else item
+            }
+            state.copy(screenItems = listItems, selectedItemsArePinned = false)
+        }
+    }
+
+    fun onMoveToTrashSelected() {
+        applicationScope.launch(Dispatchers.Default) {
+            val itemsToTrash = _uiState.value.screenItems.filter { it.isSelected }
+            onExitSelectionMode()
+            supervisorScope {
+                itemsToTrash.forEach { item ->
+                    when (item) {
+                        is MainScreenItem.Checklist -> launch { checklistRepository.moveToTrash(item.id) }
+                        is MainScreenItem.TextNote -> launch { textNotesRepository.moveToTrash(item.id) }
+                    }
+                }
+            }
+            notifyItemsMovedToTrash(itemsToTrash)
+        }
+    }
+
+    private fun notifyItemsMovedToTrash(trashedItems: List<MainScreenItem>) {
+        _uiState.update { oldState ->
+            val snackbarEvent = SnackbarEvent(
+                message = context.getString(R.string.note_moved_to_trash),
+                action = SnackbarEvent.Action(
+                    label = context.getString(R.string.undo),
+                    key = MainSnackbarActionKey.UndoTrashedItemList(items = trashedItems)
+                )
+            )
+            oldState.copy(snackbarEvent = snackbarEvent)
+        }
+    }
+
+    fun onPinnedStateChangedForSelected(checked: Boolean) {
+        applicationScope.launch(Dispatchers.Default) {
+            val itemsToUpdate = _uiState.value.screenItems.filter { it.isSelected }
+            _uiState.update { it.copy(selectedItemsArePinned = checked) }
+            supervisorScope {
+                itemsToUpdate.forEach { item ->
+                    when (item) {
+                        is MainScreenItem.Checklist ->
+                            launch { checklistRepository.storePinnedSate(pinned = checked, itemId = item.id) }
+
+                        is MainScreenItem.TextNote ->
+                            launch { textNotesRepository.storePinnedSate(pinned = checked, itemId = item.id) }
+                    }
+                }
+            }
+            onExitSelectionMode()
+        }
+    }
+
+    private fun <T : MainScreenItem> changeItemSelectionState(selectedItem: T) {
+        _uiState.update { state ->
+            val listItems = state.screenItems.map { item ->
+                if (item.compositeKey == selectedItem.compositeKey) {
+                    item.withSelection(isSelected = item.isSelected.not())
+                } else {
+                    item
+                }
+            }
+            val selectedItemsArePinned = listItems.filter { it.isSelected }.all { it.isPinned }
+            state.copy(screenItems = listItems, selectedItemsArePinned = selectedItemsArePinned)
+        }
     }
 
     private suspend fun validateNoteEditingResult(result: Route.EditNoteScreen.Result): SnackbarEvent? {

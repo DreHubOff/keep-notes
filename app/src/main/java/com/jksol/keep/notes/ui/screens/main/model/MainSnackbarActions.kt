@@ -9,4 +9,8 @@ sealed class MainSnackbarActionKey {
     data class UndoTrashedNote(
         val noteId: Long,
     ) : MainSnackbarActionKey()
+
+    data class UndoTrashedItemList(
+        val items: List<MainScreenItem>,
+    ) : MainSnackbarActionKey()
 }

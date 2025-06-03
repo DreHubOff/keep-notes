@@ -26,6 +26,7 @@ fun MainScreenStateSelection(
     innerPadding: PaddingValues,
     listItems: List<MainScreenItem>,
     selectedItemCount: Int,
+    selectedItemsArePinned: Boolean,
     onExitSelectionMode: () -> Unit,
     onMoveToTrashClick: () -> Unit,
     onPinnedStateChanged: (Boolean) -> Unit,
@@ -49,6 +50,7 @@ fun MainScreenStateSelection(
             selectedItemCount = selectedItemCount,
             onMoveToTrashClick = onMoveToTrashClick,
             onPinnedStateChanged = onPinnedStateChanged,
+            isPinned = selectedItemsArePinned,
         )
         LazyColumn(
             modifier = modifier.fillMaxSize(),
@@ -84,12 +86,13 @@ private fun Preview() {
         MainScreenStateSelection(
             innerPadding = PaddingValues(20.dp),
             listItems = MainScreenDemoData.notesList(),
-            selectTextNote = {},
-            selectChecklist = {},
+            selectedItemCount = 123,
+            selectedItemsArePinned = false,
             onExitSelectionMode = {},
             onMoveToTrashClick = {},
             onPinnedStateChanged = {},
-            selectedItemCount = 123,
+            selectTextNote = {},
+            selectChecklist = {},
         )
     }
 }

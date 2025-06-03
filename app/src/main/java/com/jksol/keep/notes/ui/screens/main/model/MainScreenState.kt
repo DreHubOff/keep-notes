@@ -11,7 +11,12 @@ data class MainScreenState(
     val searchEnabled: Boolean = searchPrompt != null,
     val isWelcomeBanner: Boolean,
     val showNavigationOverlay: ElementFocusRequest?,
+    val selectedItemsArePinned: Boolean,
 ) {
+
+    val selectedItemsCount: Int by lazy { screenItems.count { it.isSelected } }
+    val isSelectionMode: Boolean get() = selectedItemsCount > 0
+
     companion object {
         val EMPTY: MainScreenState = MainScreenState(
             screenItems = emptyList(),
@@ -20,6 +25,7 @@ data class MainScreenState(
             snackbarEvent = null,
             isWelcomeBanner = false,
             showNavigationOverlay = null,
+            selectedItemsArePinned = false,
         )
     }
 }

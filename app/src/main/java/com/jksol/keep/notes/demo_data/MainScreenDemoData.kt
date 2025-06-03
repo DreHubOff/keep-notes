@@ -157,7 +157,8 @@ object MainScreenDemoData {
                 ),
                 tickedItems = 2,
                 hasScheduledReminder = true,
-                isPinned = true
+                isPinned = true,
+                isSelected = true,
             )
     }
 

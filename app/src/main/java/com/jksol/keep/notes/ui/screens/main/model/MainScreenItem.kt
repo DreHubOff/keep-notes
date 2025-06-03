@@ -13,6 +13,8 @@ sealed class MainScreenItem {
 
     val compositeKey: String by lazy { this::class.simpleName + id }
 
+    abstract fun withSelection(isSelected: Boolean): MainScreenItem
+
     @Stable
     data class TextNote(
         override val id: Long,
@@ -22,7 +24,10 @@ sealed class MainScreenItem {
         override val hasScheduledReminder: Boolean = false,
         override val interactive: Boolean = true,
         override val isSelected: Boolean = false,
-    ) : MainScreenItem()
+    ) : MainScreenItem() {
+
+        override fun withSelection(isSelected: Boolean): MainScreenItem = copy(isSelected = isSelected)
+    }
 
     @Stable
     data class Checklist(
@@ -36,6 +41,8 @@ sealed class MainScreenItem {
         override val interactive: Boolean = true,
         override val isSelected: Boolean = false,
     ) : MainScreenItem() {
+
+        override fun withSelection(isSelected: Boolean): MainScreenItem = copy(isSelected = isSelected)
 
         @Stable
         data class Item(val isChecked: Boolean, val text: String)

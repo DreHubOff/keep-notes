@@ -2,6 +2,7 @@ package com.jksol.keep.notes.ui.screens.main
 
 import android.content.res.Configuration
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.LocalActivity
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
@@ -37,6 +38,7 @@ import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.repeatOnLifecycle
 import com.jksol.keep.notes.demo_data.MainScreenDemoData.notesList
@@ -46,6 +48,7 @@ import com.jksol.keep.notes.ui.screens.main.drawer.MainDrawer
 import com.jksol.keep.notes.ui.screens.main.fab.MainFabContainer
 import com.jksol.keep.notes.ui.screens.main.model.MainScreenItem
 import com.jksol.keep.notes.ui.screens.main.model.MainScreenState
+import com.jksol.keep.notes.ui.screens.main.selection.MainScreenStateSelection
 import com.jksol.keep.notes.ui.shared.HandleSnackbarState
 import com.jksol.keep.notes.ui.shared.SnackbarEvent
 import com.jksol.keep.notes.ui.shared.defaultTransitionAnimationDuration
@@ -59,6 +62,11 @@ fun MainScreen(
     checklistEditingResult: Route.EditChecklistScreen.Result?,
 ) {
     val viewModel = hiltViewModel<MainViewModel>(LocalActivity.current as ComponentActivity)
+
+    BackHandler {
+        viewModel.navigateBack()
+    }
+
     NotifyViewModelOnEditorResult(
         viewModel = viewModel,
         noteEditingResult = noteEditingResult,
@@ -94,6 +102,9 @@ fun MainScreen(
             },
             onTextNoteLongClick = viewModel::onTextNoteLongClick,
             onChecklistLongClick = viewModel::onChecklistLongClick,
+            onExitSelectionMode = viewModel::onExitSelectionMode,
+            onMoveToTrashSelected = viewModel::onMoveToTrashSelected,
+            onPinnedStateChangedForSelected = viewModel::onPinnedStateChangedForSelected,
         )
     }
     NavigationOverlay(state)
@@ -125,6 +136,9 @@ private fun ScreenContent(
     onOpenMenuClick: () -> Unit = {},
     onTextNoteLongClick: (MainScreenItem.TextNote) -> Unit = {},
     onChecklistLongClick: (MainScreenItem.Checklist) -> Unit = {},
+    onExitSelectionMode: () -> Unit = {},
+    onMoveToTrashSelected: () -> Unit = {},
+    onPinnedStateChangedForSelected: (Boolean) -> Unit = {},
 ) {
     val showOverlay = state.addItemsMode
     val snackbarHostState = remember { SnackbarHostState() }
@@ -159,8 +173,11 @@ private fun ScreenContent(
                 openTextNoteEditor = openTextNoteEditor,
                 openCheckListEditor = openCheckListEditor,
                 onOpenMenuClick = onOpenMenuClick,
-                onTextNoteLongClick = onTextNoteLongClick,
-                onChecklistLongClick = onChecklistLongClick,
+                onTextNoteSelected = onTextNoteLongClick,
+                onChecklistSelected = onChecklistLongClick,
+                onExitSelectionMode = onExitSelectionMode,
+                onMoveToTrashSelected = onMoveToTrashSelected,
+                onPinnedStateChangedForSelected = onPinnedStateChangedForSelected,
             )
             FabsOverlay(enabled = showOverlay, onClick = { toggleAddModeSelection() })
         }
@@ -176,8 +193,11 @@ private fun DisplayState(
     openTextNoteEditor: (MainScreenItem.TextNote?) -> Unit,
     openCheckListEditor: (MainScreenItem.Checklist?) -> Unit,
     onOpenMenuClick: () -> Unit,
-    onTextNoteLongClick: (MainScreenItem.TextNote) -> Unit,
-    onChecklistLongClick: (MainScreenItem.Checklist) -> Unit,
+    onExitSelectionMode: () -> Unit,
+    onTextNoteSelected: (MainScreenItem.TextNote) -> Unit,
+    onChecklistSelected: (MainScreenItem.Checklist) -> Unit,
+    onMoveToTrashSelected: () -> Unit,
+    onPinnedStateChangedForSelected: (Boolean) -> Unit,
 ) {
     when {
         state == MainScreenState.EMPTY -> {
@@ -185,6 +205,21 @@ private fun DisplayState(
                 innerPadding = innerPadding,
                 onToggleSearchVisibility = onToggleSearchVisibility,
                 onOpenMenuClick = onOpenMenuClick,
+            )
+        }
+
+        state.isSelectionMode -> {
+            MainScreenStateSelection(
+                modifier = Modifier,
+                innerPadding = innerPadding,
+                listItems = state.screenItems,
+                selectedItemCount = state.selectedItemsCount,
+                onExitSelectionMode = onExitSelectionMode,
+                onMoveToTrashClick = onMoveToTrashSelected,
+                onPinnedStateChanged = onPinnedStateChangedForSelected,
+                selectTextNote = onTextNoteSelected,
+                selectChecklist = onChecklistSelected,
+                selectedItemsArePinned = state.selectedItemsArePinned,
             )
         }
 
@@ -197,6 +232,8 @@ private fun DisplayState(
                 onNewPrompt = onNewSearchPrompt,
                 openTextNoteEditor = openTextNoteEditor,
                 openCheckListEditor = openCheckListEditor,
+                selectTextNote = onTextNoteSelected,
+                selectChecklist = onChecklistSelected,
             )
         }
 
@@ -217,8 +254,8 @@ private fun DisplayState(
                 openTextNoteEditor = openTextNoteEditor,
                 openChecklistEditor = openCheckListEditor,
                 onOpenMenuClick = onOpenMenuClick,
-                onTextNoteLongClick = onTextNoteLongClick,
-                onChecklistLongClick = onChecklistLongClick,
+                onTextNoteLongClick = onTextNoteSelected,
+                onChecklistLongClick = onChecklistSelected,
             )
             SystemBarBackground(innerPadding)
         }
@@ -278,7 +315,7 @@ private fun NavigationOverlay(
 private fun NotifyViewModelWhenToClearTrash(viewModel: MainViewModel) {
     val lifecycle = LocalLifecycleOwner.current.lifecycle
     LaunchedEffect(viewModel, lifecycle) {
-        lifecycle.repeatOnLifecycle(state = androidx.lifecycle.Lifecycle.State.RESUMED) {
+        lifecycle.repeatOnLifecycle(state = Lifecycle.State.RESUMED) {
             viewModel.clearTrashOldRecords()
         }
     }

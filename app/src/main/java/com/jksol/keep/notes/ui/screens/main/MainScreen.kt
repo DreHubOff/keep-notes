@@ -9,13 +9,23 @@ import androidx.activity.compose.LocalActivity
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement.Absolute.spacedBy
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FabPosition
@@ -24,7 +34,6 @@ import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -33,11 +42,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
@@ -46,20 +55,23 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.repeatOnLifecycle
+import com.jksol.keep.notes.R
 import com.jksol.keep.notes.demo_data.MainScreenDemoData.notesList
 import com.jksol.keep.notes.demo_data.MainScreenDemoData.welcomeBanner
 import com.jksol.keep.notes.ui.screens.Route
+import com.jksol.keep.notes.ui.screens.main.actionbar.MainActionBar
+import com.jksol.keep.notes.ui.screens.main.actionbar.MainActionBarIntent
 import com.jksol.keep.notes.ui.screens.main.drawer.MainDrawer
 import com.jksol.keep.notes.ui.screens.main.fab.MainFabContainer
+import com.jksol.keep.notes.ui.screens.main.listitem.MainChecklist
+import com.jksol.keep.notes.ui.screens.main.listitem.MainTextNote
 import com.jksol.keep.notes.ui.screens.main.model.MainScreenItem
 import com.jksol.keep.notes.ui.screens.main.model.MainScreenState
-import com.jksol.keep.notes.ui.screens.main.selection.MainScreenStateSelection
 import com.jksol.keep.notes.ui.shared.HandleSnackbarState
 import com.jksol.keep.notes.ui.shared.SnackbarEvent
 import com.jksol.keep.notes.ui.shared.defaultTransitionAnimationDuration
 import com.jksol.keep.notes.ui.theme.ApplicationTheme
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 
 @Composable
 fun MainScreen(
@@ -79,9 +91,16 @@ fun MainScreen(
     )
     NotifyViewModelWhenToClearTrash(viewModel)
 
-    val state by viewModel.uiState.collectAsState(MainScreenState.EMPTY)
+    val state by viewModel.uiState.collectAsState()
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
-    val coroutineScope = rememberCoroutineScope()
+
+    LaunchedEffect(state.openSideMenuEvent) {
+        if (state.openSideMenuEvent?.isHandled() == false) {
+            state.openSideMenuEvent?.confirmProcessing()
+            drawerState.open()
+        }
+    }
+
     ModalNavigationDrawer(
         drawerState = drawerState,
         gesturesEnabled = drawerState.isOpen,
@@ -97,19 +116,10 @@ fun MainScreen(
             openTextNoteEditor = viewModel::openTextNoteEditor,
             openCheckListEditor = viewModel::openCheckListEditor,
             toggleAddModeSelection = viewModel::toggleAddModeSelection,
-            onToggleSearchVisibility = viewModel::onToggleSearchVisibility,
-            onNewSearchPrompt = viewModel::onNewSearchPrompt,
             onSnackbarAction = viewModel::handleSnackbarAction,
-            onOpenMenuClick = {
-                coroutineScope.launch {
-                    drawerState.open()
-                }
-            },
             onTextNoteLongClick = viewModel::onTextNoteLongClick,
             onChecklistLongClick = viewModel::onChecklistLongClick,
-            onExitSelectionMode = viewModel::onExitSelectionMode,
-            onMoveToTrashSelected = viewModel::onMoveToTrashSelected,
-            onPinnedStateChangedForSelected = viewModel::onPinnedStateChangedForSelected,
+            onActionBarEvent = viewModel::handleActionBarEvent,
         )
     }
     NavigationOverlay(state)
@@ -135,15 +145,10 @@ private fun ScreenContent(
     openTextNoteEditor: (MainScreenItem.TextNote?) -> Unit = {},
     openCheckListEditor: (MainScreenItem.Checklist?) -> Unit = {},
     toggleAddModeSelection: () -> Unit = {},
-    onToggleSearchVisibility: () -> Unit = {},
-    onNewSearchPrompt: (String) -> Unit = {},
     onSnackbarAction: (SnackbarEvent.Action) -> Unit = {},
-    onOpenMenuClick: () -> Unit = {},
     onTextNoteLongClick: (MainScreenItem.TextNote) -> Unit = {},
     onChecklistLongClick: (MainScreenItem.Checklist) -> Unit = {},
-    onExitSelectionMode: () -> Unit = {},
-    onMoveToTrashSelected: () -> Unit = {},
-    onPinnedStateChangedForSelected: (Boolean) -> Unit = {},
+    onActionBarEvent: (MainActionBarIntent) -> Unit = {},
 ) {
     val showOverlay = state.addItemsMode
     val snackbarHostState = remember { SnackbarHostState() }
@@ -153,12 +158,10 @@ private fun ScreenContent(
         onActionExecuted = onSnackbarAction,
     )
 
-    val topAppBarScrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
-
     Scaffold(
         modifier = Modifier
             .fillMaxSize()
-            .nestedScroll(topAppBarScrollBehavior.nestedScrollConnection),
+            .imePadding(),
         floatingActionButton = {
             MainFabContainer(
                 expanded = showOverlay,
@@ -173,30 +176,20 @@ private fun ScreenContent(
         floatingActionButtonPosition = FabPosition.End,
         contentWindowInsets = WindowInsets.systemBars,
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
-        topBar = {
-//            MainActionBar(
-//                state = state,
-//                topBarBehaviour = topBarBehaviour,
-//                onToggleSearchVisibility = onToggleSearchVisibility,
-//                onNewSearchPrompt = onNewSearchPrompt,
-//            )
-        }
     ) { innerPadding ->
         Box {
             DisplayState(
                 state = state,
                 innerPadding = innerPadding,
-                onToggleSearchVisibility = onToggleSearchVisibility,
-                onNewSearchPrompt = onNewSearchPrompt,
+                onActionBarEvent = onActionBarEvent,
                 openTextNoteEditor = openTextNoteEditor,
                 openCheckListEditor = openCheckListEditor,
-                onOpenMenuClick = onOpenMenuClick,
                 onTextNoteSelected = onTextNoteLongClick,
                 onChecklistSelected = onChecklistLongClick,
-                onExitSelectionMode = onExitSelectionMode,
-                onMoveToTrashSelected = onMoveToTrashSelected,
-                onPinnedStateChangedForSelected = onPinnedStateChangedForSelected,
             )
+            if (!state.searchEnabled && !state.isSelectionMode) {
+                SystemBarBackground(innerPadding)
+            }
             FabsOverlay(enabled = showOverlay, onClick = { toggleAddModeSelection() })
         }
     }
@@ -206,78 +199,132 @@ private fun ScreenContent(
 private fun DisplayState(
     state: MainScreenState,
     innerPadding: PaddingValues,
-    onToggleSearchVisibility: () -> Unit,
-    onNewSearchPrompt: (String) -> Unit,
+    onActionBarEvent: (MainActionBarIntent) -> Unit,
     openTextNoteEditor: (MainScreenItem.TextNote?) -> Unit,
     openCheckListEditor: (MainScreenItem.Checklist?) -> Unit,
-    onOpenMenuClick: () -> Unit,
-    onExitSelectionMode: () -> Unit,
     onTextNoteSelected: (MainScreenItem.TextNote) -> Unit,
     onChecklistSelected: (MainScreenItem.Checklist) -> Unit,
-    onMoveToTrashSelected: () -> Unit,
-    onPinnedStateChangedForSelected: (Boolean) -> Unit,
 ) {
-    when {
-        state == MainScreenState.EMPTY -> {
-            MainScreenEmptyState(
-                innerPadding = innerPadding,
-                onToggleSearchVisibility = onToggleSearchVisibility,
-                onOpenMenuClick = onOpenMenuClick,
-            )
-        }
+    val listScrollState = rememberLazyListState()
+    val isEmptyListState = state.screenItems.isEmpty() && state !== MainScreenState.EMPTY
 
-        state.isSelectionMode -> {
-            MainScreenStateSelection(
-                modifier = Modifier,
-                innerPadding = innerPadding,
-                listItems = state.screenItems,
-                selectedItemCount = state.selectedItemsCount,
-                onExitSelectionMode = onExitSelectionMode,
-                onMoveToTrashClick = onMoveToTrashSelected,
-                onPinnedStateChanged = onPinnedStateChangedForSelected,
-                selectTextNote = onTextNoteSelected,
-                selectChecklist = onChecklistSelected,
-                selectedItemsArePinned = state.selectedItemsArePinned,
-            )
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .imePadding()
+    ) {
+        val contentPadding = remember(isEmptyListState) {
+            val fabsPadding = (if (isEmptyListState) 0.dp else 120.dp)
+            PaddingValues(bottom = fabsPadding + innerPadding.calculateBottomPadding())
         }
-
-        state.searchEnabled -> {
-            MainScreenStateSearch(
-                innerPadding = innerPadding,
-                searchPrompt = state.searchPrompt,
-                listItems = state.screenItems,
-                onHideSearch = onToggleSearchVisibility,
-                onNewPrompt = onNewSearchPrompt,
-                openTextNoteEditor = openTextNoteEditor,
-                openCheckListEditor = openCheckListEditor,
-                selectTextNote = onTextNoteSelected,
-                selectChecklist = onChecklistSelected,
-            )
-        }
-
-        state.isWelcomeBanner -> {
-            MainScreenWelcomeBanner(
-                innerPadding = innerPadding,
-                banner = state.screenItems.first() as MainScreenItem.TextNote,
-                onToggleSearchVisibility = onToggleSearchVisibility,
-                onOpenMenuClick = onOpenMenuClick,
-            )
-        }
-
-        else -> {
-            MainScreenStateIdle(
-                innerPadding = innerPadding,
-                listItems = state.screenItems,
-                onToggleSearchVisibility = onToggleSearchVisibility,
-                openTextNoteEditor = openTextNoteEditor,
-                openChecklistEditor = openCheckListEditor,
-                onOpenMenuClick = onOpenMenuClick,
-                onTextNoteLongClick = onTextNoteSelected,
-                onChecklistLongClick = onChecklistSelected,
-            )
-            SystemBarBackground(innerPadding)
+        List(
+            state = state,
+            containerPadding = contentPadding,
+            listScrollState = listScrollState,
+            onActionBarEvent = onActionBarEvent,
+            onChecklistSelected = onChecklistSelected,
+            openCheckListEditor = openCheckListEditor,
+            onTextNoteSelected = onTextNoteSelected,
+            openTextNoteEditor = openTextNoteEditor
+        )
+        if (isEmptyListState) {
+            NoItemsState(state = state, onActionBarEvent = onActionBarEvent)
         }
     }
+}
+
+@Composable
+private fun List(
+    containerPadding: PaddingValues,
+    listScrollState: LazyListState,
+    state: MainScreenState,
+    onActionBarEvent: (MainActionBarIntent) -> Unit,
+    onChecklistSelected: (MainScreenItem.Checklist) -> Unit,
+    openCheckListEditor: (MainScreenItem.Checklist?) -> Unit,
+    onTextNoteSelected: (MainScreenItem.TextNote) -> Unit,
+    openTextNoteEditor: (MainScreenItem.TextNote?) -> Unit,
+) {
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxWidth()
+            .wrapContentHeight(),
+        contentPadding = containerPadding,
+        verticalArrangement = spacedBy(8.dp),
+        state = listScrollState,
+        userScrollEnabled = state.screenItems.isNotEmpty(),
+    ) {
+        if (state.searchEnabled || state.isSelectionMode) {
+            stickyHeader(key = "MainActionBar-sticky") {
+                MainActionBar(
+                    state = state,
+                    modifier = Modifier.fillMaxWidth(),
+                    onEvent = onActionBarEvent,
+                )
+            }
+        } else {
+            item(key = "MainActionBar-floating") {
+                MainActionBar(
+                    state = state,
+                    modifier = Modifier.fillMaxWidth(),
+                    onEvent = onActionBarEvent,
+                )
+            }
+        }
+
+        item { Spacer(modifier = Modifier.height(4.dp)) }
+
+        items(state.screenItems, key = { it.compositeKey }) { item ->
+            when (item) {
+                is MainScreenItem.Checklist ->
+                    MainChecklist(
+                        modifier = Modifier
+                            .padding(horizontal = 8.dp)
+                            .animateItem(),
+                        item = item,
+                        onClick = {
+                            if (state.isSelectionMode) {
+                                onChecklistSelected(item)
+                            } else {
+                                openCheckListEditor(item)
+                            }
+                        },
+                        onLongClick = { onChecklistSelected(item) },
+                    )
+
+                is MainScreenItem.TextNote ->
+                    MainTextNote(
+                        modifier = Modifier
+                            .padding(horizontal = 8.dp)
+                            .animateItem(),
+                        item = item,
+                        onClick = {
+                            if (state.isSelectionMode) {
+                                onTextNoteSelected(item)
+                            } else {
+                                openTextNoteEditor(item)
+                            }
+                        },
+                        onLongClick = { onTextNoteSelected(item) },
+                    )
+            }
+        }
+    }
+}
+
+@Composable
+fun NoItemsState(state: MainScreenState, onActionBarEvent: (MainActionBarIntent) -> Unit) {
+    val message = when {
+        state.searchEnabled -> R.string.search_empty_list
+        else -> R.string.notes_you_add_appear_here
+    }
+    val icon = if (state.searchEnabled) R.drawable.ic_no_search_results else R.drawable.ic_empty_list
+    MainScreenEmptyList(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(bottom = 100.dp),
+        message = stringResource(message),
+        icon = painterResource(icon),
+    )
 }
 
 @Composable
@@ -285,7 +332,7 @@ private fun SystemBarBackground(innerPadding: PaddingValues) {
     Box(
         Modifier
             .fillMaxWidth()
-            .height(innerPadding.calculateTopPadding() + 4.dp)
+            .height(innerPadding.calculateTopPadding())
             .background(MaterialTheme.colorScheme.background.copy(alpha = 0.8f))
     )
 }

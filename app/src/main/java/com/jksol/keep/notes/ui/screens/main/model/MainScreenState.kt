@@ -11,6 +11,7 @@ data class MainScreenState(
     val searchEnabled: Boolean = searchPrompt != null,
     val isWelcomeBanner: Boolean,
     val showNavigationOverlay: ElementFocusRequest?,
+    val openSideMenuEvent: ElementFocusRequest?,
     val selectedItemsArePinned: Boolean,
 ) {
 
@@ -25,6 +26,7 @@ data class MainScreenState(
             snackbarEvent = null,
             isWelcomeBanner = false,
             showNavigationOverlay = null,
+            openSideMenuEvent = null,
             selectedItemsArePinned = false,
         )
     }

@@ -24,6 +24,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -39,9 +40,12 @@ import com.jksol.keep.notes.R
 import com.jksol.keep.notes.ui.screens.main.search.SearchBarDefaults
 import com.jksol.keep.notes.ui.shared.PinCheckbox
 import com.jksol.keep.notes.ui.theme.ApplicationTheme
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @Composable
 fun SelectionActionBar(
+    modifier: Modifier,
     innerPadding: PaddingValues,
     selectedItemCount: Int,
     isPinned: Boolean,
@@ -79,7 +83,7 @@ fun SelectionActionBar(
     }
 
     Box(
-        Modifier
+        modifier
             .fillMaxWidth()
             .height(expandedHeight),
         contentAlignment = Alignment.BottomCenter
@@ -95,14 +99,18 @@ fun SelectionActionBar(
                 )
         )
         val selectionText = stringResource(R.string.selected_count_pattern, selectedItemCount)
+        val coroutineScope = rememberCoroutineScope()
         AnimatedVisibility(visible = showActionBar) {
             ActionBarContent(
                 value = selectionText,
                 modifier = Modifier.padding(horizontalPad),
                 isPinned = isPinned,
                 onCancelClick = {
-                    showActionBar = false
-                    onExitSelectionMode()
+                    coroutineScope.launch {
+                        showActionBar = false
+                        delay(150)
+                        onExitSelectionMode()
+                    }
                 },
                 onMoveToTrashClick = onMoveToTrashClick,
                 onPinnedStateChanged = onPinnedStateChanged,
@@ -169,6 +177,7 @@ private fun ActionBarContent(
 private fun Preview() {
     ApplicationTheme {
         SelectionActionBar(
+            modifier = Modifier,
             innerPadding = PaddingValues(10.dp),
             selectedItemCount = 1,
             isPinned = true,

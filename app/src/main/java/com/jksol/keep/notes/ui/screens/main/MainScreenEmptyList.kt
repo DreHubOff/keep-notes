@@ -10,6 +10,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -21,6 +22,7 @@ import com.jksol.keep.notes.ui.theme.ApplicationTheme
 fun MainScreenEmptyList(
     modifier: Modifier,
     message: String,
+    icon: Painter,
 ) {
     Box(
         modifier = modifier,
@@ -28,7 +30,7 @@ fun MainScreenEmptyList(
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Icon(
-                painter = painterResource(id = R.drawable.ic_empty_list),
+                painter = icon,
                 contentDescription = stringResource(R.string.empty_list_desc),
                 tint = MaterialTheme.colorScheme.onSurface,
             )
@@ -47,7 +49,8 @@ private fun Preview() {
     ApplicationTheme {
         MainScreenEmptyList(
             modifier = Modifier,
-            message = stringResource(R.string.notes_you_add_appear_here)
+            message = stringResource(R.string.notes_you_add_appear_here),
+            icon = painterResource(id = R.drawable.ic_empty_list),
         )
     }
 }

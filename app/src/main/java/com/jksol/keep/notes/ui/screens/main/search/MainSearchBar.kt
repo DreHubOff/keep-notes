@@ -26,6 +26,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -41,9 +42,11 @@ import androidx.compose.ui.unit.dp
 import com.jksol.keep.notes.R
 import com.jksol.keep.notes.ui.theme.ApplicationTheme
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @Composable
 fun MainSearchBar(
+    modifier: Modifier,
     innerPadding: PaddingValues,
     searchPrompt: String?,
     onHideSearch: () -> Unit = {},
@@ -82,7 +85,7 @@ fun MainSearchBar(
     }
 
     Box(
-        Modifier
+        modifier
             .fillMaxWidth()
             .height(expandedHeight),
         contentAlignment = Alignment.BottomCenter
@@ -99,6 +102,7 @@ fun MainSearchBar(
         )
         AnimatedVisibility(visible = showSearch) {
             var searchPromptLocal by remember(searchPrompt) { mutableStateOf(searchPrompt ?: "") }
+            val coroutineScope = rememberCoroutineScope()
             SearchBarContent(
                 value = searchPromptLocal,
                 modifier = Modifier
@@ -116,8 +120,11 @@ fun MainSearchBar(
                     keyboardController?.hide()
                     focusRequester.freeFocus()
                     focusManager.clearFocus()
-                    showSearch = false
-                    onHideSearch()
+                    coroutineScope.launch {
+                        showSearch = false
+                        delay(150)
+                        onHideSearch()
+                    }
                 },
                 onDoneClick = {
                     keyboardController?.hide()
@@ -193,6 +200,7 @@ private fun SearchBarContent(
 private fun Preview() {
     ApplicationTheme {
         MainSearchBar(
+            modifier = Modifier,
             innerPadding = PaddingValues(10.dp),
             searchPrompt = "Search",
         )

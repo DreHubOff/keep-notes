@@ -90,7 +90,10 @@ class MainActivity : ComponentActivity() {
                     val checklistEditingResult = backStackEntry
                         .savedStateHandle
                         .getAndRemove<Route.EditChecklistScreen.Result>(Route.EditChecklistScreen.Result.KEY)
-                    MainScreen(noteEditingResult, checklistEditingResult)
+                    MainScreen(
+                        noteEditingResult = noteEditingResult,
+                        checklistEditingResult = checklistEditingResult,
+                    )
                 }
             }
             composable<Route.EditNoteScreen>(

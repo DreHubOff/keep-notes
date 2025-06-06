@@ -13,6 +13,7 @@ import com.jksol.keep.notes.di.ApplicationGlobalScope
 import com.jksol.keep.notes.ui.focus.ElementFocusRequest
 import com.jksol.keep.notes.ui.navigation.NavigationEventsHost
 import com.jksol.keep.notes.ui.screens.Route
+import com.jksol.keep.notes.ui.screens.main.actionbar.MainActionBarIntent
 import com.jksol.keep.notes.ui.screens.main.mapper.toMainScreenItem
 import com.jksol.keep.notes.ui.screens.main.model.MainScreenItem
 import com.jksol.keep.notes.ui.screens.main.model.MainScreenState
@@ -27,10 +28,12 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.SharingStarted.Companion.WhileSubscribed
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.supervisorScope
@@ -54,7 +57,13 @@ class MainViewModel @Inject constructor(
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(MainScreenState.EMPTY)
-    val uiState: Flow<MainScreenState> = _uiState.asStateFlow().onStart { observeDatabase(searchPrompt = "") }
+    val uiState: StateFlow<MainScreenState> = _uiState
+        .onStart { observeDatabase(searchPrompt = "") }
+        .stateIn(
+            scope = viewModelScope,
+            started = WhileSubscribed(stopTimeoutMillis = 3000),
+            initialValue = MainScreenState.EMPTY
+        )
 
     private var searchJob: Job? = null
     private var databaseObserverJob: Job? = null
@@ -85,7 +94,6 @@ class MainViewModel @Inject constructor(
 
     fun openTextNoteEditor(note: MainScreenItem.TextNote?) {
         viewModelScope.launch {
-            exitSearch()
             exitAddModeSelection()
             if (note == null) {
                 delay(250)
@@ -99,7 +107,6 @@ class MainViewModel @Inject constructor(
 
     fun openCheckListEditor(checklist: MainScreenItem.Checklist?) {
         viewModelScope.launch {
-            exitSearch()
             exitAddModeSelection()
             if (checklist == null) {
                 delay(250)
@@ -122,7 +129,7 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    fun onToggleSearchVisibility() {
+    private fun onToggleSearchVisibility() {
         viewModelScope.launch(Dispatchers.Default) {
             val currentState = _uiState.value
             if (currentState.searchEnabled) {
@@ -133,7 +140,7 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    fun onNewSearchPrompt(searchPrompt: String) {
+    private fun onNewSearchPrompt(searchPrompt: String) {
         searchJob?.cancel()
         searchJob = viewModelScope.launch(Dispatchers.Default) {
             _uiState.update { state -> state.copy(searchPrompt = searchPrompt, searchEnabled = true) }
@@ -144,16 +151,16 @@ class MainViewModel @Inject constructor(
 
     fun processNoteEditingResult(result: Route.EditNoteScreen.Result?) {
         viewModelScope.launch(Dispatchers.Default) {
+            delay((defaultTransitionAnimationDuration * 1.5).toLong())
             val resultMessageEvent = validateNoteEditingResult(result ?: return@launch) ?: return@launch
-            delay(defaultTransitionAnimationDuration.toLong())
             _uiState.update { state -> state.copy(snackbarEvent = resultMessageEvent) }
         }
     }
 
     fun processChecklistEditingResult(result: Route.EditChecklistScreen.Result?) {
         viewModelScope.launch(Dispatchers.Default) {
+            delay((defaultTransitionAnimationDuration * 1.5).toLong())
             val resultMessageEvent = validateChecklistEditingResult(result ?: return@launch) ?: return@launch
-            delay(defaultTransitionAnimationDuration.toLong())
             _uiState.update { state -> state.copy(snackbarEvent = resultMessageEvent) }
         }
     }
@@ -209,7 +216,7 @@ class MainViewModel @Inject constructor(
         changeItemSelectionState(selectedItem = textNote)
     }
 
-    fun onExitSelectionMode() {
+    private fun onExitSelectionMode() {
         _uiState.update { state ->
             val listItems = state.screenItems.map { item ->
                 if (item.isSelected) item.withSelection(isSelected = false) else item
@@ -218,7 +225,7 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    fun onMoveToTrashSelected() {
+    private fun onMoveToTrashSelected() {
         applicationScope.launch(Dispatchers.Default) {
             val itemsToTrash = _uiState.value.screenItems.filter { it.isSelected }
             onExitSelectionMode()
@@ -264,6 +271,22 @@ class MainViewModel @Inject constructor(
             }
             onExitSelectionMode()
         }
+    }
+
+    fun handleActionBarEvent(event: MainActionBarIntent) {
+        when (event) {
+            is MainActionBarIntent.ChangePinnedStateOfSelected -> onPinnedStateChangedForSelected(event.isPinned)
+            MainActionBarIntent.HideSearch -> onToggleSearchVisibility()
+            MainActionBarIntent.HideSelection -> onExitSelectionMode()
+            MainActionBarIntent.MoveToTrashSelected -> onMoveToTrashSelected()
+            MainActionBarIntent.OpenSearch -> onToggleSearchVisibility()
+            MainActionBarIntent.OpenSideMenu -> openSideMenu()
+            is MainActionBarIntent.Search -> onNewSearchPrompt(searchPrompt = event.prompt)
+        }
+    }
+
+    private fun openSideMenu() {
+        _uiState.update { it.copy(openSideMenuEvent = ElementFocusRequest()) }
     }
 
     private fun <T : MainScreenItem> changeItemSelectionState(selectedItem: T) {

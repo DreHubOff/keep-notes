@@ -1,5 +1,8 @@
+@file:OptIn(ExperimentalSharedTransitionApi::class)
+
 package com.jksol.keep.notes.ui.screens.main.search
 
+import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -26,6 +29,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.jksol.keep.notes.R
+import com.jksol.keep.notes.ui.shared.sharedBoundsTransition
 import com.jksol.keep.notes.ui.theme.ApplicationTheme
 
 @Composable
@@ -52,7 +56,8 @@ fun MainSearchBarEntryPoint(
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(SearchBarDefaults.searchButtonCornerRadius))
                 .background(SearchBarDefaults.searchBackgroundColor())
-                .padding(horizontal = 8.dp),
+                .padding(horizontal = 8.dp)
+                .sharedBoundsTransition("ActionBar"),
             contentAlignment = Alignment.CenterStart
         ) {
             Row(

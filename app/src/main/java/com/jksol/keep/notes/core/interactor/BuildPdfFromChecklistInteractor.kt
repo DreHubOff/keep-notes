@@ -8,6 +8,7 @@ import com.jksol.keep.notes.core.model.Checklist
 import com.jksol.keep.notes.core.model.ChecklistItem
 import com.jksol.keep.notes.data.ChecklistRepository
 import com.jksol.keep.notes.data.FileManagerRepository
+import com.jksol.keep.notes.di.qualifier.BulletPointSymbol
 import com.wwdablu.soumya.simplypdf.SimplyPdf
 import com.wwdablu.soumya.simplypdf.composers.properties.TextProperties
 import com.wwdablu.soumya.simplypdf.document.DocumentInfo
@@ -19,6 +20,7 @@ import javax.inject.Inject
 
 class BuildPdfFromChecklistInteractor @Inject constructor(
     @ApplicationContext private val context: Context,
+    @BulletPointSymbol private val bulletPointSymbol: String,
     private val checklistRepository: ChecklistRepository,
     private val fileManagerRepository: FileManagerRepository,
 ) {
@@ -46,9 +48,8 @@ class BuildPdfFromChecklistInteractor @Inject constructor(
             properties = titleStyle,
         )
 
-        val bulletSymbol = "•"
         val uncheckedItemStyle = TextProperties().apply {
-            this.bulletSymbol = bulletSymbol
+            this.bulletSymbol = this@BuildPdfFromChecklistInteractor.bulletPointSymbol
             textSize = 12
             textColor = "#000000"
             typeface = Typeface.DEFAULT
@@ -66,7 +67,7 @@ class BuildPdfFromChecklistInteractor @Inject constructor(
             }
 
         val checkedItemStyle = TextProperties().apply {
-            this.bulletSymbol = bulletSymbol
+            this.bulletSymbol = this@BuildPdfFromChecklistInteractor.bulletPointSymbol
             strikethrough = true
             textSize = 12
             textColor = "#000000"

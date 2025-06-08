@@ -1,5 +1,7 @@
 package com.jksol.keep.notes.core
 
+import java.time.OffsetDateTime
+
 interface MainTypeEditorFacade {
 
     suspend fun storePinnedSate(pinned: Boolean, itemId: Long)
@@ -11,4 +13,8 @@ interface MainTypeEditorFacade {
     suspend fun permanentlyDelete(itemId: Long)
 
     suspend fun restoreItemFromTrash(itemId: Long)
+
+    suspend fun deleteReminder(itemId: Long)
+
+    suspend fun setReminder(itemId: Long, date: OffsetDateTime)
 }

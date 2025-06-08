@@ -15,9 +15,7 @@ data class Checklist(
     override val backgroundColor: NoteColor?,
     override val isTrashed: Boolean,
     override val trashedDate: OffsetDateTime?,
-
-    // TODO: Not yet implemented
-    override val hasReminder: Boolean = false,
+    override val reminderDate: OffsetDateTime?,
 ) : Parcelable, ApplicationMainDataType {
 
     override fun isEmpty(): Boolean = title.trim().isEmpty() && (items.isEmpty() || items.all { it.title.trim().isEmpty() })
@@ -33,6 +31,7 @@ data class Checklist(
             backgroundColor = null,
             isTrashed = false,
             trashedDate = null,
+            reminderDate = null,
         )
     }
 }

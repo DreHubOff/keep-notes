@@ -4,12 +4,14 @@ import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.jksol.keep.notes.R
+import com.jksol.keep.notes.core.ChecklistEditorFacade
+import com.jksol.keep.notes.core.TextNoteEditorFacade
 import com.jksol.keep.notes.core.interactor.ObserveApplicationMainTypeInteractor
 import com.jksol.keep.notes.core.interactor.PermanentlyDeleteOldTrashRecordsInteractor
 import com.jksol.keep.notes.data.ChecklistRepository
 import com.jksol.keep.notes.data.TextNotesRepository
 import com.jksol.keep.notes.data.preferences.UserPreferences
-import com.jksol.keep.notes.di.ApplicationGlobalScope
+import com.jksol.keep.notes.di.qualifier.ApplicationGlobalScope
 import com.jksol.keep.notes.ui.focus.ElementFocusRequest
 import com.jksol.keep.notes.ui.navigation.NavigationEventsHost
 import com.jksol.keep.notes.ui.screens.Route
@@ -49,10 +51,12 @@ class MainViewModel @Inject constructor(
     @ApplicationGlobalScope
     private val applicationScope: CoroutineScope,
     private val navigationEventsHost: NavigationEventsHost,
-    private val textNotesRepository: TextNotesRepository,
     private val observeApplicationMainType: ObserveApplicationMainTypeInteractor,
     private val permanentlyDeleteOldTrashRecords: PermanentlyDeleteOldTrashRecordsInteractor,
+    private val textNotesRepository: TextNotesRepository,
     private val checklistRepository: ChecklistRepository,
+    private val textNotesFacade: TextNoteEditorFacade,
+    private val checklistFacade: ChecklistEditorFacade,
     private val userPreferences: UserPreferences,
 ) : ViewModel() {
 
@@ -169,10 +173,10 @@ class MainViewModel @Inject constructor(
         viewModelScope.launch {
             when (val actionKey = action.key) {
                 is MainSnackbarActionKey.UndoTrashedChecklist ->
-                    checklistRepository.restoreChecklist(actionKey.checklistId)
+                    checklistFacade.restoreItemFromTrash(actionKey.checklistId)
 
                 is MainSnackbarActionKey.UndoTrashedNote ->
-                    textNotesRepository.restoreItemFromTrash(actionKey.noteId)
+                    textNotesFacade.restoreItemFromTrash(actionKey.noteId)
 
                 is MainSnackbarActionKey.UndoTrashedItemList ->
                     undoTrashedItems(actionKey.items)
@@ -185,8 +189,8 @@ class MainViewModel @Inject constructor(
             supervisorScope {
                 items.forEach { item ->
                     when (item) {
-                        is MainScreenItem.Checklist -> launch { checklistRepository.restoreChecklist(item.id) }
-                        is MainScreenItem.TextNote -> launch { textNotesRepository.restoreItemFromTrash(item.id) }
+                        is MainScreenItem.Checklist -> launch { checklistFacade.restoreItemFromTrash(item.id) }
+                        is MainScreenItem.TextNote -> launch { textNotesFacade.restoreItemFromTrash(item.id) }
                     }
                 }
             }
@@ -232,8 +236,8 @@ class MainViewModel @Inject constructor(
             supervisorScope {
                 itemsToTrash.forEach { item ->
                     when (item) {
-                        is MainScreenItem.Checklist -> launch { checklistRepository.moveToTrash(item.id) }
-                        is MainScreenItem.TextNote -> launch { textNotesRepository.moveToTrash(item.id) }
+                        is MainScreenItem.Checklist -> launch { checklistFacade.moveToTrash(item.id) }
+                        is MainScreenItem.TextNote -> launch { textNotesFacade.moveToTrash(item.id) }
                     }
                 }
             }
@@ -254,7 +258,7 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    fun onPinnedStateChangedForSelected(checked: Boolean) {
+    private fun onPinnedStateChangedForSelected(checked: Boolean) {
         applicationScope.launch(Dispatchers.Default) {
             val itemsToUpdate = _uiState.value.screenItems.filter { it.isSelected }
             _uiState.update { it.copy(selectedItemsArePinned = checked) }
@@ -262,10 +266,10 @@ class MainViewModel @Inject constructor(
                 itemsToUpdate.forEach { item ->
                     when (item) {
                         is MainScreenItem.Checklist ->
-                            launch { checklistRepository.storePinnedSate(pinned = checked, itemId = item.id) }
+                            launch { checklistFacade.storePinnedSate(pinned = checked, itemId = item.id) }
 
                         is MainScreenItem.TextNote ->
-                            launch { textNotesRepository.storePinnedSate(pinned = checked, itemId = item.id) }
+                            launch { textNotesFacade.storePinnedSate(pinned = checked, itemId = item.id) }
                     }
                 }
             }
@@ -323,7 +327,7 @@ class MainViewModel @Inject constructor(
     private suspend fun onTextNoteEdited(noteId: Long): SnackbarEvent? {
         val createdNote = textNotesRepository.getNoteById(noteId) ?: return null
         if (createdNote.isEmpty()) {
-            textNotesRepository.permanentlyDelete(createdNote)
+            textNotesFacade.permanentlyDelete(createdNote.id)
             return SnackbarEvent(context.getString(R.string.empty_notes_discarded))
         }
         return null
@@ -349,7 +353,7 @@ class MainViewModel @Inject constructor(
     private suspend fun onChecklistEdited(checklistId: Long): SnackbarEvent? {
         val createdChecklist = checklistRepository.getChecklistById(checklistId) ?: return null
         if (createdChecklist.isEmpty()) {
-            checklistRepository.delete(createdChecklist)
+            checklistFacade.permanentlyDelete(createdChecklist.id)
             return SnackbarEvent(context.getString(R.string.empty_checklist_discarded))
         }
         return null

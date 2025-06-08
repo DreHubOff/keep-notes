@@ -76,4 +76,7 @@ interface ChecklistDao {
 
     @Query("DELETE FROM $CHECKLIST_TABLE_NAME WHERE id = :checklistId")
     suspend fun deleteChecklistById(checklistId: Long)
+
+    @Query("UPDATE $CHECKLIST_TABLE_NAME SET reminder_date = :date WHERE id = :id")
+    suspend fun updateReminderDateById(id: Long, date: OffsetDateTime?)
 }

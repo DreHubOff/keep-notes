@@ -5,13 +5,18 @@
     <queries>
         <intent>
             <action android:name="android.intent.action.SEND" />
+
             <data android:mimeType="text/plain" />
         </intent>
         <intent>
             <action android:name="android.intent.action.SEND" />
+
             <data android:mimeType="application/pdf" />
         </intent>
     </queries>
+
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
 
     <application
         android:name=".RootApplication"
@@ -49,5 +54,10 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/file_paths" />
         </provider>
+
+        <service
+            android:name=".data.service.AlarmSchedulerService"
+            android:enabled="true"
+            android:exported="false" />
     </application>
 </manifest>

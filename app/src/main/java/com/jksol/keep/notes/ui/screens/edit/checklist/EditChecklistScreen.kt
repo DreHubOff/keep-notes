@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalMaterial3Api::class)
+
 package com.jksol.keep.notes.ui.screens.edit.checklist
 
 import androidx.activity.compose.BackHandler
@@ -10,6 +12,7 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBars
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
@@ -35,6 +38,9 @@ import com.jksol.keep.notes.ui.screens.edit.ShareTypeSelectionDialog
 import com.jksol.keep.notes.ui.screens.edit.checklist.model.CheckedListItemUi
 import com.jksol.keep.notes.ui.screens.edit.checklist.model.EditChecklistScreenState
 import com.jksol.keep.notes.ui.screens.edit.checklist.model.UncheckedListItemUi
+import com.jksol.keep.notes.ui.screens.edit.reminder.RemainderDatePickerDialog
+import com.jksol.keep.notes.ui.screens.edit.reminder.RemainderEditorOverviewDialog
+import com.jksol.keep.notes.ui.screens.edit.reminder.RemainderTimePickerDialog
 import com.jksol.keep.notes.ui.shared.HandleSnackbarState
 import com.jksol.keep.notes.ui.shared.SnackbarEvent
 import com.jksol.keep.notes.ui.shared.mainItemCardTransition
@@ -44,7 +50,7 @@ import com.jksol.keep.notes.ui.shared.rememberChecklistToEditorTransitionKey
 import com.jksol.keep.notes.ui.theme.ApplicationTheme
 
 @Composable
-fun EditCheckListScreen() {
+fun EditChecklistScreen() {
     val viewModel = hiltViewModel<EditChecklistViewModel>()
 
     val keyboardController = LocalSoftwareKeyboardController.current
@@ -82,6 +88,7 @@ fun EditCheckListScreen() {
         onPermanentlyDeleteClick = viewModel::askConfirmationToPermanentlyDeleteItem,
         onRestoreClick = viewModel::restoreItemFromTrash,
         onShareClick = viewModel::onShareCurrentItemClick,
+        onEditReminderClick = viewModel::onAddReminderClick,
     )
 
     HandleAlerts(state, viewModel)
@@ -110,6 +117,7 @@ fun ScreenContent(
     onPermanentlyDeleteClick: () -> Unit,
     onRestoreClick: () -> Unit,
     onShareClick: () -> Unit,
+    onEditReminderClick: () -> Unit,
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
     HandleSnackbarState(
@@ -144,6 +152,7 @@ fun ScreenContent(
                 onPermanentlyDeleteClick = onPermanentlyDeleteClick,
                 onRestoreClick = onRestoreClick,
                 onShareClick = onShareClick,
+                onAddReminderClick = onEditReminderClick,
             )
             Box(modifier = Modifier.fillMaxSize()) {
                 if (state !== EditChecklistScreenState.EMPTY) {
@@ -161,7 +170,8 @@ fun ScreenContent(
                         onMoveItems,
                         onTitleNextClick,
                         onMoveCompleted,
-                        onItemFocused
+                        onItemFocused,
+                        onEditReminderClick,
                     )
                 }
                 if (state.isTrashed) {
@@ -193,6 +203,7 @@ private fun Editor(
     onTitleNextClick: () -> Unit,
     onMoveCompleted: () -> Unit,
     onItemFocused: (UncheckedListItemUi) -> Unit,
+    onEditReminderClick: () -> Unit,
 ) {
     Box {
         val paddingBottom = remember(innerPadding) { innerPadding.calculateBottomPadding() + 40.dp }
@@ -202,6 +213,7 @@ private fun Editor(
             contentPaddingBottom = paddingBottom,
             title = state.title,
             titleTransitionKey = rememberChecklistToEditorTitleTransitionKey(state.itemId),
+            reminderStateData = state.reminderData,
             checkedItems = state.checkedItems,
             uncheckedItems = state.uncheckedItems,
             onTitleChanged = onTitleChanged,
@@ -217,6 +229,7 @@ private fun Editor(
             onTitleNextClick = onTitleNextClick,
             onMoveCompleted = onMoveCompleted,
             onItemFocused = onItemFocused,
+            onEditReminderClick = onEditReminderClick,
         )
         ModificationDateOverlay(
             navigationBarPadding = innerPadding.calculateBottomPadding(),
@@ -242,6 +255,34 @@ private fun HandleAlerts(
             title = stringResource(R.string.share_checklist_title),
             onDismiss = viewModel::cancelItemShareTypeRequest,
             onTypeSelected = viewModel::shareItemAs,
+        )
+    }
+
+
+    if (state.showReminderEditorOverview && state.reminderEditorData != null) {
+        RemainderEditorOverviewDialog(
+            data = state.reminderEditorData,
+            onDismiss = viewModel::hideReminderOverview,
+            onSave = viewModel::saveReminder,
+            onDelete = viewModel::deleteReminder,
+            onEditDate = viewModel::editReminderDate,
+            onEditTime = viewModel::editReminderTime,
+        )
+    }
+
+    if (state.showReminderDatePicker && state.reminderEditorData != null) {
+        RemainderDatePickerDialog(
+            data = state.reminderEditorData,
+            onDismiss = viewModel::hideReminderDatePicker,
+            onDateSelected = viewModel::saveReminderDatePickerResult,
+        )
+    }
+
+    if (state.showReminderTimePicker && state.reminderEditorData != null) {
+        RemainderTimePickerDialog(
+            data = state.reminderEditorData,
+            onDismiss = viewModel::hideReminderTimePicker,
+            onTimeSelected = viewModel::saveReminderTimePickerResult,
         )
     }
 }
@@ -272,6 +313,7 @@ private fun Preview(@PreviewParameter(EditChecklistScreenStateProvider::class) s
             onPermanentlyDeleteClick = {},
             onRestoreClick = {},
             onShareClick = {},
+            onEditReminderClick = {},
         )
     }
 }

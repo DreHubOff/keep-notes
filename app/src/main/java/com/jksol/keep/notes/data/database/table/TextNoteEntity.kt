@@ -26,6 +26,9 @@ data class TextNoteEntity(
     @ColumnInfo(name = "modification_date", typeAffinity = ColumnInfo.INTEGER)
     val modificationDate: OffsetDateTime,
 
+    @ColumnInfo("reminder_date", typeAffinity = ColumnInfo.INTEGER)
+    val reminderDate: OffsetDateTime?,
+
     @ColumnInfo(name = "display_color_resource")
     val displayColorResource: NoteColor?,
 

@@ -1,7 +1,6 @@
 package com.jksol.keep.notes.data
 
 import androidx.room.withTransaction
-import com.jksol.keep.notes.core.MainTypeEditorFacade
 import com.jksol.keep.notes.core.model.Checklist
 import com.jksol.keep.notes.core.model.ChecklistItem
 import com.jksol.keep.notes.data.database.AppDatabase
@@ -22,7 +21,7 @@ class ChecklistRepository @Inject constructor(
     private val database: AppDatabase,
     private val checklistDao: ChecklistDao,
     private val checklistItemDao: ChecklistItemDao,
-) : MainTypeEditorFacade {
+) {
 
     suspend fun getChecklistById(id: Long): Checklist? =
         checklistDao.getChecklistWithItemsById(id)?.toDomain()
@@ -53,7 +52,7 @@ class ChecklistRepository @Inject constructor(
     fun observeTrashedChecklists(): Flow<List<Checklist>> =
         checklistDao.observeTrashed().map { list -> list.map { checklist -> checklist.toDomain() } }
 
-    override suspend fun storeNewTitle(title: String, itemId: Long) {
+    suspend fun storeNewTitle(title: String, itemId: Long) {
         updateChecklistTitle(checklistId = itemId, title = title)
     }
 
@@ -67,7 +66,7 @@ class ChecklistRepository @Inject constructor(
         }
     }
 
-    override suspend fun storePinnedSate(pinned: Boolean, itemId: Long) {
+    suspend fun storePinnedSate(pinned: Boolean, itemId: Long) {
         withContext(NonCancellable) {
             // Does not effect modification date
             checklistDao.updatePinnedStateById(itemId, pinned)
@@ -114,7 +113,7 @@ class ChecklistRepository @Inject constructor(
         }
     }
 
-    override suspend fun permanentlyDelete(itemId: Long) {
+    suspend fun permanentlyDelete(itemId: Long) {
         withContext(NonCancellable) {
             database.withTransaction {
                 checklistItemDao.deleteItemsForChecklist(checklistId = itemId)
@@ -187,7 +186,7 @@ class ChecklistRepository @Inject constructor(
         }
     }
 
-    override suspend fun moveToTrash(itemId: Long) {
+    suspend fun moveToTrash(itemId: Long) {
         withContext(NonCancellable) {
             database.withTransaction {
                 checklistDao.updateIsTrashedById(id = itemId, isTrashed = true)
@@ -197,8 +196,18 @@ class ChecklistRepository @Inject constructor(
         }
     }
 
-    override suspend fun restoreItemFromTrash(itemId: Long) {
+    suspend fun restoreItemFromTrash(itemId: Long) {
         restoreChecklist(checklistId = itemId)
+    }
+
+    suspend fun deleteReminder(itemId: Long) {
+        checklistDao.updateReminderDateById(id = itemId, date = null)
+    }
+
+    suspend fun storeReminderDate(itemId: Long, date: OffsetDateTime) {
+        withContext(NonCancellable) {
+            checklistDao.updateReminderDateById(id = itemId, date = date)
+        }
     }
 
     suspend fun restoreChecklist(checklistId: Long) {

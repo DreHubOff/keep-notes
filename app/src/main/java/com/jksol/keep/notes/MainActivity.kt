@@ -2,6 +2,8 @@
 
 package com.jksol.keep.notes
 
+import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
@@ -28,13 +30,14 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.jksol.keep.notes.core.model.ApplicationMainDataType
 import com.jksol.keep.notes.ui.animation.defaultAnimationSpec
 import com.jksol.keep.notes.ui.animation.scaleInFromBottomRight
 import com.jksol.keep.notes.ui.animation.scaleOutToBottomRight
 import com.jksol.keep.notes.ui.navigation.NavigationEvent
 import com.jksol.keep.notes.ui.navigation.NavigationEventsHost
 import com.jksol.keep.notes.ui.screens.Route
-import com.jksol.keep.notes.ui.screens.edit.checklist.EditCheckListScreen
+import com.jksol.keep.notes.ui.screens.edit.checklist.EditChecklistScreen
 import com.jksol.keep.notes.ui.screens.edit.note.EditNoteScreen
 import com.jksol.keep.notes.ui.screens.main.MainScreen
 import com.jksol.keep.notes.ui.screens.trash.TrashScreen
@@ -109,7 +112,7 @@ class MainActivity : ComponentActivity() {
                 exitTransition = { scaleOutToBottomRight() },
             ) {
                 NavigationRoute(sharedTransitionScope = this@BuildNavigationGraph) {
-                    EditCheckListScreen()
+                    EditChecklistScreen()
                 }
             }
             composable<Route.TrashScreen>(
@@ -185,5 +188,13 @@ class MainActivity : ComponentActivity() {
         ) {
             content()
         }
+    }
+
+    companion object {
+
+        private const val KEY_TARGET_ITEM = "target_item"
+
+        fun getOpenItemEditorIntent(context: Context, item: ApplicationMainDataType): Intent =
+            Intent(context, MainActivity::class.java).putExtra(KEY_TARGET_ITEM, item)
     }
 }

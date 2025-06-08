@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalMaterial3Api::class)
+
 package com.jksol.keep.notes.ui.screens.edit.note
 
 import androidx.activity.compose.BackHandler
@@ -10,6 +12,7 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBars
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
@@ -18,9 +21,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
@@ -32,7 +37,11 @@ import com.jksol.keep.notes.demo_data.MainScreenDemoData
 import com.jksol.keep.notes.ui.screens.edit.EditActionBar
 import com.jksol.keep.notes.ui.screens.edit.ModificationDateOverlay
 import com.jksol.keep.notes.ui.screens.edit.ShareTypeSelectionDialog
+import com.jksol.keep.notes.ui.screens.edit.core.ReminderStateData
 import com.jksol.keep.notes.ui.screens.edit.note.model.EditNoteScreenState
+import com.jksol.keep.notes.ui.screens.edit.reminder.RemainderDatePickerDialog
+import com.jksol.keep.notes.ui.screens.edit.reminder.RemainderEditorOverviewDialog
+import com.jksol.keep.notes.ui.screens.edit.reminder.RemainderTimePickerDialog
 import com.jksol.keep.notes.ui.shared.HandleSnackbarState
 import com.jksol.keep.notes.ui.shared.SnackbarEvent
 import com.jksol.keep.notes.ui.shared.mainItemCardTransition
@@ -40,6 +49,7 @@ import com.jksol.keep.notes.ui.shared.rememberTextNotePinToEditorTransitionKey
 import com.jksol.keep.notes.ui.shared.rememberTextNoteToEditorTitleTransitionKey
 import com.jksol.keep.notes.ui.shared.rememberTextNoteToEditorTransitionKey
 import com.jksol.keep.notes.ui.theme.ApplicationTheme
+import java.time.OffsetDateTime
 
 @Composable
 fun EditNoteScreen() {
@@ -70,8 +80,9 @@ fun EditNoteScreen() {
         onPermanentlyDeleteClick = viewModel::askConfirmationToPermanentlyDeleteItem,
         onRestoreClick = viewModel::restoreItemFromTrash,
         onAttemptEditTrashed = viewModel::onAttemptEditTrashed,
-        onSnackbarAction = viewModel::handleSnackbarAction,
         onShareClick = viewModel::onShareCurrentItemClick,
+        onSnackbarAction = viewModel::handleSnackbarAction,
+        onAddReminderClick = viewModel::onAddReminderClick,
     )
 
     HandleAlerts(state, viewModel)
@@ -91,6 +102,7 @@ fun ScreenContent(
     onAttemptEditTrashed: () -> Unit = {},
     onShareClick: () -> Unit = {},
     onSnackbarAction: (SnackbarEvent.Action) -> Unit = {},
+    onAddReminderClick: () -> Unit = {},
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
     HandleSnackbarState(
@@ -124,10 +136,18 @@ fun ScreenContent(
                 onPermanentlyDeleteClick = onPermanentlyDeleteClick,
                 onRestoreClick = onRestoreClick,
                 onShareClick = onShareClick,
+                onAddReminderClick = onAddReminderClick,
             )
             Box(modifier = Modifier.fillMaxSize()) {
                 if (state !== EditNoteScreenState.EMPTY) {
-                    Editor(state, onTitleChanged, onContentChanged, onTitleNextClick, innerPadding)
+                    Editor(
+                        state,
+                        onTitleChanged,
+                        onContentChanged,
+                        onTitleNextClick,
+                        onAddReminderClick,
+                        innerPadding
+                    )
                 }
                 if (state.isTrashed) {
                     Box(
@@ -148,6 +168,7 @@ private fun Editor(
     onTitleChanged: (String) -> Unit,
     onContentChanged: (String) -> Unit,
     onTitleNextClick: () -> Unit,
+    onEditReminderClick: () -> Unit,
     innerPadding: PaddingValues,
 ) {
     Box {
@@ -155,11 +176,13 @@ private fun Editor(
             modifier = Modifier,
             title = state.title,
             titleTransitionKey = rememberTextNoteToEditorTitleTransitionKey(state.itemId),
+            reminderData = state.reminderData,
             content = state.content,
             contentFocusRequest = state.contentFocusRequest,
             onTitleChanged = onTitleChanged,
             onContentChanged = onContentChanged,
             onTitleNextClick = onTitleNextClick,
+            onEditReminderClick = onEditReminderClick,
         )
         ModificationDateOverlay(
             navigationBarPadding = innerPadding.calculateBottomPadding(),
@@ -187,6 +210,33 @@ private fun HandleAlerts(
             onTypeSelected = viewModel::shareItemAs,
         )
     }
+
+    if (state.showReminderEditorOverview && state.reminderEditorData != null) {
+        RemainderEditorOverviewDialog(
+            data = state.reminderEditorData,
+            onDismiss = viewModel::hideReminderOverview,
+            onSave = viewModel::saveReminder,
+            onDelete = viewModel::deleteReminder,
+            onEditDate = viewModel::editReminderDate,
+            onEditTime = viewModel::editReminderTime,
+        )
+    }
+
+    if (state.showReminderDatePicker && state.reminderEditorData != null) {
+        RemainderDatePickerDialog(
+            data = state.reminderEditorData,
+            onDismiss = viewModel::hideReminderDatePicker,
+            onDateSelected = viewModel::saveReminderDatePickerResult,
+        )
+    }
+
+    if (state.showReminderTimePicker && state.reminderEditorData != null) {
+        RemainderTimePickerDialog(
+            data = state.reminderEditorData,
+            onDismiss = viewModel::hideReminderTimePicker,
+            onTimeSelected = viewModel::saveReminderTimePickerResult,
+        )
+    }
 }
 
 @Preview
@@ -211,9 +261,19 @@ private class EditNoteScreenStateProvider : PreviewParameterProvider<EditNoteScr
                 modificationStatusMessage = "Edited 09:48 am",
             ),
             EditNoteScreenState.EMPTY.copy(
-                itemId = 1,
+                itemId = 2,
                 isPinned = true,
                 modificationStatusMessage = "Edited 09:48 am",
+            ),
+            EditNoteScreenState.EMPTY.copy(
+                itemId = 3,
+                isPinned = true,
+                reminderData = ReminderStateData(
+                    sourceDate = OffsetDateTime.now(),
+                    dateString = AnnotatedString(text = "21 May, 10:12 AM"),
+                    outdated = false,
+                    reminderColor = Color(0x14017FFA),
+                )
             ),
         )
 }

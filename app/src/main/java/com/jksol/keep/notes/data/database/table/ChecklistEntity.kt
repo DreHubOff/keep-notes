@@ -18,11 +18,14 @@ data class ChecklistEntity(
     @ColumnInfo("title")
     val title: String,
 
-    @ColumnInfo("creation_date")
+    @ColumnInfo("creation_date", typeAffinity = ColumnInfo.INTEGER)
     val creationDate: OffsetDateTime,
 
-    @ColumnInfo("modification_date")
+    @ColumnInfo("modification_date", typeAffinity = ColumnInfo.INTEGER)
     val modificationDate: OffsetDateTime,
+
+    @ColumnInfo("reminder_date", typeAffinity = ColumnInfo.INTEGER)
+    val reminderDate: OffsetDateTime?,
 
     @ColumnInfo("pinned")
     val isPinned: Boolean,

@@ -16,7 +16,7 @@ import com.jksol.keep.notes.data.database.table.TextNoteEntity
         TextNoteEntity::class,
         ChecklistEntity::class,
         ChecklistItemEntity::class,
-    ], version = 4, exportSchema = false
+    ], version = 5, exportSchema = false
 )
 @TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {

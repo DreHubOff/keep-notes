@@ -31,7 +31,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -43,20 +45,26 @@ import androidx.compose.ui.unit.sp
 import com.jksol.keep.notes.R
 import com.jksol.keep.notes.demo_data.MainScreenDemoData
 import com.jksol.keep.notes.ui.focus.ElementFocusRequest
+import com.jksol.keep.notes.ui.screens.edit.core.ReminderButton
+import com.jksol.keep.notes.ui.screens.edit.core.ReminderStateData
 import com.jksol.keep.notes.ui.shared.sharedElementTransition
 import com.jksol.keep.notes.ui.theme.ApplicationTheme
+import com.jksol.keep.notes.util.asStrikethroughText
 import kotlinx.coroutines.launch
+import java.time.OffsetDateTime
 
 @Composable
 fun NoteBody(
     modifier: Modifier,
     title: String,
+    reminderData: ReminderStateData?,
     content: String,
     titleTransitionKey: Any = Unit,
     contentFocusRequest: ElementFocusRequest? = null,
     onTitleChanged: (String) -> Unit = {},
     onContentChanged: (String) -> Unit = {},
     onTitleNextClick: () -> Unit = {},
+    onEditReminderClick: () -> Unit = {},
 ) {
     val bringIntoViewRequester = remember { BringIntoViewRequester() }
     val lazyListState = rememberLazyListState()
@@ -78,6 +86,15 @@ fun NoteBody(
                 onTitleChanged = onTitleChanged,
                 onNextClick = onTitleNextClick,
             )
+        }
+        if (reminderData != null) {
+            item(key = "Reminder") {
+                ReminderButton(
+                    modifier = Modifier,
+                    reminderData = reminderData,
+                    onClick = onEditReminderClick,
+                )
+            }
         }
         item(key = "Content") {
             Content(
@@ -207,6 +224,30 @@ private fun Preview() {
             modifier = Modifier.fillMaxWidth(),
             title = MainScreenDemoData.TextNotes.welcomeBanner.title,
             content = MainScreenDemoData.TextNotes.welcomeBanner.content,
+            reminderData = ReminderStateData(
+                sourceDate = OffsetDateTime.now(),
+                dateString = AnnotatedString("21 May, 10:12 AM"),
+                outdated = false,
+                reminderColor = Color(0x14017FFA)
+            ),
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun PreviewOutdatedReminder() {
+    ApplicationTheme {
+        NoteBody(
+            modifier = Modifier.fillMaxWidth(),
+            title = MainScreenDemoData.TextNotes.welcomeBanner.title,
+            content = MainScreenDemoData.TextNotes.welcomeBanner.content,
+            reminderData = ReminderStateData(
+                sourceDate = OffsetDateTime.now(),
+                dateString = "21 May, 10:12 AM".asStrikethroughText(),
+                outdated = true,
+                reminderColor = Color(0x14017FFA)
+            ),
         )
     }
 }

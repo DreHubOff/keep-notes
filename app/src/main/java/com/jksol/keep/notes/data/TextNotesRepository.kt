@@ -1,7 +1,6 @@
 package com.jksol.keep.notes.data
 
 import androidx.room.withTransaction
-import com.jksol.keep.notes.core.MainTypeEditorFacade
 import com.jksol.keep.notes.core.model.TextNote
 import com.jksol.keep.notes.data.database.AppDatabase
 import com.jksol.keep.notes.data.database.dao.TextNoteDao
@@ -18,7 +17,7 @@ import javax.inject.Inject
 class TextNotesRepository @Inject constructor(
     private val database: AppDatabase,
     private val textNoteDao: TextNoteDao,
-) : MainTypeEditorFacade {
+) {
 
     fun observeNotTrashedNotes(): Flow<List<TextNote>> =
         textNoteDao.observeNotTrashed().map { list -> list.map { textNote -> textNote.toDomain() } }
@@ -39,7 +38,7 @@ class TextNotesRepository @Inject constructor(
         return textNote.copy(id = id)
     }
 
-    override suspend fun permanentlyDelete(itemId: Long) {
+    suspend fun permanentlyDelete(itemId: Long) {
         withContext(NonCancellable) {
             textNoteDao.deleteById(itemId)
         }
@@ -53,7 +52,7 @@ class TextNotesRepository @Inject constructor(
         }
     }
 
-    override suspend fun storePinnedSate(pinned: Boolean, itemId: Long) {
+    suspend fun storePinnedSate(pinned: Boolean, itemId: Long) {
         withContext(NonCancellable) {
             database.withTransaction {
                 textNoteDao.updatePinnedStateById(id = itemId, pinned = pinned)
@@ -61,7 +60,7 @@ class TextNotesRepository @Inject constructor(
         }
     }
 
-    override suspend fun storeNewTitle(title: String, itemId: Long) {
+    suspend fun storeNewTitle(title: String, itemId: Long) {
         withContext(NonCancellable) {
             database.withTransaction {
                 textNoteDao.updateTitleById(id = itemId, newTitle = title)
@@ -79,7 +78,7 @@ class TextNotesRepository @Inject constructor(
         }
     }
 
-    override suspend fun moveToTrash(itemId: Long) {
+    suspend fun moveToTrash(itemId: Long) {
         withContext(NonCancellable) {
             database.withTransaction {
                 textNoteDao.updateIsTrashedById(id = itemId, isTrashed = true)
@@ -89,12 +88,22 @@ class TextNotesRepository @Inject constructor(
         }
     }
 
-    override suspend fun restoreItemFromTrash(itemId: Long) {
+    suspend fun restoreItemFromTrash(itemId: Long) {
         withContext(NonCancellable) {
             database.withTransaction {
                 textNoteDao.updateIsTrashedById(id = itemId, isTrashed = false)
                 textNoteDao.updateTrashedDateById(id = itemId, date = null)
             }
+        }
+    }
+
+    suspend fun deleteReminder(itemId: Long) {
+        textNoteDao.updateReminderDateById(id = itemId, date = null)
+    }
+
+    suspend fun storeReminderDate(itemId: Long, date: OffsetDateTime) {
+        withContext(NonCancellable) {
+            textNoteDao.updateReminderDateById(id = itemId, date = date)
         }
     }
 }

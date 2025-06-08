@@ -1,4 +1,4 @@
-package com.jksol.keep.notes.di
+package com.jksol.keep.notes.di.qualifier
 
 import javax.inject.Qualifier
 

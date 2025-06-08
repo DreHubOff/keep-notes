@@ -1,5 +1,16 @@
 <resources>
-    <string name="app_name">Keep notes</string>
+    <string name="app_name">Keep Notes</string>
+
+    <string name="cancel">Cancel</string>
+    <string name="save">Save</string>
+    <string name="done">Done</string>
+    <string name="trash">Trash</string>
+    <string name="title">Title</string>
+    <string name="note">Note</string>
+    <string name="notes">Notes</string>
+    <string name="go_back">Go back</string>
+    <string name="add_item">Add item</string>
+
     <string name="main_floating_button_desc">Add note or checklist</string>
     <string name="empty_list_desc">List is empty</string>
     <string name="notes_you_add_appear_here">Notes you add appear here</string>
@@ -14,10 +25,6 @@
     <string name="clear_search_bar_desc">Clear search bar</string>
 
     <string name="search_empty_list">No matching search</string>
-    <string name="title">Title</string>
-    <string name="note">Note</string>
-    <string name="notes">Notes</string>
-    <string name="go_back">Go back</string>
     <string name="pin_this_note">Pin this note</string>
     <string name="empty_notes_discarded">Empty notes discarded</string>
     <string name="empty_checklist_discarded">Empty checklist discarded</string>
@@ -26,9 +33,9 @@
     <string name="edited_just_now">Edited just now</string>
     <string name="edited_pattern">Edited %1$s</string>
     <string name="drag_current_item">Drag current item</string>
-    <string name="add_item">Add item</string>
     <string name="checked_item_count_pattern">%1$d checked item</string>
     <string name="action_add_reminder">Add Reminder</string>
+    <string name="action_edit_reminder">Edit Reminder</string>
     <string name="action_delete">Delete</string>
     <string name="action_share">Share</string>
     <string name="menu_desc">Open menu</string>
@@ -36,7 +43,6 @@
     <string name="checklist_moved_to_trash">Checklist moved to trash</string>
     <string name="note_moved_to_trash">Note moved to trash</string>
     <string name="my_notes_title">My Notes</string>
-    <string name="trash">Trash</string>
     <string name="action_empty_trash">Empty Trash</string>
     <string name="no_notes_in_trash">No notes in Trash</string>
     <string name="dialog_title_empty_trash">Empty Trash?</string>
@@ -45,7 +51,6 @@
     <string name="confirm_permanently_delete_note">Are you sure want to delete this note forever?</string>
     <string name="confirm_permanently_delete_checklist">Are you sure want to delete this checklist forever?</string>
     <string name="confirm_empty_trash">Empty Trash</string>
-    <string name="cancel">Cancel</string>
     <string name="trashed_item_day_left_pattern">%1$d day left</string>
     <string name="restore">Restore</string>
     <string name="cannot_edit_in_trash">Can\'t edit in Trash</string>
@@ -56,4 +61,9 @@
     <string name="share_note_title">Share Note</string>
     <string name="share_checklist_title">Share Checklist</string>
     <string name="selected_count_pattern">%1$d Selected</string>
+    <string name="enter_time_title">Enter time</string>
+    <string name="notes_notification_channel_id">notes_channel_id</string>
+    <string name="notes_notification_channel_name">Notes Notifications</string>
+    <string name="notes_notification_channel_desc">Channel for note reminders</string>
+    <string name="bullet_point_symbol">•</string>
 </resources>

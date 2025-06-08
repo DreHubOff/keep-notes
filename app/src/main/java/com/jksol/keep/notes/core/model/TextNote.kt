@@ -15,7 +15,7 @@ data class TextNote(
     override val isPinned: Boolean,
     override val isTrashed: Boolean,
     override val trashedDate: OffsetDateTime?,
-    override val hasReminder: Boolean,
+    override val reminderDate: OffsetDateTime?,
 ) : Parcelable, ApplicationMainDataType {
 
     override fun isEmpty(): Boolean = title.trim().isEmpty() && content.trim().isEmpty()
@@ -31,7 +31,7 @@ data class TextNote(
             isPinned = false,
             isTrashed = false,
             trashedDate = null,
-            hasReminder = false,
+            reminderDate = null,
         )
     }
 }

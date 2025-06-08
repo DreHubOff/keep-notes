@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.BasicTextField
@@ -41,6 +42,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -52,10 +54,13 @@ import com.jksol.keep.notes.R
 import com.jksol.keep.notes.demo_data.EditChecklistDemoData
 import com.jksol.keep.notes.ui.screens.edit.checklist.model.CheckedListItemUi
 import com.jksol.keep.notes.ui.screens.edit.checklist.model.UncheckedListItemUi
+import com.jksol.keep.notes.ui.screens.edit.core.ReminderButton
+import com.jksol.keep.notes.ui.screens.edit.core.ReminderStateData
 import com.jksol.keep.notes.ui.shared.sharedElementTransition
 import com.jksol.keep.notes.ui.theme.ApplicationTheme
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyListState
+import java.time.OffsetDateTime
 
 @Composable
 fun ChecklistBody(
@@ -65,6 +70,7 @@ fun ChecklistBody(
     checkedItems: List<CheckedListItemUi> = emptyList(),
     uncheckedItems: List<UncheckedListItemUi> = emptyList(),
     showCheckedItems: Boolean = false,
+    reminderStateData: ReminderStateData? = null,
     titleTransitionKey: Any = Unit,
     onTitleChanged: (String) -> Unit = {},
     onTitleNextClick: () -> Unit = {},
@@ -78,14 +84,48 @@ fun ChecklistBody(
     onMoveItems: (fromIndex: Int, toIndex: Int) -> Unit = { _, _ -> },
     onMoveCompleted: () -> Unit = { },
     onItemFocused: (UncheckedListItemUi) -> Unit = {},
+    onEditReminderClick: () -> Unit = {},
 ) {
     var titleCache by remember(title) { mutableStateOf(title) }
     val lazyListState = rememberLazyListState()
 
-    val itemsBeforeReorderable = 2
+    val itemsBeforeReorderable = buildList<LazyListScope.() -> Unit> {
+        add {
+            item(key = "title") {
+                Title(
+                    modifier = Modifier
+                        .padding(horizontal = 16.dp)
+                        .sharedElementTransition(transitionKey = titleTransitionKey),
+                    title = titleCache,
+                    onTitleChanged = {
+                        titleCache = it
+                        onTitleChanged(it)
+                    },
+                    onNextClick = onTitleNextClick,
+                )
+            }
+        }
+        add {
+            item(key = "spacer1") {
+                Spacer(modifier = Modifier.height(12.dp))
+            }
+        }
+        if (reminderStateData != null) {
+            add {
+                item(key = "Reminder") {
+                    ReminderButton(
+                        modifier = Modifier.padding(horizontal = 12.dp),
+                        reminderData = reminderStateData,
+                        onClick = onEditReminderClick,
+                    )
+                }
+            }
+        }
+    }
+
     val reorderableLazyListState = rememberReorderableLazyListState(lazyListState) { from, to ->
-        val fromIndex = from.index - itemsBeforeReorderable
-        val toIndex = to.index - itemsBeforeReorderable
+        val fromIndex = from.index - itemsBeforeReorderable.size
+        val toIndex = to.index - itemsBeforeReorderable.size
         onMoveItems(fromIndex, toIndex)
     }
 
@@ -96,22 +136,7 @@ fun ChecklistBody(
         contentPadding = PaddingValues(bottom = contentPaddingBottom, top = 16.dp),
         verticalArrangement = spacedBy(4.dp),
     ) {
-        item(key = "title") {
-            Title(
-                modifier = Modifier
-                    .padding(horizontal = 16.dp)
-                    .sharedElementTransition(transitionKey = titleTransitionKey),
-                title = titleCache,
-                onTitleChanged = {
-                    titleCache = it
-                    onTitleChanged(it)
-                },
-                onNextClick = onTitleNextClick,
-            )
-        }
-        item(key = "spacer1") {
-            Spacer(modifier = Modifier.height(12.dp))
-        }
+        itemsBeforeReorderable.forEach { it.invoke(this) }
 
         if (uncheckedItems.isNotEmpty()) {
             items(uncheckedItems, key = { item -> item.id }) { item ->
@@ -331,6 +356,23 @@ private fun PreviewList() {
             checkedItems = EditChecklistDemoData.checkedChecklistItems,
             uncheckedItems = EditChecklistDemoData.uncheckedChecklistItems,
             showCheckedItems = true,
+        )
+    }
+}
+
+@Preview(name = "PreviewListWithReminder", showBackground = true)
+@Composable
+private fun PreviewListWithReminder() {
+    ApplicationTheme {
+        ChecklistBody(
+            modifier = Modifier.fillMaxWidth(),
+            title = "This is a title",
+            uncheckedItems = EditChecklistDemoData.uncheckedChecklistItems,
+            reminderStateData = ReminderStateData(
+                sourceDate = OffsetDateTime.now(),
+                dateString = AnnotatedString("21 May, 10:12 AM"),
+                outdated = false,
+            )
         )
     }
 }

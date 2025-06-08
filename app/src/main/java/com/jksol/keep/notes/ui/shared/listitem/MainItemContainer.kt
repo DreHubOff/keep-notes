@@ -58,7 +58,7 @@ fun MainItemContainer(
         colors = themedCardColors(isSelected = isSelected),
         border = themedCardBorder(isSelected = isSelected),
     ) {
-        Box {
+        Box(modifier = Modifier.fillMaxWidth()) {
             if (title.isNotEmpty()) {
                 WithTitleNote(
                     title = title,

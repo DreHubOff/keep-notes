@@ -53,4 +53,7 @@ interface TextNoteDao {
 
     @Query("UPDATE $TEXT_NOTE_TABLE_NAME SET trashed_date = :date WHERE id = :id")
     suspend fun updateTrashedDateById(id: Long, date: OffsetDateTime?)
+
+    @Query("UPDATE $TEXT_NOTE_TABLE_NAME SET reminder_date = :date WHERE id = :id")
+    suspend fun updateReminderDateById(id: Long, date: OffsetDateTime?)
 }

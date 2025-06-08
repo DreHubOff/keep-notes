@@ -2,6 +2,8 @@ package com.jksol.keep.notes.ui.screens.edit.checklist.model
 
 import androidx.compose.runtime.Stable
 import com.jksol.keep.notes.ui.screens.edit.core.EditScreenState
+import com.jksol.keep.notes.ui.screens.edit.core.ReminderEditorData
+import com.jksol.keep.notes.ui.screens.edit.core.ReminderStateData
 import com.jksol.keep.notes.ui.shared.SnackbarEvent
 
 @Stable
@@ -14,7 +16,11 @@ data class EditChecklistScreenState(
     override val showPermanentlyDeleteConfirmation: Boolean,
     override val snackbarEvent: SnackbarEvent?,
     override val requestItemShareType: Boolean,
-    override val reminderTime: String?,
+    override val reminderData: ReminderStateData?,
+    override val reminderEditorData: ReminderEditorData?,
+    override val showReminderEditorOverview: Boolean,
+    override val showReminderDatePicker: Boolean,
+    override val showReminderTimePicker: Boolean,
     val uncheckedItems: List<UncheckedListItemUi>,
     val checkedItems: List<CheckedListItemUi>,
     val showCheckedItems: Boolean,
@@ -24,25 +30,33 @@ data class EditChecklistScreenState(
         itemId: Long,
         title: String,
         isPinned: Boolean,
-        reminderTime: String?,
+        reminderData: ReminderStateData?,
+        reminderEditorData: ReminderEditorData?,
         isTrashed: Boolean,
         requestItemShareType: Boolean,
         modificationStatusMessage: String,
         showPermanentlyDeleteConfirmation: Boolean,
         snackbarEvent: SnackbarEvent?,
+        showReminderEditorOverview: Boolean,
+        showReminderDatePicker: Boolean,
+        showReminderTimePicker: Boolean,
     ): EditChecklistScreenState = copy(
         itemId = itemId,
         title = title,
         isPinned = isPinned,
-        reminderTime = reminderTime,
+        reminderData = reminderData,
         isTrashed = isTrashed,
         requestItemShareType = requestItemShareType,
         modificationStatusMessage = modificationStatusMessage,
         showPermanentlyDeleteConfirmation = showPermanentlyDeleteConfirmation,
         snackbarEvent = snackbarEvent,
-        uncheckedItems = uncheckedItems,
-        checkedItems = checkedItems,
-        showCheckedItems = showCheckedItems,
+        reminderEditorData = reminderEditorData,
+        showReminderEditorOverview = showReminderEditorOverview,
+        showReminderDatePicker = showReminderDatePicker,
+        showReminderTimePicker = showReminderTimePicker,
+        uncheckedItems = this@EditChecklistScreenState.uncheckedItems,
+        checkedItems = this@EditChecklistScreenState.checkedItems,
+        showCheckedItems = this@EditChecklistScreenState.showCheckedItems,
     )
 
     companion object {
@@ -58,7 +72,11 @@ data class EditChecklistScreenState(
             showPermanentlyDeleteConfirmation = false,
             snackbarEvent = null,
             requestItemShareType = false,
-            reminderTime = null,
+            reminderData = null,
+            showReminderEditorOverview = false,
+            reminderEditorData = null,
+            showReminderDatePicker = false,
+            showReminderTimePicker = false,
         )
     }
 }

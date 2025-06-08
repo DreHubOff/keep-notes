@@ -5,12 +5,13 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
 import com.jksol.keep.notes.R
+import com.jksol.keep.notes.core.TextNoteEditorFacade
 import com.jksol.keep.notes.core.interactor.BuildModificationDateTextInteractor
 import com.jksol.keep.notes.core.interactor.BuildPdfFromTextNoteInteractor
 import com.jksol.keep.notes.core.model.MainTypeTextRepresentation
 import com.jksol.keep.notes.core.model.TextNote
 import com.jksol.keep.notes.data.TextNotesRepository
-import com.jksol.keep.notes.di.ApplicationGlobalScope
+import com.jksol.keep.notes.di.qualifier.ApplicationGlobalScope
 import com.jksol.keep.notes.ui.focus.ElementFocusRequest
 import com.jksol.keep.notes.ui.intent.ShareFileIntentBuilder
 import com.jksol.keep.notes.ui.intent.ShareTextIntentBuilder
@@ -38,6 +39,7 @@ class EditNoteViewModel @Inject constructor(
     shareFileIntentBuilder: Provider<ShareFileIntentBuilder>,
     shareTextIntentBuilder: Provider<ShareTextIntentBuilder>,
     buildModificationDateText: Lazy<BuildModificationDateTextInteractor>,
+    editorFacade: TextNoteEditorFacade,
     private val savedStateHandle: SavedStateHandle,
     @ApplicationContext
     private val context: Context,
@@ -48,7 +50,7 @@ class EditNoteViewModel @Inject constructor(
     private val textNotesRepository: TextNotesRepository,
 ) : EditScreenViewModel<EditNoteScreenState, TextNote>(
     navigationEventsHost = navigationEventsHost,
-    editorFacade = textNotesRepository,
+    editorFacade = editorFacade,
     applicationCoroutineScope = applicationCoroutineScope,
     context = context,
     buildModificationDateText = buildModificationDateText,

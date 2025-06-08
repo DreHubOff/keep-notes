@@ -5,6 +5,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
 import com.jksol.keep.notes.R
+import com.jksol.keep.notes.core.ChecklistEditorFacade
 import com.jksol.keep.notes.core.interactor.BuildModificationDateTextInteractor
 import com.jksol.keep.notes.core.interactor.BuildPdfFromChecklistInteractor
 import com.jksol.keep.notes.core.interactor.BuildTextFromChecklistInteractor
@@ -12,7 +13,7 @@ import com.jksol.keep.notes.core.model.Checklist
 import com.jksol.keep.notes.core.model.ChecklistItem
 import com.jksol.keep.notes.core.model.MainTypeTextRepresentation
 import com.jksol.keep.notes.data.ChecklistRepository
-import com.jksol.keep.notes.di.ApplicationGlobalScope
+import com.jksol.keep.notes.di.qualifier.ApplicationGlobalScope
 import com.jksol.keep.notes.ui.focus.ElementFocusRequest
 import com.jksol.keep.notes.ui.intent.ShareFileIntentBuilder
 import com.jksol.keep.notes.ui.intent.ShareTextIntentBuilder
@@ -47,6 +48,7 @@ class EditChecklistViewModel @Inject constructor(
     buildModificationDateText: Lazy<BuildModificationDateTextInteractor>,
     shareTextIntentBuilder: Provider<ShareTextIntentBuilder>,
     shareFileIntentBuilder: Provider<ShareFileIntentBuilder>,
+    editorFacade: ChecklistEditorFacade,
     private val navigationStateHandle: SavedStateHandle,
     @ApplicationContext
     private val context: Context,
@@ -58,7 +60,7 @@ class EditChecklistViewModel @Inject constructor(
     private val checklistRepository: ChecklistRepository,
 ) : EditScreenViewModel<EditChecklistScreenState, Checklist>(
     navigationEventsHost = navigationEventsHost,
-    editorFacade = checklistRepository,
+    editorFacade = editorFacade,
     applicationCoroutineScope = applicationCoroutineScope,
     context = context,
     buildModificationDateText = buildModificationDateText,

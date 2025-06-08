@@ -11,7 +11,7 @@ fun TextNote.toMainScreenItem(): MainScreenItem.TextNote {
         title = this.title,
         content = this.content,
         isPinned = this.isPinned,
-        hasScheduledReminder = this.hasReminder,
+        hasScheduledReminder = this.reminderDate != null,
         interactive = true
     )
 }
@@ -27,7 +27,7 @@ fun Checklist.toMainScreenItem(checklistItemsMaxCount: Int = 10): MainScreenItem
         items = noTickedItems.take(checklistItemsMaxCount).map {
             MainScreenItem.Checklist.Item(isChecked = false, text = it.title)
         },
-        hasScheduledReminder = false,
+        hasScheduledReminder = this.reminderDate != null,
         interactive = true,
         tickedItems = tickedItems.size,
     )

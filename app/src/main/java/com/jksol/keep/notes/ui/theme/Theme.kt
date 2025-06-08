@@ -7,9 +7,13 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.CardColors
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CheckboxColors
+import androidx.compose.material3.DatePickerColors
+import androidx.compose.material3.DatePickerDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MenuItemColors
+import androidx.compose.material3.TimePickerColors
+import androidx.compose.material3.TimePickerDefaults
 import androidx.compose.material3.TopAppBarColors
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
@@ -97,6 +101,30 @@ fun themedCardBorder(isSelected: Boolean): BorderStroke {
         width = if (isSelected) defaults.width * 2 else defaults.width,
         color = if (isSelected) VividBlue else MorningFog
     )
+}
+
+@Composable
+fun themedTimePickerColors(): TimePickerColors {
+    return TimePickerDefaults.colors().copy(
+        clockDialColor = Color(0xFFE0E7FF),
+        selectorColor = VividBlue,
+        periodSelectorSelectedContainerColor = Color(0xFFE0E7FF),
+        periodSelectorUnselectedContainerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+        periodSelectorSelectedContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+        periodSelectorUnselectedContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+        periodSelectorBorderColor = Color.LightGray,
+        timeSelectorSelectedContainerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+        timeSelectorUnselectedContainerColor = Color(0xFFEDF1FF),
+        timeSelectorSelectedContentColor = VividBlue,
+        timeSelectorUnselectedContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+        clockDialSelectedContentColor = MaterialTheme.colorScheme.surface,
+        clockDialUnselectedContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+    )
+}
+
+@Composable
+fun themedDatePickerColors(): DatePickerColors {
+    return DatePickerDefaults.colors()
 }
 
 @Composable

@@ -19,6 +19,9 @@ interface EditScreenState<Self : EditScreenState<Self>> {
     val showReminderDatePicker: Boolean
     val showReminderTimePicker: Boolean
 
+    val showPostNotificationsPermissionPrompt: Boolean
+    val showSetAlarmsPermissionPrompt: Boolean
+
     fun copy(
         itemId: Long = this.itemId,
         title: String = this.title,
@@ -33,5 +36,7 @@ interface EditScreenState<Self : EditScreenState<Self>> {
         showReminderEditorOverview: Boolean = this.showReminderEditorOverview,
         showReminderDatePicker: Boolean = this.showReminderDatePicker,
         showReminderTimePicker: Boolean = this.showReminderTimePicker,
+        showPostNotificationsPermissionPrompt: Boolean = this.showPostNotificationsPermissionPrompt,
+        showSetAlarmsPermissionPrompt: Boolean = this.showSetAlarmsPermissionPrompt,
     ): Self
 }

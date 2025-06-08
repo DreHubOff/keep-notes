@@ -20,6 +20,8 @@ data class EditNoteScreenState(
     override val showReminderEditorOverview: Boolean,
     override val showReminderDatePicker: Boolean,
     override val showReminderTimePicker: Boolean,
+    override val showPostNotificationsPermissionPrompt: Boolean,
+    override val showSetAlarmsPermissionPrompt: Boolean,
     val content: String,
     val contentFocusRequest: ElementFocusRequest?,
 ) : EditScreenState<EditNoteScreenState> {
@@ -38,6 +40,8 @@ data class EditNoteScreenState(
         showReminderEditorOverview: Boolean,
         showReminderDatePicker: Boolean,
         showReminderTimePicker: Boolean,
+        showPostNotificationsPermissionPrompt: Boolean,
+        showSetAlarmsPermissionPrompt: Boolean,
     ): EditNoteScreenState = copy(
         itemId = itemId,
         title = title,
@@ -52,6 +56,8 @@ data class EditNoteScreenState(
         showReminderEditorOverview = showReminderEditorOverview,
         showReminderDatePicker = showReminderDatePicker,
         showReminderTimePicker = showReminderTimePicker,
+        showPostNotificationsPermissionPrompt = showPostNotificationsPermissionPrompt,
+        showSetAlarmsPermissionPrompt = showSetAlarmsPermissionPrompt,
         contentFocusRequest = this@EditNoteScreenState.contentFocusRequest,
         content = this@EditNoteScreenState.content,
     )
@@ -73,6 +79,8 @@ data class EditNoteScreenState(
             showReminderEditorOverview = false,
             showReminderDatePicker = false,
             showReminderTimePicker = false,
+            showPostNotificationsPermissionPrompt = false,
+            showSetAlarmsPermissionPrompt = false,
         )
     }
 }

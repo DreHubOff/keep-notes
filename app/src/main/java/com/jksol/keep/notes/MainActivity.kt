@@ -24,13 +24,17 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
+import androidx.core.content.IntentCompat
 import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.jksol.keep.notes.core.model.ApplicationMainDataType
+import com.jksol.keep.notes.core.model.Checklist
+import com.jksol.keep.notes.core.model.TextNote
 import com.jksol.keep.notes.ui.animation.defaultAnimationSpec
 import com.jksol.keep.notes.ui.animation.scaleInFromBottomRight
 import com.jksol.keep.notes.ui.animation.scaleOutToBottomRight
@@ -48,6 +52,7 @@ import com.jksol.keep.notes.util.getAndRemove
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
@@ -69,6 +74,27 @@ class MainActivity : ComponentActivity() {
                     BuildNavigationGraph(navController)
                 }
                 ObserveNavigationEvents(navController)
+            }
+        }
+        intent.targetItem?.let(::openItemEditorScreen)
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        intent.targetItem?.let(::openItemEditorScreen)
+    }
+
+    private fun openItemEditorScreen(itemToOpen: ApplicationMainDataType) {
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.CREATED) {
+                intent = null
+                Log.d(TAG, "Opening item editor screen: $itemToOpen")
+                val itemRoute = when (itemToOpen) {
+                    is TextNote -> Route.EditNoteScreen(itemToOpen.id)
+                    is Checklist -> Route.EditChecklistScreen(itemToOpen.id)
+                }
+                navigationEventsHost.popBackStack(toRoute = Route.MainScreen)
+                navigationEventsHost.navigate(itemRoute)
             }
         }
     }
@@ -133,7 +159,7 @@ class MainActivity : ComponentActivity() {
                 var lastNavigationEventTime = System.currentTimeMillis()
                 navigationEventsHost.navigationRoute.collectLatest { event ->
                     val currentTime = System.currentTimeMillis()
-                    if (currentTime - lastNavigationEventTime < 400) {
+                    if (event is NavigationEvent.NavigateBack && currentTime - lastNavigationEventTime < 400) {
                         Log.w(TAG, "Ignoring navigation event: $event")
                         return@collectLatest
                     }
@@ -150,6 +176,8 @@ class MainActivity : ComponentActivity() {
         event: NavigationEvent,
         navController: NavHostController,
     ) {
+        if (event.consumed) return
+        Log.d(TAG, "Handling navigation event: $event")
         when (event) {
             is NavigationEvent.NavigateBack -> {
                 event.result?.let { (key, result) ->
@@ -173,7 +201,10 @@ class MainActivity : ComponentActivity() {
                     Log.e(TAG, "Error while sending intent", error)
                 }
             }
+
+            is NavigationEvent.PopBackStack -> navController.popBackStack(event.toRoute, event.inclusive)
         }
+        event.consumed = true
     }
 
     @Composable
@@ -194,7 +225,12 @@ class MainActivity : ComponentActivity() {
 
         private const val KEY_TARGET_ITEM = "target_item"
 
+        private val Intent.targetItem: ApplicationMainDataType?
+            get() = IntentCompat.getParcelableExtra(this, KEY_TARGET_ITEM, ApplicationMainDataType::class.java)
+
         fun getOpenItemEditorIntent(context: Context, item: ApplicationMainDataType): Intent =
-            Intent(context, MainActivity::class.java).putExtra(KEY_TARGET_ITEM, item)
+            Intent(context, MainActivity::class.java)
+                .putExtra(KEY_TARGET_ITEM, item)
+                .addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_CLEAR_TOP)
     }
 }

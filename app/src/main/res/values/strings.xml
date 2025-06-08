@@ -10,6 +10,8 @@
     <string name="notes">Notes</string>
     <string name="go_back">Go back</string>
     <string name="add_item">Add item</string>
+    <string name="allow">Allow</string>
+    <string name="deny">Deny</string>
 
     <string name="main_floating_button_desc">Add note or checklist</string>
     <string name="empty_list_desc">List is empty</string>
@@ -66,4 +68,8 @@
     <string name="notes_notification_channel_name">Notes Notifications</string>
     <string name="notes_notification_channel_desc">Channel for note reminders</string>
     <string name="bullet_point_symbol">•</string>
+    <string name="allow_notifications_title">Allow Notifications?</string>
+    <string name="post_notifications_permission_prompt">To remind you about your notes, the app needs permission to send notifications.</string>
+    <string name="allow_exact_alarms_title">Allow Exact Alarms</string>
+    <string name="exact_alarms_permission_prompt">This app needs permission to schedule exact alarms to deliver reminders at the right time.</string>
 </resources>

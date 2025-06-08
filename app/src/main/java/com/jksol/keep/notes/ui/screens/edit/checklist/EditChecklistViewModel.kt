@@ -13,6 +13,7 @@ import com.jksol.keep.notes.core.model.Checklist
 import com.jksol.keep.notes.core.model.ChecklistItem
 import com.jksol.keep.notes.core.model.MainTypeTextRepresentation
 import com.jksol.keep.notes.data.ChecklistRepository
+import com.jksol.keep.notes.data.PermissionsRepository
 import com.jksol.keep.notes.di.qualifier.ApplicationGlobalScope
 import com.jksol.keep.notes.ui.focus.ElementFocusRequest
 import com.jksol.keep.notes.ui.intent.ShareFileIntentBuilder
@@ -49,6 +50,7 @@ class EditChecklistViewModel @Inject constructor(
     shareTextIntentBuilder: Provider<ShareTextIntentBuilder>,
     shareFileIntentBuilder: Provider<ShareFileIntentBuilder>,
     editorFacade: ChecklistEditorFacade,
+    permissionsRepository: Provider<PermissionsRepository>,
     private val navigationStateHandle: SavedStateHandle,
     @ApplicationContext
     private val context: Context,
@@ -66,6 +68,7 @@ class EditChecklistViewModel @Inject constructor(
     buildModificationDateText = buildModificationDateText,
     shareTextIntentBuilder = shareTextIntentBuilder,
     shareFileIntentBuilder = shareFileIntentBuilder,
+    permissionsRepository = permissionsRepository,
 ) {
 
     override val itemRestoredMessageRes: Int = R.string.checklist_restored
@@ -114,7 +117,7 @@ class EditChecklistViewModel @Inject constructor(
     override suspend fun getTextRepresentation(state: EditChecklistScreenState): MainTypeTextRepresentation? =
         buildTextFromChecklist.get().invoke(state.itemId)
 
-    override fun fillWithScreenSpesificData(
+    override fun fillWithScreenSpecificData(
         oldState: EditChecklistScreenState,
         newState: EditChecklistScreenState,
         updatedItem: Checklist,

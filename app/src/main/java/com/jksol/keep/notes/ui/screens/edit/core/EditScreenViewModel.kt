@@ -3,6 +3,10 @@
 package com.jksol.keep.notes.ui.screens.edit.core
 
 import android.content.Context
+import android.content.Intent
+import android.net.Uri
+import android.os.Build
+import android.provider.Settings
 import androidx.annotation.StringRes
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.TimePickerState
@@ -14,6 +18,7 @@ import com.jksol.keep.notes.core.MainTypeEditorFacade
 import com.jksol.keep.notes.core.interactor.BuildModificationDateTextInteractor
 import com.jksol.keep.notes.core.model.ApplicationMainDataType
 import com.jksol.keep.notes.core.model.MainTypeTextRepresentation
+import com.jksol.keep.notes.data.PermissionsRepository
 import com.jksol.keep.notes.di.qualifier.ApplicationGlobalScope
 import com.jksol.keep.notes.ui.intent.ShareFileIntentBuilder
 import com.jksol.keep.notes.ui.intent.ShareTextIntentBuilder
@@ -57,6 +62,7 @@ abstract class EditScreenViewModel<State : EditScreenState<State>, Item : Applic
     private val buildModificationDateText: Lazy<BuildModificationDateTextInteractor>,
     private val shareTextIntentBuilder: Provider<ShareTextIntentBuilder>,
     private val shareFileIntentBuilder: Provider<ShareFileIntentBuilder>,
+    private val permissionsRepository: Provider<PermissionsRepository>,
 ) : ViewModel() {
 
     private val reminderEditorDateFormat by lazy { DateTimeFormatter.ofPattern("d MMMM, yyyy", Locale.getDefault()) }
@@ -87,7 +93,7 @@ abstract class EditScreenViewModel<State : EditScreenState<State>, Item : Applic
 
     protected abstract fun getCurrentIdFromNavigationArgs(): Long
 
-    protected abstract fun fillWithScreenSpesificData(oldState: State, newState: State, updatedItem: Item): State
+    protected abstract fun fillWithScreenSpecificData(oldState: State, newState: State, updatedItem: Item): State
 
     protected abstract fun itemUpdatesFlow(itemId: Long): Flow<Item>
 
@@ -202,10 +208,50 @@ abstract class EditScreenViewModel<State : EditScreenState<State>, Item : Applic
 
     fun onAddReminderClick() {
         viewModelScope.launch(Dispatchers.Default) {
-            _state.update { oldState ->
-                val editorData = buildReminderEditorDataForState(state = oldState)
-                oldState.copy(reminderEditorData = editorData, showReminderEditorOverview = true)
+            if (checkReminderPermissions()) {
+                _state.update { oldState ->
+                    val editorData = buildReminderEditorDataForState(state = oldState)
+                    oldState.copy(reminderEditorData = editorData, showReminderEditorOverview = true)
+                }
             }
+        }
+    }
+
+    fun checkReminderPermissions(): Boolean {
+        val repository = permissionsRepository.get()
+        if (!repository.canPostNotifications()) {
+            _state.update {
+                it.copy(
+                    showPostNotificationsPermissionPrompt = true,
+                    showSetAlarmsPermissionPrompt = false,
+                )
+            }
+            return false
+        }
+        if (!repository.canScheduleAlarms()) {
+            _state.update {
+                it.copy(
+                    showPostNotificationsPermissionPrompt = false,
+                    showSetAlarmsPermissionPrompt = true,
+                )
+            }
+            return false
+        }
+        _state.update {
+            it.copy(
+                showPostNotificationsPermissionPrompt = false,
+                showSetAlarmsPermissionPrompt = false,
+            )
+        }
+        return true
+    }
+
+    fun hideReminderPermissionsPrompt() {
+        _state.update {
+            it.copy(
+                showPostNotificationsPermissionPrompt = false,
+                showSetAlarmsPermissionPrompt = false,
+            )
         }
     }
 
@@ -222,6 +268,7 @@ abstract class EditScreenViewModel<State : EditScreenState<State>, Item : Applic
                 .toOffsetDateTime()
                 .withHour(editorData.hourOfDay)
                 .withMinute(editorData.minuteOfHour)
+                .withSecond(0)
 
             editorFacade.setReminder(
                 itemId = _state.value.itemId,
@@ -279,6 +326,28 @@ abstract class EditScreenViewModel<State : EditScreenState<State>, Item : Applic
 
     fun hideReminderTimePicker() {
         _state.update { it.copy(showReminderTimePicker = false) }
+    }
+
+    fun openAppSettings() {
+        viewModelScope.launch {
+            val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                data = Uri.fromParts("package", context.packageName, null)
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            }
+            navigationEventsHost.navigate(intent)
+        }
+    }
+
+    fun openAlarmsSettings() {
+        viewModelScope.launch {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                val intent = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM).apply {
+                    data = Uri.fromParts("package", context.packageName, null)
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                }
+                navigationEventsHost.navigate(intent)
+            }
+        }
     }
 
     fun saveReminderTimePickerResult(timePickerState: TimePickerState) {
@@ -360,7 +429,7 @@ abstract class EditScreenViewModel<State : EditScreenState<State>, Item : Applic
                 isTrashed = updatedItem.isTrashed,
                 modificationStatusMessage = buildModificationDateText.get().invoke(updatedItem.modificationDate),
             )
-            fillWithScreenSpesificData(oldState, newState, updatedItem)
+            fillWithScreenSpecificData(oldState, newState, updatedItem)
         }
     }
 

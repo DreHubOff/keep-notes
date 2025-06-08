@@ -1,13 +1,13 @@
-package com.jksol.keep.notes.data.service
+package com.jksol.keep.notes.data
 
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
-import android.app.Service
+import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import android.os.IBinder
+import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.content.IntentCompat
 import com.jksol.keep.notes.MainActivity
@@ -15,18 +15,19 @@ import com.jksol.keep.notes.R
 import com.jksol.keep.notes.core.model.ApplicationMainDataType
 import com.jksol.keep.notes.core.model.Checklist
 import com.jksol.keep.notes.core.model.TextNote
-import com.jksol.keep.notes.data.ChecklistRepository
-import com.jksol.keep.notes.data.TextNotesRepository
 import com.jksol.keep.notes.di.qualifier.ApplicationGlobalScope
 import com.jksol.keep.notes.di.qualifier.BulletPointSymbol
 import dagger.hilt.android.AndroidEntryPoint
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 import javax.inject.Provider
 
+private val TAG = AlarmSchedulerEventReceiver::class.java.simpleName
+
 @AndroidEntryPoint
-class AlarmSchedulerService : Service() {
+class AlarmSchedulerEventReceiver : BroadcastReceiver() {
 
     @Inject
     lateinit var checklistRepository: Provider<ChecklistRepository>
@@ -39,31 +40,20 @@ class AlarmSchedulerService : Service() {
     lateinit var coroutineScope: CoroutineScope
 
     @Inject
+    @ApplicationContext
+    lateinit var context: Context
+
+    @Inject
     lateinit var notificationManager: NotificationManager
 
     @Inject
     @BulletPointSymbol
     lateinit var bulletPointSymbol: String
 
-    override fun onCreate() {
-        super.onCreate()
-        createNotificationChannel()
-    }
+    override fun onReceive(context: Context?, intent: Intent?) {
+        if (context == null || intent == null) return
+        createNotificationChannel(context)
 
-    private fun createNotificationChannel() {
-        val channel = NotificationChannel(
-            getString(R.string.notes_notification_channel_id),
-            getString(R.string.notes_notification_channel_name),
-            NotificationManager.IMPORTANCE_DEFAULT
-        )
-        channel.description = getString(R.string.notes_notification_channel_desc)
-        notificationManager.createNotificationChannel(channel)
-    }
-
-    override fun onBind(intent: Intent): IBinder? = null
-
-    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        if (intent == null) return START_NOT_STICKY
         if (intent.itemId != -1L && intent.itemType != null) {
             when (intent.itemType) {
                 TextNote::class.java -> processTextNoteReminder(intent.itemId)
@@ -73,7 +63,16 @@ class AlarmSchedulerService : Service() {
         if (intent.notificationToRemove != -1) {
             notificationManager.cancel(intent.notificationToRemove)
         }
-        return super.onStartCommand(intent, flags, startId)
+    }
+
+    private fun createNotificationChannel(context: Context) {
+        val channel = NotificationChannel(
+            context.getString(R.string.notes_notification_channel_id),
+            context.getString(R.string.notes_notification_channel_name),
+            NotificationManager.IMPORTANCE_DEFAULT
+        )
+        channel.description = context.getString(R.string.notes_notification_channel_desc)
+        notificationManager.createNotificationChannel(channel)
     }
 
     private fun processChecklistReminder(checklistId: Long) {
@@ -108,8 +107,8 @@ class AlarmSchedulerService : Service() {
         return buildNotification(
             title = textNote.title,
             content = textNote.content,
-            openItemEditorIntent = getOpenItemEditorPendingIntent(context = this, item = textNote),
-            hideNotificationIntent = getHideNotificationPendingIntent(context = this, notificationId = notificationId)
+            openItemEditorIntent = getOpenItemEditorPendingIntent(context = context, item = textNote),
+            hideNotificationIntent = getHideNotificationPendingIntent(context = context, notificationId = notificationId)
         )
     }
 
@@ -127,8 +126,8 @@ class AlarmSchedulerService : Service() {
         return buildNotification(
             title = checklist.title,
             content = content,
-            openItemEditorIntent = getOpenItemEditorPendingIntent(context = this, item = checklist),
-            hideNotificationIntent = getHideNotificationPendingIntent(context = this, notificationId = notificationId),
+            openItemEditorIntent = getOpenItemEditorPendingIntent(context = context, item = checklist),
+            hideNotificationIntent = getHideNotificationPendingIntent(context = context, notificationId = notificationId),
         )
     }
 
@@ -138,14 +137,15 @@ class AlarmSchedulerService : Service() {
         openItemEditorIntent: PendingIntent,
         hideNotificationIntent: PendingIntent,
     ): Notification? {
-        return NotificationCompat.Builder(this, getString(R.string.notes_notification_channel_id))
+        Log.d(TAG, "Building notification. Title: $title, content: $content")
+        return NotificationCompat.Builder(context, context.getString(R.string.notes_notification_channel_id))
             .setSmallIcon(R.drawable.ic_circle_notifications)
             .setContentTitle(title)
             .setContentText(content)
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
             .setContentIntent(openItemEditorIntent)
             .setAutoCancel(true)
-            .addAction(R.drawable.ic_check, getString(R.string.done), hideNotificationIntent)
+            .addAction(R.drawable.ic_check, context.getString(R.string.done), hideNotificationIntent)
             .build()
     }
 
@@ -153,6 +153,7 @@ class AlarmSchedulerService : Service() {
         notificationId: Int,
         notification: Notification,
     ) {
+        Log.d(TAG, "Show reminder notification with notificationId: $notificationId")
         notificationManager.notify(notificationId, notification)
     }
 
@@ -172,15 +173,15 @@ class AlarmSchedulerService : Service() {
         val Intent.notificationToRemove: Int get() = getIntExtra(KEY_NOTIFICATION_TO_HIDE, -1)
 
         fun getIntent(context: Context, target: ApplicationMainDataType): Intent {
-            return Intent(context, AlarmSchedulerService::class.java)
+            return Intent(context, AlarmSchedulerEventReceiver::class.java)
                 .putExtra(KEY_ITEM_ID, target.id)
                 .putExtra(KEY_ITEM_TYPE, target::class.java)
         }
 
         private fun getHideNotificationPendingIntent(context: Context, notificationId: Int): PendingIntent {
-            val intent = Intent(context, AlarmSchedulerService::class.java)
+            val intent = Intent(context, AlarmSchedulerEventReceiver::class.java)
                 .putExtra(KEY_NOTIFICATION_TO_HIDE, notificationId)
-            return PendingIntent.getService(
+            return PendingIntent.getBroadcast(
                 context,
                 notificationId,
                 intent,

@@ -1,13 +1,13 @@
 package com.jksol.keep.notes.core
 
-import com.jksol.keep.notes.data.AlarmSchedulerRepository
+import com.jksol.keep.notes.data.ReminderSchedulerRepository
 import com.jksol.keep.notes.data.TextNotesRepository
 import java.time.OffsetDateTime
 import javax.inject.Inject
 
 class TextNoteEditorFacade @Inject constructor(
     private val textNotesRepository: TextNotesRepository,
-    private val alarmSchedulerRepository: AlarmSchedulerRepository,
+    private val reminderSchedulerRepository: ReminderSchedulerRepository,
 ) : MainTypeEditorFacade {
 
     override suspend fun storePinnedSate(pinned: Boolean, itemId: Long) {
@@ -40,11 +40,13 @@ class TextNoteEditorFacade @Inject constructor(
     override suspend fun setReminder(itemId: Long, date: OffsetDateTime) {
         textNotesRepository.storeReminderDate(itemId, date)
         val note = textNotesRepository.getNoteById(itemId) ?: return
-        alarmSchedulerRepository.scheduleAlarm(note)
+        reminderSchedulerRepository.cancelReminder(note)
+        reminderSchedulerRepository.scheduleReminder(note)
     }
 
     private suspend fun cancelAlarm(itemId: Long) {
         val item = textNotesRepository.getNoteById(itemId) ?: return
-        alarmSchedulerRepository.cancelAlarm(item)
+        textNotesRepository.deleteReminder(item.id)
+        reminderSchedulerRepository.cancelReminder(item)
     }
 }

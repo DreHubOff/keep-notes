@@ -42,6 +42,8 @@ import com.jksol.keep.notes.ui.screens.edit.note.model.EditNoteScreenState
 import com.jksol.keep.notes.ui.screens.edit.reminder.RemainderDatePickerDialog
 import com.jksol.keep.notes.ui.screens.edit.reminder.RemainderEditorOverviewDialog
 import com.jksol.keep.notes.ui.screens.edit.reminder.RemainderTimePickerDialog
+import com.jksol.keep.notes.ui.screens.permissions.ExactAlarmsPermissionDialog
+import com.jksol.keep.notes.ui.screens.permissions.PostNotificationsPermissionDialog
 import com.jksol.keep.notes.ui.shared.HandleSnackbarState
 import com.jksol.keep.notes.ui.shared.SnackbarEvent
 import com.jksol.keep.notes.ui.shared.mainItemCardTransition
@@ -235,6 +237,27 @@ private fun HandleAlerts(
             data = state.reminderEditorData,
             onDismiss = viewModel::hideReminderTimePicker,
             onTimeSelected = viewModel::saveReminderTimePickerResult,
+        )
+    }
+
+    if (state.showPostNotificationsPermissionPrompt) {
+        PostNotificationsPermissionDialog(
+            onDismiss = viewModel::hideReminderPermissionsPrompt,
+            onGranted = { viewModel.checkReminderPermissions() },
+            onOpenAppSettings = {
+                viewModel.hideReminderPermissionsPrompt()
+                viewModel.openAppSettings()
+            }
+        )
+    }
+
+    if (state.showSetAlarmsPermissionPrompt) {
+        ExactAlarmsPermissionDialog(
+            onDismiss = viewModel::hideReminderPermissionsPrompt,
+            onOpenAlarmsSettings = {
+                viewModel.hideReminderPermissionsPrompt()
+                viewModel.openAlarmsSettings()
+            }
         )
     }
 }

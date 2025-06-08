@@ -10,6 +10,7 @@ import com.jksol.keep.notes.core.interactor.BuildModificationDateTextInteractor
 import com.jksol.keep.notes.core.interactor.BuildPdfFromTextNoteInteractor
 import com.jksol.keep.notes.core.model.MainTypeTextRepresentation
 import com.jksol.keep.notes.core.model.TextNote
+import com.jksol.keep.notes.data.PermissionsRepository
 import com.jksol.keep.notes.data.TextNotesRepository
 import com.jksol.keep.notes.di.qualifier.ApplicationGlobalScope
 import com.jksol.keep.notes.ui.focus.ElementFocusRequest
@@ -40,6 +41,7 @@ class EditNoteViewModel @Inject constructor(
     shareTextIntentBuilder: Provider<ShareTextIntentBuilder>,
     buildModificationDateText: Lazy<BuildModificationDateTextInteractor>,
     editorFacade: TextNoteEditorFacade,
+    permissionsRepository: Provider<PermissionsRepository>,
     private val savedStateHandle: SavedStateHandle,
     @ApplicationContext
     private val context: Context,
@@ -56,6 +58,7 @@ class EditNoteViewModel @Inject constructor(
     buildModificationDateText = buildModificationDateText,
     shareTextIntentBuilder = shareTextIntentBuilder,
     shareFileIntentBuilder = shareFileIntentBuilder,
+    permissionsRepository = permissionsRepository,
 ) {
 
     override val itemRestoredMessageRes: Int = R.string.note_restored
@@ -68,7 +71,7 @@ class EditNoteViewModel @Inject constructor(
 
     override fun getEmptyState(): EditNoteScreenState = EditNoteScreenState.EMPTY
 
-    override fun fillWithScreenSpesificData(
+    override fun fillWithScreenSpecificData(
         oldState: EditNoteScreenState,
         newState: EditNoteScreenState,
         updatedItem: TextNote,

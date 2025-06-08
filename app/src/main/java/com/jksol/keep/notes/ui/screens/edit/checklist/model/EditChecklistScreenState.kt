@@ -21,6 +21,8 @@ data class EditChecklistScreenState(
     override val showReminderEditorOverview: Boolean,
     override val showReminderDatePicker: Boolean,
     override val showReminderTimePicker: Boolean,
+    override val showPostNotificationsPermissionPrompt: Boolean,
+    override val showSetAlarmsPermissionPrompt: Boolean,
     val uncheckedItems: List<UncheckedListItemUi>,
     val checkedItems: List<CheckedListItemUi>,
     val showCheckedItems: Boolean,
@@ -40,6 +42,8 @@ data class EditChecklistScreenState(
         showReminderEditorOverview: Boolean,
         showReminderDatePicker: Boolean,
         showReminderTimePicker: Boolean,
+        showPostNotificationsPermissionPrompt: Boolean,
+        showSetAlarmsPermissionPrompt: Boolean,
     ): EditChecklistScreenState = copy(
         itemId = itemId,
         title = title,
@@ -54,6 +58,8 @@ data class EditChecklistScreenState(
         showReminderEditorOverview = showReminderEditorOverview,
         showReminderDatePicker = showReminderDatePicker,
         showReminderTimePicker = showReminderTimePicker,
+        showPostNotificationsPermissionPrompt = showPostNotificationsPermissionPrompt,
+        showSetAlarmsPermissionPrompt = showSetAlarmsPermissionPrompt,
         uncheckedItems = this@EditChecklistScreenState.uncheckedItems,
         checkedItems = this@EditChecklistScreenState.checkedItems,
         showCheckedItems = this@EditChecklistScreenState.showCheckedItems,
@@ -77,6 +83,8 @@ data class EditChecklistScreenState(
             reminderEditorData = null,
             showReminderDatePicker = false,
             showReminderTimePicker = false,
+            showPostNotificationsPermissionPrompt = false,
+            showSetAlarmsPermissionPrompt = false,
         )
     }
 }

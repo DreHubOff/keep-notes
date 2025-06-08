@@ -10,7 +10,7 @@ import javax.inject.Singleton
 @Singleton
 class NavigationEventsHost @Inject constructor() {
 
-    private val _navigationRoute = MutableSharedFlow<NavigationEvent>()
+    private val _navigationRoute = MutableSharedFlow<NavigationEvent>(replay = 2, extraBufferCapacity = 2)
     val navigationRoute = _navigationRoute.asSharedFlow()
 
     suspend fun navigate(route: Route) {
@@ -19,6 +19,10 @@ class NavigationEventsHost @Inject constructor() {
 
     suspend fun navigate(intent: Intent) {
         _navigationRoute.emit(NavigationEvent.SendIntent(intent = intent))
+    }
+
+    suspend fun popBackStack(toRoute: Route, inclusive: Boolean = false) {
+        _navigationRoute.emit(NavigationEvent.PopBackStack(toRoute = toRoute, inclusive = inclusive))
     }
 
     suspend fun navigateBack(result: Pair<String, Any>? = null) {

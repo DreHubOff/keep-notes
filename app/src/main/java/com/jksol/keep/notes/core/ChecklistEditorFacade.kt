@@ -40,12 +40,14 @@ class ChecklistEditorFacade @Inject constructor(
     override suspend fun setReminder(itemId: Long, date: OffsetDateTime) {
         checklistRepository.storeReminderDate(itemId, date)
         val item = checklistRepository.getChecklistById(itemId) ?: return
+        checklistRepository.updateChecklistReminderShownState(itemId, isShown = false)
         reminderSchedulerRepository.cancelReminder(item)
         reminderSchedulerRepository.scheduleReminder(item)
     }
 
     private suspend fun cancelAlarm(itemId: Long) {
         val item = checklistRepository.getChecklistById(itemId) ?: return
+        checklistRepository.updateChecklistReminderShownState(itemId, isShown = false)
         checklistRepository.deleteReminder(item.id)
         reminderSchedulerRepository.cancelReminder(item)
     }

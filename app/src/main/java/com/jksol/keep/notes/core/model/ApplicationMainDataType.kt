@@ -13,6 +13,7 @@ sealed interface ApplicationMainDataType : SortableListItem, Parcelable {
     val backgroundColor: NoteColor?
     val isTrashed: Boolean
     val trashedDate: OffsetDateTime?
+    val reminderHasBeenPosted: Boolean
 
     fun isEmpty(): Boolean
 }

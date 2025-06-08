@@ -14,6 +14,7 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.jksol.keep.notes.R
+import com.jksol.keep.notes.RescheduleRemindersCommandReceiver
 import com.jksol.keep.notes.core.MainTypeEditorFacade
 import com.jksol.keep.notes.core.interactor.BuildModificationDateTextInteractor
 import com.jksol.keep.notes.core.model.ApplicationMainDataType
@@ -40,7 +41,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.getAndUpdate
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
@@ -84,7 +85,6 @@ abstract class EditScreenViewModel<State : EditScreenState<State>, Item : Applic
 
     private var pinChangesJob: Job? = null
     private var titleUpdatesJob: Job? = null
-    private var reminderExpirationObserverJob: Job? = null
 
     @get:StringRes
     protected abstract val itemRestoredMessageRes: Int
@@ -237,12 +237,18 @@ abstract class EditScreenViewModel<State : EditScreenState<State>, Item : Applic
             }
             return false
         }
-        _state.update {
+
+        val oldState = _state.getAndUpdate {
             it.copy(
                 showPostNotificationsPermissionPrompt = false,
                 showSetAlarmsPermissionPrompt = false,
             )
         }
+
+        if (oldState.showPostNotificationsPermissionPrompt || oldState.showSetAlarmsPermissionPrompt) {
+            context.sendBroadcast(RescheduleRemindersCommandReceiver.getIntent(context))
+        }
+
         return true
     }
 
@@ -397,25 +403,8 @@ abstract class EditScreenViewModel<State : EditScreenState<State>, Item : Applic
     private fun observeEditedItemChanges(itemId: Long) {
         viewModelScope.launch(Dispatchers.Default) {
             itemUpdatesFlow(itemId).collectLatest { updatedItem: Item ->
-                if (updatedItem.reminderDate != null) {
-                    scheduleUiRefreshOnReminderDate(updatedItem)
-                }
                 refreshScreenState(updatedItem)
             }
-        }
-    }
-
-    private fun scheduleUiRefreshOnReminderDate(item: Item) {
-        reminderExpirationObserverJob?.cancel()
-        val reminderDate = item.reminderDate ?: return
-        reminderExpirationObserverJob = viewModelScope.launch(Dispatchers.Default) {
-            val currentDate = OffsetDateTime.now()
-            if (reminderDate.isBefore(currentDate)) return@launch
-            if (currentDate.plusDays(1).isBefore(reminderDate)) return@launch
-            val delay = (reminderDate.toEpochSecond() - OffsetDateTime.now().toEpochSecond()) * 1000
-            delay(delay.coerceAtLeast(0) + 1000)
-            val refreshedData = itemUpdatesFlow(item.id).firstOrNull() ?: return@launch
-            refreshScreenState(refreshedData)
         }
     }
 

@@ -106,4 +106,10 @@ class TextNotesRepository @Inject constructor(
             textNoteDao.updateReminderDateById(id = itemId, date = date)
         }
     }
+
+    suspend fun updateChecklistReminderShownState(noteId: Long, isShown: Boolean) {
+        withContext(NonCancellable) {
+            textNoteDao.updateChecklistReminderShownState(id = noteId, isShown = isShown)
+        }
+    }
 }

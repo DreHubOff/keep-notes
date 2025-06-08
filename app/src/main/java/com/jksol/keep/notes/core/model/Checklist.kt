@@ -16,6 +16,7 @@ data class Checklist(
     override val isTrashed: Boolean,
     override val trashedDate: OffsetDateTime?,
     override val reminderDate: OffsetDateTime?,
+    override val reminderHasBeenPosted: Boolean,
 ) : Parcelable, ApplicationMainDataType {
 
     override fun isEmpty(): Boolean = title.trim().isEmpty() && (items.isEmpty() || items.all { it.title.trim().isEmpty() })
@@ -32,6 +33,7 @@ data class Checklist(
             isTrashed = false,
             trashedDate = null,
             reminderDate = null,
+            reminderHasBeenPosted = false,
         )
     }
 }

@@ -56,4 +56,7 @@ interface TextNoteDao {
 
     @Query("UPDATE $TEXT_NOTE_TABLE_NAME SET reminder_date = :date WHERE id = :id")
     suspend fun updateReminderDateById(id: Long, date: OffsetDateTime?)
+
+    @Query("UPDATE $TEXT_NOTE_TABLE_NAME SET reminder_posted = :isShown WHERE id = :id")
+    suspend fun updateChecklistReminderShownState(id: Long, isShown: Boolean)
 }

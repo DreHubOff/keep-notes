@@ -210,7 +210,13 @@ class ChecklistRepository @Inject constructor(
         }
     }
 
-    suspend fun restoreChecklist(checklistId: Long) {
+    suspend fun updateChecklistReminderShownState(checklistId: Long, isShown: Boolean) {
+        withContext(NonCancellable) {
+            checklistDao.updateChecklistReminderShownState(id = checklistId, isShown = isShown)
+        }
+    }
+
+    private suspend fun restoreChecklist(checklistId: Long) {
         withContext(NonCancellable) {
             database.withTransaction {
                 checklistDao.updateIsTrashedById(id = checklistId, isTrashed = false)

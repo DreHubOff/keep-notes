@@ -18,6 +18,7 @@ fun ChecklistWithItems.toDomain(): Checklist {
         isTrashed = checklist.isTrashed,
         trashedDate = checklist.trashedDate,
         reminderDate = checklist.reminderDate,
+        reminderHasBeenPosted = checklist.reminderHasBeenPosted,
     )
 }
 
@@ -41,6 +42,7 @@ fun Checklist.toEntity(): ChecklistEntity {
         isTrashed = isTrashed,
         trashedDate = trashedDate,
         reminderDate = reminderDate,
+        reminderHasBeenPosted = reminderHasBeenPosted,
     )
 }
 
@@ -50,6 +52,6 @@ fun ChecklistItem.toEntity(parentChecklistId: Long): ChecklistItemEntity {
         title = title,
         isChecked = isChecked,
         listPosition = listPosition,
-        checklistId = parentChecklistId // assuming this is your foreign key field
+        checklistId = parentChecklistId
     )
 }

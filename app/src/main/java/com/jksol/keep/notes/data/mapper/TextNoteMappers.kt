@@ -15,6 +15,7 @@ fun TextNoteEntity.toDomain(): TextNote {
         isTrashed = isTrashed,
         trashedDate = trashedDate,
         reminderDate = reminderDate,
+        reminderHasBeenPosted = reminderHasBeenPosted,
     )
 }
 
@@ -30,5 +31,6 @@ fun TextNote.toEntity(): TextNoteEntity {
         isTrashed = isTrashed,
         trashedDate = trashedDate,
         reminderDate = reminderDate,
+        reminderHasBeenPosted = reminderHasBeenPosted,
     )
 }

@@ -36,6 +36,9 @@ class AlarmSchedulerEventReceiver : BroadcastReceiver() {
     lateinit var textNotesRepository: Provider<TextNotesRepository>
 
     @Inject
+    lateinit var permissionsRepository: Provider<PermissionsRepository>
+
+    @Inject
     @ApplicationGlobalScope
     lateinit var coroutineScope: CoroutineScope
 
@@ -82,10 +85,13 @@ class AlarmSchedulerEventReceiver : BroadcastReceiver() {
                 return@launch
             }
             val notificationId = buildNotificationIdForItem(checklist)
-            showReminderNotification(
+            val successfullyPosted = showReminderNotification(
                 notificationId = notificationId,
                 notification = buildChecklistNotification(checklist, notificationId) ?: return@launch
             )
+            if (successfullyPosted) {
+                checklistRepository.get().updateChecklistReminderShownState(checklistId, isShown = true)
+            }
         }
     }
 
@@ -96,10 +102,13 @@ class AlarmSchedulerEventReceiver : BroadcastReceiver() {
                 return@launch
             }
             val notificationId = buildNotificationIdForItem(textNote)
-            showReminderNotification(
+            val successfullyPosted = showReminderNotification(
                 notificationId = notificationId,
                 notification = buildTextNoteNotification(textNote, notificationId) ?: return@launch
             )
+            if (successfullyPosted) {
+                textNotesRepository.get().updateChecklistReminderShownState(noteId, isShown = true)
+            }
         }
     }
 
@@ -152,9 +161,13 @@ class AlarmSchedulerEventReceiver : BroadcastReceiver() {
     private fun showReminderNotification(
         notificationId: Int,
         notification: Notification,
-    ) {
-        Log.d(TAG, "Show reminder notification with notificationId: $notificationId")
-        notificationManager.notify(notificationId, notification)
+    ): Boolean {
+        return if (permissionsRepository.get().canPostNotifications()) {
+            notificationManager.notify(notificationId, notification)
+            true
+        } else {
+            false
+        }
     }
 
     private fun buildNotificationIdForItem(item: ApplicationMainDataType): Int =

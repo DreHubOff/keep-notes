@@ -40,12 +40,14 @@ class TextNoteEditorFacade @Inject constructor(
     override suspend fun setReminder(itemId: Long, date: OffsetDateTime) {
         textNotesRepository.storeReminderDate(itemId, date)
         val note = textNotesRepository.getNoteById(itemId) ?: return
+        textNotesRepository.updateChecklistReminderShownState(note.id, isShown = false)
         reminderSchedulerRepository.cancelReminder(note)
         reminderSchedulerRepository.scheduleReminder(note)
     }
 
     private suspend fun cancelAlarm(itemId: Long) {
         val item = textNotesRepository.getNoteById(itemId) ?: return
+        textNotesRepository.updateChecklistReminderShownState(itemId, isShown = false)
         textNotesRepository.deleteReminder(item.id)
         reminderSchedulerRepository.cancelReminder(item)
     }

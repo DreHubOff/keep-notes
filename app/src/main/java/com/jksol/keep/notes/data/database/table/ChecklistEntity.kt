@@ -38,6 +38,9 @@ data class ChecklistEntity(
 
     @ColumnInfo("trashed_date")
     val trashedDate: OffsetDateTime?,
+
+    @ColumnInfo("reminder_posted")
+    val reminderHasBeenPosted: Boolean,
 ) {
 
     companion object {

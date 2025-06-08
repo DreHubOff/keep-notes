@@ -79,4 +79,7 @@ interface ChecklistDao {
 
     @Query("UPDATE $CHECKLIST_TABLE_NAME SET reminder_date = :date WHERE id = :id")
     suspend fun updateReminderDateById(id: Long, date: OffsetDateTime?)
+
+    @Query("UPDATE $CHECKLIST_TABLE_NAME SET reminder_posted = :isShown WHERE id = :id")
+    suspend fun updateChecklistReminderShownState(id: Long, isShown: Boolean)
 }

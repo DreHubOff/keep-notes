@@ -41,6 +41,6 @@ data class TextNoteEntity(
     @ColumnInfo(name = "trashed_date")
     val trashedDate: OffsetDateTime?,
 
-    @ColumnInfo(name = "has_reminder")
-    val hasReminder: Boolean = false,
+    @ColumnInfo("reminder_posted")
+    val reminderHasBeenPosted: Boolean,
 )

@@ -12,7 +12,6 @@ import com.jksol.keep.notes.demo_data.MainScreenDemoData
 import com.jksol.keep.notes.ui.screens.main.model.MainScreenItem
 import com.jksol.keep.notes.ui.shared.listitem.TextNoteCard
 import com.jksol.keep.notes.ui.shared.listitem.TextNoteCardData
-import com.jksol.keep.notes.ui.shared.rememberTextNotePinToEditorTransitionKey
 import com.jksol.keep.notes.ui.shared.rememberTextNoteToEditorTransitionKey
 import com.jksol.keep.notes.ui.theme.ApplicationTheme
 
@@ -40,7 +39,6 @@ fun MainTextNote(
         itemStatus = {
             MainItemStatusIcons(
                 isPinned = item.isPinned,
-                pinTransitionKey = rememberTextNotePinToEditorTransitionKey(noteId = item.id),
                 hasScheduledReminder = item.hasScheduledReminder,
             )
         }

@@ -16,7 +16,6 @@ import com.jksol.keep.notes.ui.shared.sharedElementTransition
 @Composable
 fun MainItemStatusIcons(
     isPinned: Boolean = false,
-    pinTransitionKey: Any = Unit,
     hasScheduledReminder: Boolean = false,
 ) {
     if (hasScheduledReminder) {
@@ -28,7 +27,7 @@ fun MainItemStatusIcons(
     }
     if (isPinned) {
         Icon(
-            modifier = Modifier.sharedElementTransition(transitionKey = pinTransitionKey),
+            modifier = Modifier,
             painter = painterResource(R.drawable.ic_material_keep),
             contentDescription = null,
             tint = MaterialTheme.colorScheme.onSurface

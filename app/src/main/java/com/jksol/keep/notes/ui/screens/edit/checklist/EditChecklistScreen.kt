@@ -46,7 +46,6 @@ import com.jksol.keep.notes.ui.screens.permissions.PostNotificationsPermissionDi
 import com.jksol.keep.notes.ui.shared.HandleSnackbarState
 import com.jksol.keep.notes.ui.shared.SnackbarEvent
 import com.jksol.keep.notes.ui.shared.mainItemCardTransition
-import com.jksol.keep.notes.ui.shared.rememberChecklistToEditorPinTransitionKey
 import com.jksol.keep.notes.ui.shared.rememberChecklistToEditorTitleTransitionKey
 import com.jksol.keep.notes.ui.shared.rememberChecklistToEditorTransitionKey
 import com.jksol.keep.notes.ui.theme.ApplicationTheme
@@ -144,7 +143,6 @@ fun ScreenContent(
                 .fillMaxSize(),
         ) {
             EditActionBar(
-                pinTransitionKey = rememberChecklistToEditorPinTransitionKey(state.itemId),
                 systemBarInset = innerPadding.calculateTopPadding(),
                 pinned = state.isPinned,
                 trashed = state.isTrashed,

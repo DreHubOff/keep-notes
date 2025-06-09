@@ -72,9 +72,10 @@ class AlarmSchedulerEventReceiver : BroadcastReceiver() {
         val channel = NotificationChannel(
             context.getString(R.string.notes_notification_channel_id),
             context.getString(R.string.notes_notification_channel_name),
-            NotificationManager.IMPORTANCE_DEFAULT
+            NotificationManager.IMPORTANCE_HIGH
         )
         channel.description = context.getString(R.string.notes_notification_channel_desc)
+        channel.lockscreenVisibility = Notification.VISIBILITY_PUBLIC
         notificationManager.createNotificationChannel(channel)
     }
 
@@ -151,7 +152,8 @@ class AlarmSchedulerEventReceiver : BroadcastReceiver() {
             .setSmallIcon(R.drawable.ic_circle_notifications)
             .setContentTitle(title)
             .setContentText(content)
-            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
             .setContentIntent(openItemEditorIntent)
             .setAutoCancel(true)
             .addAction(R.drawable.ic_check, context.getString(R.string.done), hideNotificationIntent)

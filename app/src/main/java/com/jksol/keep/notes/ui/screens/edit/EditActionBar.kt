@@ -31,7 +31,6 @@ import com.jksol.keep.notes.ui.theme.themedTopAppBarColors
 
 @Composable
 fun EditActionBar(
-    pinTransitionKey: Any = "",
     systemBarInset: Dp = 0.dp,
     pinned: Boolean = false,
     trashed: Boolean = false,
@@ -60,7 +59,6 @@ fun EditActionBar(
             if (!trashed) {
                 ActionsForNotTrashedItem(
                     pinned = pinned,
-                    pinTransitionKey = pinTransitionKey,
                     onPinCheckedChange = onPinCheckedChange,
                     onAddReminderClick = onAddReminderClick,
                     onMoveToTrashClick = onMoveToTrashClick,
@@ -79,7 +77,6 @@ fun EditActionBar(
 @Composable
 private fun ActionsForNotTrashedItem(
     pinned: Boolean,
-    pinTransitionKey: Any,
     onPinCheckedChange: (Boolean) -> Unit,
     onAddReminderClick: () -> Unit,
     onMoveToTrashClick: () -> Unit,
@@ -87,10 +84,7 @@ private fun ActionsForNotTrashedItem(
 ) {
     var checked by remember(pinned) { mutableStateOf(pinned) }
     PinCheckbox(
-        modifier = Modifier
-            .sharedElementTransition(
-                transitionKey = pinTransitionKey,
-            ),
+        modifier = Modifier,
         isChecked = checked,
         onCheckedChange = {
             onPinCheckedChange(it)

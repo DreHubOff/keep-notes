@@ -12,7 +12,6 @@ import com.jksol.keep.notes.demo_data.MainScreenDemoData
 import com.jksol.keep.notes.ui.screens.main.model.MainScreenItem
 import com.jksol.keep.notes.ui.shared.listitem.ChecklistCard
 import com.jksol.keep.notes.ui.shared.listitem.ChecklistCardData
-import com.jksol.keep.notes.ui.shared.rememberChecklistToEditorPinTransitionKey
 import com.jksol.keep.notes.ui.shared.rememberChecklistToEditorTransitionKey
 import com.jksol.keep.notes.ui.theme.ApplicationTheme
 
@@ -41,7 +40,6 @@ fun MainChecklist(
         itemStatus = {
             MainItemStatusIcons(
                 isPinned = item.isPinned,
-                pinTransitionKey = rememberChecklistToEditorPinTransitionKey(checklistId = item.id),
                 hasScheduledReminder = item.hasScheduledReminder,
             )
         }

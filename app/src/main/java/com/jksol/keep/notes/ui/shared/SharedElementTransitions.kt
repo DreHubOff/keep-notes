@@ -38,20 +38,12 @@ fun rememberChecklistToEditorTransitionKey(checklistId: Long): Any =
     rememberChecklistTransitionKey(checklistId = checklistId, component = "card")
 
 @Composable
-fun rememberChecklistToEditorPinTransitionKey(checklistId: Long): Any =
-    rememberChecklistTransitionKey(checklistId = checklistId, component = "pin")
-
-@Composable
 fun rememberChecklistToEditorTitleTransitionKey(checklistId: Long): Any =
     rememberChecklistTransitionKey(checklistId = checklistId, component = "title")
 
 @Composable
 fun rememberTextNoteToEditorTransitionKey(noteId: Long): Any =
     rememberNextNoteTransitionKey(noteId = noteId, component = "card")
-
-@Composable
-fun rememberTextNotePinToEditorTransitionKey(noteId: Long): Any =
-    rememberNextNoteTransitionKey(noteId = noteId, component = "pin")
 
 @Composable
 fun rememberTextNoteToEditorTitleTransitionKey(noteId: Long): Any =

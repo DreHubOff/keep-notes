@@ -228,7 +228,7 @@ private fun DisplayState(
             openTextNoteEditor = openTextNoteEditor
         )
         if (isEmptyListState) {
-            NoItemsState(state = state, onActionBarEvent = onActionBarEvent)
+            NoItemsState(state = state)
         }
     }
 }
@@ -312,7 +312,7 @@ private fun List(
 }
 
 @Composable
-fun NoItemsState(state: MainScreenState, onActionBarEvent: (MainActionBarIntent) -> Unit) {
+fun NoItemsState(state: MainScreenState) {
     val message = when {
         state.searchEnabled -> R.string.search_empty_list
         else -> R.string.notes_you_add_appear_here

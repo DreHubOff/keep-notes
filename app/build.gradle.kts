@@ -20,8 +20,8 @@ android {
         applicationId = "com.jksol.keep.notes"
         minSdk = 26
         targetSdk = 35
-        versionCode = 1
-        versionName = "1.0.0"
+        versionCode = 2
+        versionName = "1.0.0-Beta"
         val fileProviderAuthority = "${applicationId}.fileprovider"
         buildConfigField("String", "FILE_PROVIDER_AUTHORITY", "\"${fileProviderAuthority}\"")
         manifestPlaceholders["fileProviderAuthority"] = fileProviderAuthority

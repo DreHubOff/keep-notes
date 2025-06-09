@@ -48,9 +48,9 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.flow.updateAndGet
 import kotlinx.coroutines.launch
 import java.io.File
-import java.time.Instant
 import java.time.OffsetDateTime
 import java.time.ZoneId
+import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 import javax.inject.Provider
@@ -66,18 +66,23 @@ abstract class EditScreenViewModel<State : EditScreenState<State>, Item : Applic
     private val permissionsRepository: Provider<PermissionsRepository>,
 ) : ViewModel() {
 
-    private val reminderEditorDateFormat by lazy { DateTimeFormatter.ofPattern("d MMMM, yyyy", Locale.getDefault()) }
+    private val reminderEditorDateFormat by lazy { DateTimeFormatter.ofPattern("d MMM, yyyy", Locale.getDefault()) }
     private val reminderEditorTimeFormat by lazy { DateTimeFormatter.ofPattern("h:mm a", Locale.getDefault()) }
 
     private val reminderDateTimeFormat by lazy { DateTimeFormatter.ofPattern("d MMM, h:mm a", Locale.getDefault()) }
+
+    private var firstItemCache: Item? = null
 
     @Suppress("PropertyName")
     protected val _state: MutableStateFlow<State> by lazy { MutableStateFlow(getEmptyState()) }
     val state: StateFlow<State> by lazy {
         _state
             .onStart {
-                val item = loadFirstItem(getCurrentIdFromNavigationArgs())
-                observeEditedItemChanges(item.id)
+                val idFromArgs = getCurrentIdFromNavigationArgs()
+                if (firstItemCache == null || (idFromArgs != -1L && idFromArgs != firstItemCache?.id)) {
+                    firstItemCache = loadFirstItem(getCurrentIdFromNavigationArgs())
+                }
+                observeEditedItemChanges(firstItemCache?.id ?: -1)
             }
             .distinctUntilChanged()
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(stopTimeoutMillis = 3000), getEmptyState())
@@ -269,17 +274,8 @@ abstract class EditScreenViewModel<State : EditScreenState<State>, Item : Applic
         hideReminderOverview()
         applicationCoroutineScope.launch {
             val editorData = _state.value.reminderEditorData ?: return@launch
-            val localDate = Instant.ofEpochMilli(editorData.dateMillis ?: System.currentTimeMillis())
-                .atZone(ZoneId.systemDefault())
-                .toOffsetDateTime()
-                .withHour(editorData.hourOfDay)
-                .withMinute(editorData.minuteOfHour)
-                .withSecond(0)
-
-            editorFacade.setReminder(
-                itemId = _state.value.itemId,
-                date = localDate,
-            )
+            val zonedDate = editorData.asZonedDateTime()
+            editorFacade.setReminder(itemId = _state.value.itemId, date = zonedDate)
         }
     }
 
@@ -311,16 +307,10 @@ abstract class EditScreenViewModel<State : EditScreenState<State>, Item : Applic
         if (dateMillis == null) return
         viewModelScope.launch(Dispatchers.Default) {
             _state.update { oldState ->
-                var localDate = Instant.ofEpochMilli(dateMillis)
-                    .atZone(ZoneId.systemDefault())
-                    .toOffsetDateTime()
-                oldState.reminderEditorData?.run {
-                    localDate = localDate.withHour(hourOfDay).withMinute(minuteOfHour)
-                }
-                val editorData = buildReminderEditorDataForDate(
-                    date = localDate,
-                    isNewReminder = oldState.reminderData == null
-                )
+                val oldEditor = oldState.reminderEditorData
+                val newEditor = oldEditor?.copy(dateMillis = dateMillis)
+                val zonedDate = newEditor?.asZonedDateTime() ?: OffsetDateTime.now()
+                val editorData = buildReminderEditorDataForDate(date = zonedDate, isNewReminder = oldState.reminderData == null)
                 oldState.copy(
                     reminderEditorData = editorData,
                     showReminderEditorOverview = true,
@@ -360,11 +350,9 @@ abstract class EditScreenViewModel<State : EditScreenState<State>, Item : Applic
         viewModelScope.launch(Dispatchers.Default) {
             _state.update { oldState ->
                 val reminderEditorData = oldState.reminderEditorData ?: return@update oldState
-                val localDate = Instant.ofEpochMilli(reminderEditorData.dateMillis ?: System.currentTimeMillis())
-                    .atZone(ZoneId.systemDefault())
-                    .toOffsetDateTime()
-                    .withHour(timePickerState.hour)
-                    .withMinute(timePickerState.minute)
+                val localDate = reminderEditorData
+                    .copy(hourOfDay = timePickerState.hour, minuteOfHour = timePickerState.minute)
+                    .asZonedDateTime()
                 val editorData = buildReminderEditorDataForDate(
                     date = localDate,
                     isNewReminder = oldState.reminderData == null
@@ -439,22 +427,16 @@ abstract class EditScreenViewModel<State : EditScreenState<State>, Item : Applic
     }
 
     private fun buildReminderEditorDataForState(state: State): ReminderEditorData {
-        val oldEditorData = state.reminderEditorData
-        val dateMillis = oldEditorData?.dateMillis ?: System.currentTimeMillis()
-        var localDate = Instant.ofEpochMilli(dateMillis)
-            .atZone(ZoneId.systemDefault())
-            .toOffsetDateTime()
-        if (oldEditorData != null) {
-            localDate = localDate.withHour(oldEditorData.hourOfDay).withMinute(oldEditorData.minuteOfHour)
-        }
-        return buildReminderEditorDataForDate(date = localDate, isNewReminder = state.reminderData == null)
+        val zonedDate = state.reminderEditorData?.asZonedDateTime() ?: OffsetDateTime.now()
+        return buildReminderEditorDataForDate(date = zonedDate, isNewReminder = state.reminderData == null)
     }
 
     private fun buildReminderEditorDataForDate(
         date: OffsetDateTime,
         isNewReminder: Boolean,
     ): ReminderEditorData {
-        val dateMillis = date.toEpochSecond() * 1000
+        val zoneOffsetSeconds = ZonedDateTime.now(ZoneId.systemDefault()).offset.totalSeconds
+        val dateMillis = (date.toEpochSecond() + zoneOffsetSeconds) * 1000
         val editorData = ReminderEditorData(
             isNewReminder = isNewReminder,
             dateMillis = dateMillis,

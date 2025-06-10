@@ -8,6 +8,8 @@ import com.jksol.keep.notes.core.ChecklistEditorFacade
 import com.jksol.keep.notes.core.TextNoteEditorFacade
 import com.jksol.keep.notes.core.interactor.ObserveApplicationMainTypeInteractor
 import com.jksol.keep.notes.core.interactor.PermanentlyDeleteOldTrashRecordsInteractor
+import com.jksol.keep.notes.core.model.Checklist
+import com.jksol.keep.notes.core.model.TextNote
 import com.jksol.keep.notes.data.ChecklistRepository
 import com.jksol.keep.notes.data.TextNotesRepository
 import com.jksol.keep.notes.data.preferences.UserPreferences
@@ -32,6 +34,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted.Companion.WhileSubscribed
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
@@ -63,6 +66,7 @@ class MainViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(MainScreenState.EMPTY)
     val uiState: StateFlow<MainScreenState> = _uiState
         .onStart { observeDatabase(searchPrompt = "") }
+        .distinctUntilChanged()
         .stateIn(
             scope = viewModelScope,
             started = WhileSubscribed(stopTimeoutMillis = 3000),
@@ -76,7 +80,16 @@ class MainViewModel @Inject constructor(
         databaseObserverJob?.cancel()
         databaseObserverJob = viewModelScope.launch(Dispatchers.Default) {
             val stateFlow: Flow<MainScreenState> = observeApplicationMainType(searchPrompt.trim())
-                .map { items -> items.map { item -> item.toMainScreenItem() } }
+                .map { items ->
+                    val currentItems = _uiState.value.screenItems
+                    items.map { item ->
+                        val oldItem = currentItems.firstOrNull { old ->
+                            (old is MainScreenItem.TextNote && item is TextNote && old.id == item.id) ||
+                                    (old is MainScreenItem.Checklist && item is Checklist && old.id == item.id)
+                        }
+                        item.toMainScreenItem(isSelected = oldItem?.isSelected == true)
+                    }
+                }
                 .map { items -> mainScreenStateFromItems(items, searchPrompt) }
             _uiState.emitAll(stateFlow)
         }

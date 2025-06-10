@@ -21,7 +21,7 @@ android {
         minSdk = 26
         targetSdk = 35
         versionCode = 2
-        versionName = "1.0.0-Beta"
+        versionName = "0.1.2"
         val fileProviderAuthority = "${applicationId}.fileprovider"
         buildConfigField("String", "FILE_PROVIDER_AUTHORITY", "\"${fileProviderAuthority}\"")
         manifestPlaceholders["fileProviderAuthority"] = fileProviderAuthority

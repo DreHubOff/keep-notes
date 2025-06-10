@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.sharp.Help
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material3.DrawerState
 import androidx.compose.material3.DrawerValue
@@ -33,6 +34,7 @@ fun MainDrawer(
     drawerState: DrawerState,
     modifier: Modifier = Modifier,
     openTrashClick: () -> Unit = {},
+    openHelpClick: () -> Unit = {},
 ) {
     val coroutineScope = rememberCoroutineScope()
     val context = LocalContext.current
@@ -72,6 +74,23 @@ fun MainDrawer(
             icon = {
                 Icon(
                     painter = painterResource(R.drawable.ic_delete),
+                    contentDescription = null
+                )
+            },
+            selected = false,
+            onClick = {
+                coroutineScope.launch {
+                    drawerState.close()
+                    openTrashClick()
+                }
+            }
+        )
+        NavigationDrawerItem(
+            modifier = Modifier.padding(horizontal = 16.dp),
+            label = { Text(text = stringResource(R.string.help_feedback_menu)) },
+            icon = {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Sharp.Help,
                     contentDescription = null
                 )
             },

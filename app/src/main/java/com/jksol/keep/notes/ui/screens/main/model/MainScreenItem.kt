@@ -7,6 +7,7 @@ sealed class MainScreenItem {
     abstract val id: Long
     abstract val isPinned: Boolean
     abstract val hasScheduledReminder: Boolean
+    abstract val reminderCompleted: Boolean
     abstract val title: String
     abstract val interactive: Boolean
     abstract val isSelected: Boolean
@@ -24,6 +25,7 @@ sealed class MainScreenItem {
         override val hasScheduledReminder: Boolean = false,
         override val interactive: Boolean = true,
         override val isSelected: Boolean = false,
+        override val reminderCompleted: Boolean = false,
     ) : MainScreenItem() {
 
         override fun withSelection(isSelected: Boolean): MainScreenItem = copy(isSelected = isSelected)
@@ -40,6 +42,7 @@ sealed class MainScreenItem {
         override val hasScheduledReminder: Boolean = false,
         override val interactive: Boolean = true,
         override val isSelected: Boolean = false,
+        override val reminderCompleted: Boolean = false,
     ) : MainScreenItem() {
 
         override fun withSelection(isSelected: Boolean): MainScreenItem = copy(isSelected = isSelected)

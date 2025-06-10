@@ -41,6 +41,7 @@ fun MainChecklist(
             MainItemStatusIcons(
                 isPinned = item.isPinned,
                 hasScheduledReminder = item.hasScheduledReminder,
+                reminderCompleted = item.reminderCompleted,
             )
         }
     )

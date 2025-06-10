@@ -72,4 +72,5 @@
     <string name="post_notifications_permission_prompt">To remind you about your notes, the app needs permission to send notifications.</string>
     <string name="allow_exact_alarms_title">Allow Exact Alarms</string>
     <string name="exact_alarms_permission_prompt">This app needs permission to schedule exact alarms to deliver reminders at the right time.</string>
+    <string name="help_feedback_menu"><![CDATA[Help & Feedback]]></string>
 </resources>

@@ -4,8 +4,10 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.sharp.Help
 import androidx.compose.material.icons.outlined.Edit
+import androidx.compose.material.icons.outlined.Share
+import androidx.compose.material.icons.outlined.VerifiedUser
+import androidx.compose.material.icons.sharp.Translate
 import androidx.compose.material3.DrawerState
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.Icon
@@ -17,6 +19,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -33,12 +36,25 @@ import kotlinx.coroutines.launch
 fun MainDrawer(
     drawerState: DrawerState,
     modifier: Modifier = Modifier,
-    openTrashClick: () -> Unit = {},
-    openHelpClick: () -> Unit = {},
+    onTrashClick: () -> Unit = {},
+    onThemeClick: () -> Unit = {},
+    onLanguageClick: () -> Unit = {},
+    onHelpClick: () -> Unit = {},
+    onShareAppClick: () -> Unit = {},
+    onRateUsClick: () -> Unit = {},
+    onPrivacyPolicyClick: () -> Unit = {},
 ) {
     val coroutineScope = rememberCoroutineScope()
     val context = LocalContext.current
     val versionName = remember { context.getAppVersionName() }
+
+    val onItemClicked: (() -> Unit) -> Unit = { listener ->
+        coroutineScope.launch {
+            drawerState.close()
+            listener()
+        }
+    }
+
     ModalDrawerSheet(
         modifier = modifier,
         drawerState = drawerState,
@@ -57,52 +73,124 @@ fun MainDrawer(
             modifier = Modifier.padding(horizontal = 32.dp),
         )
         Spacer(modifier = Modifier.height(26.dp))
-        NavigationDrawerItem(
+
+        DrawerItem(
             modifier = Modifier.padding(horizontal = 16.dp),
-            label = { Text(text = stringResource(R.string.notes)) },
-            icon = { Icon(imageVector = Icons.Outlined.Edit, contentDescription = null) },
+            icon = Icons.Outlined.Edit,
+            textRes = R.string.notes,
             selected = true,
-            onClick = {
-                coroutineScope.launch {
-                    drawerState.close()
-                }
-            }
+            onClick = { onItemClicked {} }
         )
-        NavigationDrawerItem(
+
+        DrawerItem(
             modifier = Modifier.padding(horizontal = 16.dp),
-            label = { Text(text = stringResource(R.string.trash)) },
-            icon = {
-                Icon(
-                    painter = painterResource(R.drawable.ic_delete),
-                    contentDescription = null
-                )
-            },
-            selected = false,
-            onClick = {
-                coroutineScope.launch {
-                    drawerState.close()
-                    openTrashClick()
-                }
-            }
+            icon = R.drawable.ic_delete,
+            textRes = R.string.trash,
+            onClick = { onItemClicked { onTrashClick() } }
         )
-        NavigationDrawerItem(
+
+        DrawerItem(
             modifier = Modifier.padding(horizontal = 16.dp),
-            label = { Text(text = stringResource(R.string.help_feedback_menu)) },
-            icon = {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Sharp.Help,
-                    contentDescription = null
-                )
-            },
-            selected = false,
-            onClick = {
-                coroutineScope.launch {
-                    drawerState.close()
-                    openTrashClick()
-                }
-            }
+            icon = R.drawable.ic_dark_mode,
+            textRes = R.string.theme,
+            onClick = { onItemClicked { onThemeClick() } }
+        )
+
+        DrawerItem(
+            modifier = Modifier.padding(horizontal = 16.dp),
+            icon = Icons.Sharp.Translate,
+            textRes = R.string.language,
+            onClick = { onItemClicked { onLanguageClick() } }
+        )
+
+        DrawerItem(
+            modifier = Modifier.padding(horizontal = 16.dp),
+            icon = R.drawable.ic_help,
+            textRes = R.string.help_feedback_menu,
+            onClick = { onItemClicked { onHelpClick() } }
+        )
+
+        DrawerItem(
+            modifier = Modifier.padding(horizontal = 16.dp),
+            icon = Icons.Outlined.Share,
+            textRes = R.string.share_app,
+            onClick = { onItemClicked { onShareAppClick() } }
+        )
+
+        DrawerItem(
+            modifier = Modifier.padding(horizontal = 16.dp),
+            icon = R.drawable.ic_thumb_up,
+            textRes = R.string.rate_us,
+            onClick = { onItemClicked { onRateUsClick() } }
+        )
+
+        DrawerItem(
+            modifier = Modifier.padding(horizontal = 16.dp),
+            icon = Icons.Outlined.VerifiedUser,
+            textRes = R.string.privacy_policy,
+            onClick = { onItemClicked { onPrivacyPolicyClick() } }
         )
     }
+}
+
+@Composable
+private fun DrawerItem(
+    modifier: Modifier = Modifier.padding(horizontal = 16.dp),
+    textRes: Int,
+    selected: Boolean = false,
+    icon: ImageVector,
+    onClick: () -> Unit,
+) {
+    DrawerItem(
+        modifier = modifier,
+        textRes = textRes,
+        selected = selected,
+        icon = {
+            Icon(imageVector = icon, contentDescription = null)
+        },
+        onClick = onClick
+    )
+}
+
+@Composable
+private fun DrawerItem(
+    modifier: Modifier = Modifier,
+    textRes: Int,
+    selected: Boolean = false,
+    icon: Int,
+    onClick: () -> Unit,
+) {
+    DrawerItem(
+        modifier = modifier,
+        textRes = textRes,
+        selected = selected,
+        icon = {
+            Icon(painter = painterResource(icon), contentDescription = null)
+        },
+        onClick = onClick
+    )
+}
+
+@Composable
+private fun DrawerItem(
+    modifier: Modifier = Modifier,
+    textRes: Int,
+    selected: Boolean = false,
+    icon: @Composable () -> Unit,
+    onClick: () -> Unit,
+) {
+    NavigationDrawerItem(
+        modifier = modifier,
+        label = {
+            Text(
+                text = stringResource(textRes),
+                fontWeight = FontWeight.Medium,
+            )
+        },
+        icon = icon,
+        selected = selected,
+        onClick = onClick,
+    )
 }
 
 @Preview

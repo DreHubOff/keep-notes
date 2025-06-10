@@ -107,7 +107,7 @@ fun MainScreen(
         drawerContent = {
             MainDrawer(
                 drawerState = drawerState,
-                openTrashClick = viewModel::openTrashClick,
+                onTrashClick = viewModel::openTrashClick,
             )
         }
     ) {

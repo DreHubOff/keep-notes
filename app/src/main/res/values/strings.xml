@@ -12,6 +12,11 @@
     <string name="add_item">Add item</string>
     <string name="allow">Allow</string>
     <string name="deny">Deny</string>
+    <string name="theme">Theme</string>
+    <string name="language">Language</string>
+    <string name="share_app">Share App</string>
+    <string name="rate_us">Rate Us</string>
+    <string name="privacy_policy">Privacy Policy</string>
 
     <string name="main_floating_button_desc">Add note or checklist</string>
     <string name="empty_list_desc">List is empty</string>

@@ -21,6 +21,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import java.time.OffsetDateTime
 import javax.inject.Inject
 import javax.inject.Provider
 
@@ -117,6 +118,7 @@ class AlarmSchedulerEventReceiver : BroadcastReceiver() {
         return buildNotification(
             title = textNote.title,
             content = textNote.content,
+            showDate = textNote.reminderDate ?: OffsetDateTime.now(),
             openItemEditorIntent = getOpenItemEditorPendingIntent(context = context, item = textNote),
             hideNotificationIntent = getHideNotificationPendingIntent(context = context, notificationId = notificationId)
         )
@@ -138,6 +140,7 @@ class AlarmSchedulerEventReceiver : BroadcastReceiver() {
             content = content,
             openItemEditorIntent = getOpenItemEditorPendingIntent(context = context, item = checklist),
             hideNotificationIntent = getHideNotificationPendingIntent(context = context, notificationId = notificationId),
+            showDate = checklist.reminderDate ?: OffsetDateTime.now(),
         )
     }
 
@@ -146,6 +149,7 @@ class AlarmSchedulerEventReceiver : BroadcastReceiver() {
         content: String,
         openItemEditorIntent: PendingIntent,
         hideNotificationIntent: PendingIntent,
+        showDate: OffsetDateTime,
     ): Notification? {
         Log.d(TAG, "Building notification. Title: $title, content: $content")
         return NotificationCompat.Builder(context, context.getString(R.string.notes_notification_channel_id))
@@ -156,6 +160,8 @@ class AlarmSchedulerEventReceiver : BroadcastReceiver() {
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
             .setContentIntent(openItemEditorIntent)
             .setAutoCancel(true)
+            .setShowWhen(true)
+            .setWhen(showDate.toInstant().toEpochMilli())
             .addAction(R.drawable.ic_check, context.getString(R.string.done), hideNotificationIntent)
             .build()
     }

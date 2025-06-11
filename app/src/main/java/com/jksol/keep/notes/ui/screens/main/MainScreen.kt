@@ -6,8 +6,12 @@ import android.content.res.Configuration
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.LocalActivity
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement.Absolute.spacedBy
 import androidx.compose.foundation.layout.Box
@@ -231,7 +235,11 @@ private fun DisplayState(
             onTextNoteSelected = onTextNoteSelected,
             openTextNoteEditor = openTextNoteEditor
         )
-        if (isEmptyListState) {
+        AnimatedVisibility(
+            isEmptyListState,
+            enter = fadeIn(animationSpec = tween(delayMillis = 300)),
+            exit = ExitTransition.None
+        ) {
             NoItemsState(state = state)
         }
     }

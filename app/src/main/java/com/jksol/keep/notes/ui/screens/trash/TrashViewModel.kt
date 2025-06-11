@@ -14,11 +14,13 @@ import com.jksol.keep.notes.ui.screens.trash.model.UiIntent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.supervisorScope
@@ -34,9 +36,10 @@ class TrashViewModel @Inject constructor(
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(TrashScreenState.EMPTY)
-    val state: Flow<TrashScreenState> = _state
-        .asStateFlow()
+    val state: StateFlow<TrashScreenState> = _state
         .onStart { observeTrashedItems() }
+        .distinctUntilChanged()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(stopTimeoutMillis = 3000), TrashScreenState.EMPTY)
 
     private var dbSubscriptionJob: Job? = null
 

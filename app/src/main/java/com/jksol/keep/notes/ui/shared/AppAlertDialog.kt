@@ -54,7 +54,7 @@ fun AppAlertDialog(
 
 @Preview(showBackground = true)
 @Composable
-private fun Preview() {
+private fun PreviewSelectedNull() {
     ApplicationTheme {
         AppAlertDialog(
             icon = {

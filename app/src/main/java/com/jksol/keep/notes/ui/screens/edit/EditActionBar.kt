@@ -6,6 +6,7 @@ import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.sharp.ArrowBack
+import androidx.compose.material.icons.outlined.Palette
 import androidx.compose.material.icons.rounded.SettingsBackupRestore
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -17,6 +18,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -25,7 +27,6 @@ import androidx.compose.ui.unit.dp
 import com.jksol.keep.notes.R
 import com.jksol.keep.notes.ui.shared.PinCheckbox
 import com.jksol.keep.notes.ui.shared.ThemedDropdownMenu
-import com.jksol.keep.notes.ui.shared.sharedElementTransition
 import com.jksol.keep.notes.ui.theme.ApplicationTheme
 import com.jksol.keep.notes.ui.theme.themedTopAppBarColors
 
@@ -41,10 +42,11 @@ fun EditActionBar(
     onShareClick: () -> Unit = {},
     onPermanentlyDeleteClick: () -> Unit = {},
     onRestoreClick: () -> Unit = {},
+    onSelectBackgroundClick: () -> Unit = {},
 ) {
     TopAppBar(
         modifier = Modifier,
-        colors = themedTopAppBarColors(),
+        colors = themedTopAppBarColors().copy(containerColor = Color.Transparent),
         windowInsets = WindowInsets(top = systemBarInset),
         title = { },
         navigationIcon = {
@@ -62,7 +64,8 @@ fun EditActionBar(
                     onPinCheckedChange = onPinCheckedChange,
                     onAddReminderClick = onAddReminderClick,
                     onMoveToTrashClick = onMoveToTrashClick,
-                    onShareClick = onShareClick
+                    onShareClick = onShareClick,
+                    onSelectBackgroundClick = onSelectBackgroundClick,
                 )
             } else {
                 ActionsForTrashedItem(
@@ -81,7 +84,12 @@ private fun ActionsForNotTrashedItem(
     onAddReminderClick: () -> Unit,
     onMoveToTrashClick: () -> Unit,
     onShareClick: () -> Unit,
+    onSelectBackgroundClick: () -> Unit,
 ) {
+    IconButton(onClick = onSelectBackgroundClick) {
+        Icon(imageVector = Icons.Outlined.Palette, contentDescription = null)
+    }
+
     var checked by remember(pinned) { mutableStateOf(pinned) }
     PinCheckbox(
         modifier = Modifier,

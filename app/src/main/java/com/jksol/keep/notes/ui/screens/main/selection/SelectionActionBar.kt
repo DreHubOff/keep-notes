@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.sharp.ArrowBack
+import androidx.compose.material.icons.outlined.Palette
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalTextStyle
@@ -52,6 +53,7 @@ fun SelectionActionBar(
     onExitSelectionMode: () -> Unit = {},
     onMoveToTrashClick: () -> Unit = {},
     onPinnedStateChanged: (Boolean) -> Unit = {},
+    onSelectBackgroundClick: () -> Unit = {},
 ) {
     var showActionBar by remember { mutableStateOf(false) }
     LaunchedEffect(Unit) {
@@ -114,6 +116,7 @@ fun SelectionActionBar(
                 },
                 onMoveToTrashClick = onMoveToTrashClick,
                 onPinnedStateChanged = onPinnedStateChanged,
+                onSelectBackgroundClick = onSelectBackgroundClick,
             )
         }
     }
@@ -127,6 +130,7 @@ private fun ActionBarContent(
     onCancelClick: () -> Unit = {},
     onMoveToTrashClick: () -> Unit = {},
     onPinnedStateChanged: (Boolean) -> Unit = {},
+    onSelectBackgroundClick: () -> Unit = {},
 ) {
     TextField(
         value = value,
@@ -142,6 +146,9 @@ private fun ActionBarContent(
         },
         trailingIcon = {
             Row {
+                IconButton(onClick = onSelectBackgroundClick) {
+                    Icon(imageVector = Icons.Outlined.Palette, contentDescription = null)
+                }
                 PinCheckbox(
                     modifier = Modifier,
                     isChecked = isPinned,
@@ -176,10 +183,9 @@ private fun ActionBarContent(
 @Composable
 private fun Preview() {
     ApplicationTheme {
-        SelectionActionBar(
-            modifier = Modifier,
-            innerPadding = PaddingValues(10.dp),
-            selectedItemCount = 1,
+        ActionBarContent(
+            modifier = Modifier.background(SearchBarDefaults.searchBackgroundColor()),
+            value = "3 Selected",
             isPinned = true,
         )
     }

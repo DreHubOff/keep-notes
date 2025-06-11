@@ -1,6 +1,7 @@
 package com.jksol.keep.notes.ui.screens.edit.core
 
 import androidx.compose.runtime.Stable
+import androidx.compose.ui.graphics.Color
 import com.jksol.keep.notes.ui.shared.SnackbarEvent
 
 @Stable
@@ -13,7 +14,9 @@ interface EditScreenState<Self : EditScreenState<Self>> {
     val isTrashed: Boolean
     val requestItemShareType: Boolean
     val modificationStatusMessage: String
+
     val snackbarEvent: SnackbarEvent?
+
     val showPermanentlyDeleteConfirmation: Boolean
     val showReminderEditorOverview: Boolean
     val showReminderDatePicker: Boolean
@@ -21,6 +24,10 @@ interface EditScreenState<Self : EditScreenState<Self>> {
 
     val showPostNotificationsPermissionPrompt: Boolean
     val showSetAlarmsPermissionPrompt: Boolean
+
+    val background: Color?
+    val backgroundColorList: List<Color?>
+    val showBackgroundSelector: Boolean
 
     fun copy(
         itemId: Long = this.itemId,
@@ -38,5 +45,8 @@ interface EditScreenState<Self : EditScreenState<Self>> {
         showReminderTimePicker: Boolean = this.showReminderTimePicker,
         showPostNotificationsPermissionPrompt: Boolean = this.showPostNotificationsPermissionPrompt,
         showSetAlarmsPermissionPrompt: Boolean = this.showSetAlarmsPermissionPrompt,
+        background: Color? = this.background,
+        showBackgroundSelector: Boolean = this.showBackgroundSelector,
+        backgroundColorList: List<Color?> = this.backgroundColorList,
     ): Self
 }

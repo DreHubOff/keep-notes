@@ -10,6 +10,7 @@ import android.provider.Settings
 import androidx.annotation.StringRes
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.TimePickerState
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.AnnotatedString
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -17,8 +18,10 @@ import com.jksol.keep.notes.R
 import com.jksol.keep.notes.RescheduleRemindersCommandReceiver
 import com.jksol.keep.notes.core.MainTypeEditorFacade
 import com.jksol.keep.notes.core.interactor.BuildModificationDateTextInteractor
+import com.jksol.keep.notes.core.interactor.BuildNoteBackgroundColorListInteractor
 import com.jksol.keep.notes.core.model.ApplicationMainDataType
 import com.jksol.keep.notes.core.model.MainTypeTextRepresentation
+import com.jksol.keep.notes.core.model.NoteColor
 import com.jksol.keep.notes.data.PermissionsRepository
 import com.jksol.keep.notes.di.qualifier.ApplicationGlobalScope
 import com.jksol.keep.notes.ui.intent.ShareFileIntentBuilder
@@ -29,6 +32,7 @@ import com.jksol.keep.notes.ui.shared.SnackbarEvent
 import com.jksol.keep.notes.ui.shared.defaultTransitionAnimationDuration
 import com.jksol.keep.notes.ui.theme.LightOceanMist
 import com.jksol.keep.notes.util.asStrikethroughText
+import com.jksol.keep.notes.util.lighten
 import dagger.Lazy
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
@@ -61,6 +65,7 @@ abstract class EditScreenViewModel<State : EditScreenState<State>, Item : Applic
     @ApplicationGlobalScope private val applicationCoroutineScope: CoroutineScope,
     @ApplicationContext private val context: Context,
     private val buildModificationDateText: Lazy<BuildModificationDateTextInteractor>,
+    private val buildNoteBackgroundColorList: Lazy<BuildNoteBackgroundColorListInteractor>,
     private val shareTextIntentBuilder: Provider<ShareTextIntentBuilder>,
     private val shareFileIntentBuilder: Provider<ShareFileIntentBuilder>,
     private val permissionsRepository: Provider<PermissionsRepository>,
@@ -366,6 +371,28 @@ abstract class EditScreenViewModel<State : EditScreenState<State>, Item : Applic
         }
     }
 
+    fun showBackgroundSelection() {
+        _state.update { it.copy(showBackgroundSelector = true) }
+    }
+
+    fun hideBackgroundSelection() {
+        _state.update { it.copy(showBackgroundSelector = false) }
+    }
+
+    fun saveBackgroundColor(color: Color?) {
+        hideBackgroundSelection()
+        applicationCoroutineScope.launch {
+            if (color == null) {
+                editorFacade.saveBackgroundColor(itemId = _state.value.itemId, color = null)
+            } else {
+                val coreColor = NoteColor.entries.firstOrNull { colorEntry ->
+                    Color(colorEntry.day) == color || Color(colorEntry.night) == color
+                }
+                editorFacade.saveBackgroundColor(itemId = _state.value.itemId, color = coreColor)
+            }
+        }
+    }
+
     private suspend fun shareAsText() {
         val textRepresentation = getTextRepresentation(_state.value) ?: return
         val shareIntent = shareTextIntentBuilder.get().build(
@@ -398,32 +425,50 @@ abstract class EditScreenViewModel<State : EditScreenState<State>, Item : Applic
 
     private fun refreshScreenState(updatedItem: Item) {
         _state.update { oldState: State ->
+            val screenBackground = calculateScreenBackground(updatedItem)
             val newState = oldState.copy(
                 itemId = updatedItem.id,
                 title = updatedItem.title,
                 isPinned = updatedItem.isPinned,
-                reminderData = buildReminderData(updatedItem.reminderDate),
+                reminderData = buildReminderData(updatedItem.reminderDate, screenBackground = screenBackground),
                 isTrashed = updatedItem.isTrashed,
                 modificationStatusMessage = buildModificationDateText.get().invoke(updatedItem.modificationDate),
+                background = screenBackground,
+                backgroundColorList = buildBackgroundColorList(),
             )
             fillWithScreenSpecificData(oldState, newState, updatedItem)
         }
     }
 
-    private fun buildReminderData(reminderDate: OffsetDateTime?): ReminderStateData? {
+    private fun buildBackgroundColorList(): List<Color?> {
+        return buildList {
+            add(null)
+            buildNoteBackgroundColorList.get().invoke().forEach { add(Color(it)) }
+        }
+    }
+
+    private fun calculateScreenBackground(updatedItem: Item): Color? {
+        val colorEntity = updatedItem.backgroundColor ?: return null
+
+        // TODO: Check current theme here
+        return Color(colorEntity.day)
+    }
+
+    private fun buildReminderData(reminderDate: OffsetDateTime?, screenBackground: Color?): ReminderStateData? {
         if (reminderDate == null) return null
         val dateText = reminderDateTimeFormat.format(reminderDate)
         val outdated = reminderDate.isBefore(OffsetDateTime.now())
-
         return ReminderStateData(
             sourceDate = reminderDate,
             dateString = if (outdated) dateText.asStrikethroughText() else AnnotatedString(dateText),
             outdated = outdated,
-
-            // TODO: Calculate some color here..
-            reminderColor = LightOceanMist,
+            reminderColor = calculateReminderBackground(screenBackground),
         )
+    }
 
+    private fun calculateReminderBackground(screenBackground: Color?): Color {
+        if (screenBackground == null) return LightOceanMist
+        return screenBackground.lighten(fraction = 0.4f)
     }
 
     private fun buildReminderEditorDataForState(state: State): ReminderEditorData {

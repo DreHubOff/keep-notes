@@ -17,6 +17,7 @@
     <string name="share_app">Share App</string>
     <string name="rate_us">Rate Us</string>
     <string name="privacy_policy">Privacy Policy</string>
+    <string name="note_color">Note Color</string>
 
     <string name="main_floating_button_desc">Add note or checklist</string>
     <string name="empty_list_desc">List is empty</string>

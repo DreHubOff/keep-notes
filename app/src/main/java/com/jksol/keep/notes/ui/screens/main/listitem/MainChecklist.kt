@@ -30,6 +30,7 @@ fun MainChecklist(
             items = item.items.map { it.text },
             tickedItemsCount = item.tickedItems,
             isSelected = item.isSelected,
+            customBackground = item.customBackground,
         )
     }
     ChecklistCard(

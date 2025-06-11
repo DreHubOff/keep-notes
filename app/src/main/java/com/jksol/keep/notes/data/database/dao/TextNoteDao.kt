@@ -4,6 +4,7 @@ import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.Query
+import com.jksol.keep.notes.core.model.NoteColor
 import com.jksol.keep.notes.data.database.table.TEXT_NOTE_TABLE_NAME
 import com.jksol.keep.notes.data.database.table.TextNoteEntity
 import kotlinx.coroutines.flow.Flow
@@ -59,4 +60,7 @@ interface TextNoteDao {
 
     @Query("UPDATE $TEXT_NOTE_TABLE_NAME SET reminder_posted = :isShown WHERE id = :id")
     suspend fun updateChecklistReminderShownState(id: Long, isShown: Boolean)
+
+    @Query("UPDATE $TEXT_NOTE_TABLE_NAME SET display_color_resource = :color WHERE id = :id")
+    suspend fun updateBackgroundColorById(id: Long, color: NoteColor?)
 }

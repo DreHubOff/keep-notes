@@ -1,8 +1,10 @@
 package com.jksol.keep.notes.ui.screens.trash.mapper
 
 import android.content.Context
+import androidx.compose.ui.graphics.Color
 import com.jksol.keep.notes.BuildConfig
 import com.jksol.keep.notes.R
+import com.jksol.keep.notes.core.interactor.BuildNoteBackgroundColorInteractor
 import com.jksol.keep.notes.core.model.ApplicationMainDataType
 import com.jksol.keep.notes.core.model.Checklist
 import com.jksol.keep.notes.core.model.TextNote
@@ -17,6 +19,7 @@ import kotlin.time.toKotlinDuration
 
 class ApplicationMainDataTypeToTrashListItemMapper @Inject constructor(
     @ApplicationContext private val context: Context,
+    private val buildNoteBackgroundColor: BuildNoteBackgroundColorInteractor,
 ) {
 
     operator fun invoke(source: ApplicationMainDataType): TrashListItem {
@@ -28,6 +31,7 @@ class ApplicationMainDataTypeToTrashListItemMapper @Inject constructor(
                     items = source.items.map { it.title },
                     tickedItems = source.items.count { it.isChecked },
                     daysLeftMessage = buildDaysLeftMessage(trashedDate = source.trashedDate),
+                    customBackground = buildNoteBackgroundColor(source)?.let(::Color),
                 )
             }
 
@@ -37,6 +41,7 @@ class ApplicationMainDataTypeToTrashListItemMapper @Inject constructor(
                     title = source.title,
                     content = source.content,
                     daysLeftMessage = buildDaysLeftMessage(trashedDate = source.trashedDate),
+                    customBackground = buildNoteBackgroundColor(source)?.let(::Color),
                 )
             }
         }

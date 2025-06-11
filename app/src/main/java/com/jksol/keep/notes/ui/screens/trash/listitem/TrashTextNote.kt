@@ -27,6 +27,7 @@ fun TrashTextNote(
             title = item.title,
             content = item.content,
             isSelected = false,
+            customBackground = item.customBackground,
         )
     }
     TextNoteCard(
@@ -55,6 +56,7 @@ private fun Preview() {
                 title = "Title",
                 content = "Some content in this text note",
                 daysLeftMessage = "2 day left",
+                customBackground = null,
             ),
             onClick = {},
         )

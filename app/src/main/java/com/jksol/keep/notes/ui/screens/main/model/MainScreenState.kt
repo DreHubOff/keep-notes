@@ -13,6 +13,7 @@ data class MainScreenState(
     val showNavigationOverlay: ElementFocusRequest?,
     val openSideMenuEvent: ElementFocusRequest?,
     val selectedItemsArePinned: Boolean,
+    val backgroundSelectionData: BackgroundSelectionData?,
 ) {
 
     val selectedItemsCount: Int by lazy { screenItems.count { it.isSelected } }
@@ -28,6 +29,7 @@ data class MainScreenState(
             showNavigationOverlay = null,
             openSideMenuEvent = null,
             selectedItemsArePinned = false,
+            backgroundSelectionData = null,
         )
     }
 }

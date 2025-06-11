@@ -33,6 +33,7 @@ fun TextNoteCard(
         onClick = onClick,
         onLongClick = onLongClick,
         itemStatus = itemStatus,
+        customBackground = item.customBackground,
         content = { contentModifier ->
             if (item.content.isNotEmpty()) {
                 ContentText(modifier = contentModifier, text = item.content)

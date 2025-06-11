@@ -11,4 +11,5 @@ sealed class MainActionBarIntent {
     data object HideSelection : MainActionBarIntent()
     data class ChangePinnedStateOfSelected(val isPinned: Boolean) : MainActionBarIntent()
     data object MoveToTrashSelected : MainActionBarIntent()
+    data object SelectBackground : MainActionBarIntent()
 }

@@ -20,9 +20,11 @@ import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Text
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.key
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
@@ -42,6 +44,7 @@ fun MainItemContainer(
     modifier: Modifier = Modifier,
     cardTransitionKey: Any,
     title: String,
+    customBackground: Color? = null,
     isSelected: Boolean = false,
     maxTitleLines: Int = 5,
     onClick: (() -> Unit)? = null,
@@ -50,12 +53,16 @@ fun MainItemContainer(
     content: @Composable (Modifier) -> Unit,
 ) {
     val haptic = LocalHapticFeedback.current
+    val cardColors = key(isSelected, customBackground) {
+        val base = themedCardColors(isSelected = isSelected)
+        if (isSelected || customBackground == null) base else base.copy(containerColor = customBackground)
+    }
     OutlinedCard(
         modifier = modifier
             .fillMaxWidth()
             .wrapContentHeight()
             .sharedBoundsTransition(transitionKey = cardTransitionKey),
-        colors = themedCardColors(isSelected = isSelected),
+        colors = cardColors,
         border = themedCardBorder(isSelected = isSelected),
     ) {
         Box(modifier = Modifier.fillMaxWidth()) {
@@ -193,6 +200,40 @@ private fun WithIconStatusPreview() {
             title = "Trashed Reminder",
             maxTitleLines = 1,
             isSelected = true,
+            onClick = {},
+            itemStatus = {
+                Icon(
+                    painter = painterResource(R.drawable.ic_delete),
+                    contentDescription = "Deleted icon",
+                    tint = MaterialTheme.colorScheme.error,
+                )
+                Text(
+                    text = "Deleted",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.error
+                )
+            },
+            content = { modifier ->
+                Text(
+                    modifier = modifier,
+                    text = "Here’s what was in the deleted item.",
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            }
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun WithIconStatusCustomBackgroundPreview() {
+    ApplicationTheme {
+        MainItemContainer(
+            cardTransitionKey = "preview_card_icon",
+            title = "Trashed Reminder",
+            maxTitleLines = 1,
+            isSelected = false,
+            customBackground = Color.Magenta,
             onClick = {},
             itemStatus = {
                 Icon(

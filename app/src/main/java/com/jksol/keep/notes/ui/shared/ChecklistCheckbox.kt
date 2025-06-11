@@ -52,7 +52,7 @@ fun ChecklistCheckbox(
 
 @Preview(name = "Checked", showBackground = true)
 @Composable
-private fun Preview() {
+private fun PreviewSelectedNull() {
     ApplicationTheme {
         ChecklistCheckbox(
             text = "This is a text",

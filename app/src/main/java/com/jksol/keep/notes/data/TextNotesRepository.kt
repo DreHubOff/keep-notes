@@ -1,6 +1,7 @@
 package com.jksol.keep.notes.data
 
 import androidx.room.withTransaction
+import com.jksol.keep.notes.core.model.NoteColor
 import com.jksol.keep.notes.core.model.TextNote
 import com.jksol.keep.notes.data.database.AppDatabase
 import com.jksol.keep.notes.data.database.dao.TextNoteDao
@@ -110,6 +111,12 @@ class TextNotesRepository @Inject constructor(
     suspend fun updateChecklistReminderShownState(noteId: Long, isShown: Boolean) {
         withContext(NonCancellable) {
             textNoteDao.updateChecklistReminderShownState(id = noteId, isShown = isShown)
+        }
+    }
+
+    suspend fun saveBackgroundColor(noteId: Long, color: NoteColor?) {
+        withContext(NonCancellable) {
+            textNoteDao.updateBackgroundColorById(id = noteId, color = color)
         }
     }
 }

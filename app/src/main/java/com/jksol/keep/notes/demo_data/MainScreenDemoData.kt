@@ -15,6 +15,7 @@ object MainScreenDemoData {
                 title = title,
                 content = content,
                 isSelected = isSelected,
+                customBackground = customBackground,
             )
         }
 

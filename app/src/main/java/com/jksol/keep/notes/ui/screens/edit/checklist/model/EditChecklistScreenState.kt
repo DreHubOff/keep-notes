@@ -1,6 +1,7 @@
 package com.jksol.keep.notes.ui.screens.edit.checklist.model
 
 import androidx.compose.runtime.Stable
+import androidx.compose.ui.graphics.Color
 import com.jksol.keep.notes.ui.screens.edit.core.EditScreenState
 import com.jksol.keep.notes.ui.screens.edit.core.ReminderEditorData
 import com.jksol.keep.notes.ui.screens.edit.core.ReminderStateData
@@ -23,6 +24,9 @@ data class EditChecklistScreenState(
     override val showReminderTimePicker: Boolean,
     override val showPostNotificationsPermissionPrompt: Boolean,
     override val showSetAlarmsPermissionPrompt: Boolean,
+    override val background: Color?,
+    override val showBackgroundSelector: Boolean,
+    override val backgroundColorList: List<Color?>,
     val uncheckedItems: List<UncheckedListItemUi>,
     val checkedItems: List<CheckedListItemUi>,
     val showCheckedItems: Boolean,
@@ -44,6 +48,9 @@ data class EditChecklistScreenState(
         showReminderTimePicker: Boolean,
         showPostNotificationsPermissionPrompt: Boolean,
         showSetAlarmsPermissionPrompt: Boolean,
+        background: Color?,
+        showBackgroundSelector: Boolean,
+        backgroundColorList: List<Color?>,
     ): EditChecklistScreenState = copy(
         itemId = itemId,
         title = title,
@@ -60,6 +67,9 @@ data class EditChecklistScreenState(
         showReminderTimePicker = showReminderTimePicker,
         showPostNotificationsPermissionPrompt = showPostNotificationsPermissionPrompt,
         showSetAlarmsPermissionPrompt = showSetAlarmsPermissionPrompt,
+        background = background,
+        showBackgroundSelector = showBackgroundSelector,
+        backgroundColorList = backgroundColorList,
         uncheckedItems = this@EditChecklistScreenState.uncheckedItems,
         checkedItems = this@EditChecklistScreenState.checkedItems,
         showCheckedItems = this@EditChecklistScreenState.showCheckedItems,
@@ -85,6 +95,9 @@ data class EditChecklistScreenState(
             showReminderTimePicker = false,
             showPostNotificationsPermissionPrompt = false,
             showSetAlarmsPermissionPrompt = false,
+            background = null,
+            showBackgroundSelector = false,
+            backgroundColorList = listOf(),
         )
     }
 }

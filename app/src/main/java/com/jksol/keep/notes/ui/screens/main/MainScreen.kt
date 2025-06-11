@@ -67,6 +67,7 @@ import com.jksol.keep.notes.ui.screens.main.listitem.MainChecklist
 import com.jksol.keep.notes.ui.screens.main.listitem.MainTextNote
 import com.jksol.keep.notes.ui.screens.main.model.MainScreenItem
 import com.jksol.keep.notes.ui.screens.main.model.MainScreenState
+import com.jksol.keep.notes.ui.shared.ColorSelectorDialog
 import com.jksol.keep.notes.ui.shared.HandleSnackbarState
 import com.jksol.keep.notes.ui.shared.SnackbarEvent
 import com.jksol.keep.notes.ui.shared.defaultTransitionAnimationDuration
@@ -122,7 +123,10 @@ fun MainScreen(
             onActionBarEvent = viewModel::handleActionBarEvent,
         )
     }
+
     NavigationOverlay(state)
+
+    HandleDialogs(state, viewModel)
 }
 
 @Composable
@@ -383,6 +387,20 @@ private fun NotifyViewModelWhenToClearTrash(viewModel: MainViewModel) {
         lifecycle.repeatOnLifecycle(state = Lifecycle.State.RESUMED) {
             viewModel.clearTrashOldRecords()
         }
+    }
+}
+
+@Composable
+private fun HandleDialogs(state: MainScreenState, viewModel: MainViewModel) {
+    if (state.backgroundSelectionData != null) {
+        ColorSelectorDialog(
+            title = stringResource(R.string.note_color),
+            colors = state.backgroundSelectionData.colors,
+            selectedColor = state.backgroundSelectionData.selectedColor,
+            onDismiss = viewModel::onHideBackgroundSelection,
+            onColorSelected = viewModel::applyBackgroundToSelected,
+            selectedColorUndefined = true,
+        )
     }
 }
 

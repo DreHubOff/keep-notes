@@ -28,6 +28,7 @@ fun ChecklistCard(
         cardTransitionKey = item.transitionKey,
         title = item.title,
         isSelected = item.isSelected,
+        customBackground = item.customBackground,
         onClick = onClick,
         onLongClick = onLongClick,
         itemStatus = itemStatus,

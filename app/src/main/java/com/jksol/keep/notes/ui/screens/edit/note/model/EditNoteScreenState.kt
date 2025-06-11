@@ -1,5 +1,6 @@
 package com.jksol.keep.notes.ui.screens.edit.note.model
 
+import androidx.compose.ui.graphics.Color
 import com.jksol.keep.notes.ui.focus.ElementFocusRequest
 import com.jksol.keep.notes.ui.screens.edit.core.EditScreenState
 import com.jksol.keep.notes.ui.screens.edit.core.ReminderEditorData
@@ -22,6 +23,9 @@ data class EditNoteScreenState(
     override val showReminderTimePicker: Boolean,
     override val showPostNotificationsPermissionPrompt: Boolean,
     override val showSetAlarmsPermissionPrompt: Boolean,
+    override val background: Color?,
+    override val showBackgroundSelector: Boolean,
+    override val backgroundColorList: List<Color?>,
     val content: String,
     val contentFocusRequest: ElementFocusRequest?,
 ) : EditScreenState<EditNoteScreenState> {
@@ -42,6 +46,9 @@ data class EditNoteScreenState(
         showReminderTimePicker: Boolean,
         showPostNotificationsPermissionPrompt: Boolean,
         showSetAlarmsPermissionPrompt: Boolean,
+        background: Color?,
+        showBackgroundSelector: Boolean,
+        backgroundColorList: List<Color?>,
     ): EditNoteScreenState = copy(
         itemId = itemId,
         title = title,
@@ -58,6 +65,9 @@ data class EditNoteScreenState(
         showReminderTimePicker = showReminderTimePicker,
         showPostNotificationsPermissionPrompt = showPostNotificationsPermissionPrompt,
         showSetAlarmsPermissionPrompt = showSetAlarmsPermissionPrompt,
+        background = background,
+        showBackgroundSelector = showBackgroundSelector,
+        backgroundColorList = backgroundColorList,
         contentFocusRequest = this@EditNoteScreenState.contentFocusRequest,
         content = this@EditNoteScreenState.content,
     )
@@ -81,6 +91,9 @@ data class EditNoteScreenState(
             showReminderTimePicker = false,
             showPostNotificationsPermissionPrompt = false,
             showSetAlarmsPermissionPrompt = false,
+            background = null,
+            showBackgroundSelector = false,
+            backgroundColorList = listOf(),
         )
     }
 }

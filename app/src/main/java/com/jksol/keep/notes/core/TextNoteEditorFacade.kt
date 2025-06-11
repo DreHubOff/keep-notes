@@ -1,5 +1,6 @@
 package com.jksol.keep.notes.core
 
+import com.jksol.keep.notes.core.model.NoteColor
 import com.jksol.keep.notes.data.ReminderSchedulerRepository
 import com.jksol.keep.notes.data.TextNotesRepository
 import java.time.OffsetDateTime
@@ -43,6 +44,10 @@ class TextNoteEditorFacade @Inject constructor(
         textNotesRepository.updateChecklistReminderShownState(note.id, isShown = false)
         reminderSchedulerRepository.cancelReminder(note)
         reminderSchedulerRepository.scheduleReminder(note)
+    }
+
+    override suspend fun saveBackgroundColor(itemId: Long, color: NoteColor?) {
+        textNotesRepository.saveBackgroundColor(itemId, color)
     }
 
     private suspend fun cancelAlarm(itemId: Long) {

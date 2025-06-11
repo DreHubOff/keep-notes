@@ -19,6 +19,7 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -44,6 +45,7 @@ import com.jksol.keep.notes.ui.screens.edit.reminder.RemainderEditorOverviewDial
 import com.jksol.keep.notes.ui.screens.edit.reminder.RemainderTimePickerDialog
 import com.jksol.keep.notes.ui.screens.permissions.ExactAlarmsPermissionDialog
 import com.jksol.keep.notes.ui.screens.permissions.PostNotificationsPermissionDialog
+import com.jksol.keep.notes.ui.shared.ColorSelectorDialog
 import com.jksol.keep.notes.ui.shared.HandleSnackbarState
 import com.jksol.keep.notes.ui.shared.SnackbarEvent
 import com.jksol.keep.notes.ui.shared.mainItemCardTransition
@@ -70,23 +72,36 @@ fun EditNoteScreen() {
     }
 
     val state by viewModel.state.collectAsStateWithLifecycle(EditNoteScreenState.EMPTY)
-    ScreenContent(
-        state = state,
-        onTitleChanged = viewModel::onTitleChanged,
-        onContentChanged = viewModel::onContentChanged,
-        onBackClick = { backAction() },
-        onPinCheckedChange = viewModel::onPinCheckedChange,
-        onTitleNextClick = viewModel::onTitleNextClick,
-        onMoveToTrashClick = viewModel::moveToTrash,
-        onPermanentlyDeleteClick = viewModel::askConfirmationToPermanentlyDeleteItem,
-        onRestoreClick = viewModel::restoreItemFromTrash,
-        onAttemptEditTrashed = viewModel::onAttemptEditTrashed,
-        onShareClick = viewModel::onShareCurrentItemClick,
-        onSnackbarAction = viewModel::handleSnackbarAction,
-        onAddReminderClick = viewModel::onAddReminderClick,
-    )
 
-    HandleAlerts(state, viewModel)
+    val overriddenColorTheme = key(state.background?.value) {
+        MaterialTheme.colorScheme.copy(
+            background = state.background ?: MaterialTheme.colorScheme.background
+        )
+    }
+    MaterialTheme(
+        colorScheme = overriddenColorTheme,
+        typography = MaterialTheme.typography,
+        shapes = MaterialTheme.shapes,
+    ) {
+        ScreenContent(
+            state = state,
+            onTitleChanged = viewModel::onTitleChanged,
+            onContentChanged = viewModel::onContentChanged,
+            onBackClick = { backAction() },
+            onPinCheckedChange = viewModel::onPinCheckedChange,
+            onTitleNextClick = viewModel::onTitleNextClick,
+            onMoveToTrashClick = viewModel::moveToTrash,
+            onPermanentlyDeleteClick = viewModel::askConfirmationToPermanentlyDeleteItem,
+            onRestoreClick = viewModel::restoreItemFromTrash,
+            onAttemptEditTrashed = viewModel::onAttemptEditTrashed,
+            onShareClick = viewModel::onShareCurrentItemClick,
+            onSnackbarAction = viewModel::handleSnackbarAction,
+            onAddReminderClick = viewModel::onAddReminderClick,
+            onSelectBackgroundClick = viewModel::showBackgroundSelection,
+        )
+
+        HandleAlerts(state, viewModel)
+    }
 }
 
 @Composable
@@ -104,6 +119,7 @@ fun ScreenContent(
     onShareClick: () -> Unit = {},
     onSnackbarAction: (SnackbarEvent.Action) -> Unit = {},
     onAddReminderClick: () -> Unit = {},
+    onSelectBackgroundClick: () -> Unit = {},
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
     HandleSnackbarState(
@@ -137,6 +153,7 @@ fun ScreenContent(
                 onRestoreClick = onRestoreClick,
                 onShareClick = onShareClick,
                 onAddReminderClick = onAddReminderClick,
+                onSelectBackgroundClick = onSelectBackgroundClick,
             )
             Box(modifier = Modifier.fillMaxSize()) {
                 if (state !== EditNoteScreenState.EMPTY) {
@@ -256,6 +273,16 @@ private fun HandleAlerts(
                 viewModel.hideReminderPermissionsPrompt()
                 viewModel.openAlarmsSettings()
             }
+        )
+    }
+
+    if (state.showBackgroundSelector) {
+        ColorSelectorDialog(
+            onDismiss = viewModel::hideBackgroundSelection,
+            onColorSelected = viewModel::saveBackgroundColor,
+            title = stringResource(R.string.note_color),
+            colors = state.backgroundColorList,
+            selectedColor = state.background,
         )
     }
 }

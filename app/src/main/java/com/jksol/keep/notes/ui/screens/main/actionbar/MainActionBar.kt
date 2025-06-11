@@ -96,6 +96,7 @@ private fun SelectionModeToolbar(
         onExitSelectionMode = { onEvent(MainActionBarIntent.HideSelection) },
         onMoveToTrashClick = { onEvent(MainActionBarIntent.MoveToTrashSelected) },
         onPinnedStateChanged = { onEvent(MainActionBarIntent.ChangePinnedStateOfSelected(it)) },
+        onSelectBackgroundClick = { onEvent(MainActionBarIntent.SelectBackground) },
     )
 }
 

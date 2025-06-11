@@ -137,7 +137,8 @@ private class EditNoteScreenStateProvider : PreviewParameterProvider<TrashScreen
                         id = 1L,
                         title = "Deleted Note",
                         content = "This is a deleted text note.",
-                        daysLeftMessage = "6 days left"
+                        daysLeftMessage = "6 days left",
+                        customBackground = null,
                     )
                 )
             ),
@@ -150,7 +151,8 @@ private class EditNoteScreenStateProvider : PreviewParameterProvider<TrashScreen
                         title = "Groceries",
                         items = listOf("Milk", "Eggs", "Bread"),
                         tickedItems = 1,
-                        daysLeftMessage = "2 days left"
+                        daysLeftMessage = "2 days left",
+                        customBackground = null,
                     )
                 )
             ),
@@ -162,14 +164,16 @@ private class EditNoteScreenStateProvider : PreviewParameterProvider<TrashScreen
                         id = 3L,
                         title = "Project ideas",
                         content = "Build a Compose library...",
-                        daysLeftMessage = "4 days left"
+                        daysLeftMessage = "4 days left",
+                        customBackground = null,
                     ),
                     TrashListItem.Checklist(
                         id = 4L,
                         title = "Travel Checklist",
                         items = listOf("Passport", "Charger", "Sunglasses"),
                         tickedItems = 2,
-                        daysLeftMessage = "5 days left"
+                        daysLeftMessage = "5 days left",
+                        customBackground = null,
                     )
                 )
             ),
@@ -181,53 +185,61 @@ private class EditNoteScreenStateProvider : PreviewParameterProvider<TrashScreen
                         id = 5L,
                         title = "Meeting Notes",
                         content = "Discuss release timeline...",
-                        daysLeftMessage = "1 day left"
+                        daysLeftMessage = "1 day left",
+                        customBackground = null,
                     ),
                     TrashListItem.Checklist(
                         id = 6L,
                         title = "Packing List",
                         items = listOf("Shoes", "T-Shirts", "Toothbrush"),
                         tickedItems = 3,
-                        daysLeftMessage = "3 days left"
+                        daysLeftMessage = "3 days left",
+                        customBackground = null,
                     ),
                     TrashListItem.TextNote(
                         id = 7L,
                         title = "Poem Draft",
                         content = "Roses are red...",
-                        daysLeftMessage = "7 days left"
+                        daysLeftMessage = "7 days left",
+                        customBackground = null,
                     ),
                     TrashListItem.Checklist(
                         id = 8L,
                         title = "Daily Routine",
                         items = listOf("Workout", "Read", "Code"),
                         tickedItems = 0,
-                        daysLeftMessage = "6 days left"
+                        daysLeftMessage = "6 days left",
+                        customBackground = null,
                     ),
                     TrashListItem.TextNote(
                         id = 9L,
                         title = "Meeting Notes",
                         content = "Discuss release timeline...",
-                        daysLeftMessage = "1 day left"
+                        daysLeftMessage = "1 day left",
+                        customBackground = null,
                     ),
                     TrashListItem.Checklist(
                         id = 10L,
                         title = "Packing List",
                         items = listOf("Shoes", "T-Shirts", "Toothbrush"),
                         tickedItems = 3,
-                        daysLeftMessage = "3 days left"
+                        daysLeftMessage = "3 days left",
+                        customBackground = null,
                     ),
                     TrashListItem.TextNote(
                         id = 11L,
                         title = "Poem Draft",
                         content = "Roses are red...",
-                        daysLeftMessage = "7 days left"
+                        daysLeftMessage = "7 days left",
+                        customBackground = null,
                     ),
                     TrashListItem.Checklist(
                         id = 12L,
                         title = "Daily Routine",
                         items = listOf("Workout", "Read", "Code"),
                         tickedItems = 0,
-                        daysLeftMessage = "6 days left"
+                        daysLeftMessage = "6 days left",
+                        customBackground = null,
                     )
                 )
             )

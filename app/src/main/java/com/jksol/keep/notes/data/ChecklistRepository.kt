@@ -3,6 +3,7 @@ package com.jksol.keep.notes.data
 import androidx.room.withTransaction
 import com.jksol.keep.notes.core.model.Checklist
 import com.jksol.keep.notes.core.model.ChecklistItem
+import com.jksol.keep.notes.core.model.NoteColor
 import com.jksol.keep.notes.data.database.AppDatabase
 import com.jksol.keep.notes.data.database.dao.ChecklistDao
 import com.jksol.keep.notes.data.database.dao.ChecklistItemDao
@@ -213,6 +214,12 @@ class ChecklistRepository @Inject constructor(
     suspend fun updateChecklistReminderShownState(checklistId: Long, isShown: Boolean) {
         withContext(NonCancellable) {
             checklistDao.updateChecklistReminderShownState(id = checklistId, isShown = isShown)
+        }
+    }
+
+    suspend fun saveBackgroundColor(checklistId: Long, color: NoteColor?) {
+        withContext(NonCancellable) {
+            checklistDao.updateBackgroundColorById(id = checklistId, color = color)
         }
     }
 

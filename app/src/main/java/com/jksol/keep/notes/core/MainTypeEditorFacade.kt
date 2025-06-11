@@ -1,5 +1,6 @@
 package com.jksol.keep.notes.core
 
+import com.jksol.keep.notes.core.model.NoteColor
 import java.time.OffsetDateTime
 
 interface MainTypeEditorFacade {
@@ -17,4 +18,6 @@ interface MainTypeEditorFacade {
     suspend fun deleteReminder(itemId: Long)
 
     suspend fun setReminder(itemId: Long, date: OffsetDateTime)
+
+    suspend fun saveBackgroundColor(itemId: Long, color: NoteColor?)
 }

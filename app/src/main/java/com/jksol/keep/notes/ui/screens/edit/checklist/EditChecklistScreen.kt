@@ -19,6 +19,7 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalFocusManager
@@ -43,6 +44,7 @@ import com.jksol.keep.notes.ui.screens.edit.reminder.RemainderEditorOverviewDial
 import com.jksol.keep.notes.ui.screens.edit.reminder.RemainderTimePickerDialog
 import com.jksol.keep.notes.ui.screens.permissions.ExactAlarmsPermissionDialog
 import com.jksol.keep.notes.ui.screens.permissions.PostNotificationsPermissionDialog
+import com.jksol.keep.notes.ui.shared.ColorSelectorDialog
 import com.jksol.keep.notes.ui.shared.HandleSnackbarState
 import com.jksol.keep.notes.ui.shared.SnackbarEvent
 import com.jksol.keep.notes.ui.shared.mainItemCardTransition
@@ -67,32 +69,45 @@ fun EditChecklistScreen() {
     }
 
     val state by viewModel.state.collectAsStateWithLifecycle(EditChecklistScreenState.EMPTY)
-    ScreenContent(
-        state = state,
-        onTitleChanged = viewModel::onTitleChanged,
-        onBackClick = onBackListener,
-        onPinCheckedChange = viewModel::onPinCheckedChange,
-        onAddChecklistItemClick = viewModel::onAddChecklistItemClick,
-        toggleCheckedItemsVisibility = viewModel::toggleCheckedItemsVisibility,
-        onItemUnchecked = viewModel::onItemUnchecked,
-        onItemChecked = viewModel::onItemChecked,
-        onItemTextChanged = viewModel::onItemTextChanged,
-        onDoneClicked = viewModel::onDoneClicked,
-        onDeleteClick = viewModel::onDeleteClick,
-        onMoveItems = viewModel::onMoveItems,
-        onTitleNextClick = viewModel::onTitleNextClick,
-        onMoveCompleted = viewModel::onMoveCompleted,
-        onItemFocused = viewModel::onItemFocused,
-        onDeleteChecklistClick = { viewModel.moveToTrash() },
-        onAttemptEditTrashed = viewModel::onAttemptEditTrashed,
-        onSnackbarAction = viewModel::handleSnackbarAction,
-        onPermanentlyDeleteClick = viewModel::askConfirmationToPermanentlyDeleteItem,
-        onRestoreClick = viewModel::restoreItemFromTrash,
-        onShareClick = viewModel::onShareCurrentItemClick,
-        onEditReminderClick = viewModel::onAddReminderClick,
-    )
 
-    HandleAlerts(state, viewModel)
+    val overriddenColorTheme = key(state.background?.value) {
+        MaterialTheme.colorScheme.copy(
+            background = state.background ?: MaterialTheme.colorScheme.background
+        )
+    }
+    MaterialTheme(
+        colorScheme = overriddenColorTheme,
+        typography = MaterialTheme.typography,
+        shapes = MaterialTheme.shapes,
+    ) {
+        ScreenContent(
+            state = state,
+            onTitleChanged = viewModel::onTitleChanged,
+            onBackClick = onBackListener,
+            onPinCheckedChange = viewModel::onPinCheckedChange,
+            onAddChecklistItemClick = viewModel::onAddChecklistItemClick,
+            toggleCheckedItemsVisibility = viewModel::toggleCheckedItemsVisibility,
+            onItemUnchecked = viewModel::onItemUnchecked,
+            onItemChecked = viewModel::onItemChecked,
+            onItemTextChanged = viewModel::onItemTextChanged,
+            onDoneClicked = viewModel::onDoneClicked,
+            onDeleteClick = viewModel::onDeleteClick,
+            onMoveItems = viewModel::onMoveItems,
+            onTitleNextClick = viewModel::onTitleNextClick,
+            onMoveCompleted = viewModel::onMoveCompleted,
+            onItemFocused = viewModel::onItemFocused,
+            onDeleteChecklistClick = { viewModel.moveToTrash() },
+            onAttemptEditTrashed = viewModel::onAttemptEditTrashed,
+            onSnackbarAction = viewModel::handleSnackbarAction,
+            onPermanentlyDeleteClick = viewModel::askConfirmationToPermanentlyDeleteItem,
+            onRestoreClick = viewModel::restoreItemFromTrash,
+            onShareClick = viewModel::onShareCurrentItemClick,
+            onEditReminderClick = viewModel::onAddReminderClick,
+            onSelectBackgroundClick = viewModel::showBackgroundSelection,
+        )
+
+        HandleAlerts(state, viewModel)
+    }
 }
 
 @Composable
@@ -119,6 +134,7 @@ fun ScreenContent(
     onRestoreClick: () -> Unit,
     onShareClick: () -> Unit,
     onEditReminderClick: () -> Unit,
+    onSelectBackgroundClick: () -> Unit,
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
     HandleSnackbarState(
@@ -153,6 +169,7 @@ fun ScreenContent(
                 onRestoreClick = onRestoreClick,
                 onShareClick = onShareClick,
                 onAddReminderClick = onEditReminderClick,
+                onSelectBackgroundClick = onSelectBackgroundClick,
             )
             Box(modifier = Modifier.fillMaxSize()) {
                 if (state !== EditChecklistScreenState.EMPTY) {
@@ -306,6 +323,16 @@ private fun HandleAlerts(
             }
         )
     }
+
+    if (state.showBackgroundSelector) {
+        ColorSelectorDialog(
+            onDismiss = viewModel::hideBackgroundSelection,
+            onColorSelected = viewModel::saveBackgroundColor,
+            title = stringResource(R.string.note_color),
+            colors = state.backgroundColorList,
+            selectedColor = state.background,
+        )
+    }
 }
 
 @Preview
@@ -335,6 +362,7 @@ private fun Preview(@PreviewParameter(EditChecklistScreenStateProvider::class) s
             onRestoreClick = {},
             onShareClick = {},
             onEditReminderClick = {},
+            onSelectBackgroundClick = {},
         )
     }
 }

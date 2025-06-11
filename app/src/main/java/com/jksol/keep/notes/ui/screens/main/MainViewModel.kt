@@ -1,14 +1,18 @@
 package com.jksol.keep.notes.ui.screens.main
 
 import android.content.Context
+import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.jksol.keep.notes.R
 import com.jksol.keep.notes.core.ChecklistEditorFacade
 import com.jksol.keep.notes.core.TextNoteEditorFacade
+import com.jksol.keep.notes.core.interactor.BuildNoteBackgroundColorInteractor
+import com.jksol.keep.notes.core.interactor.BuildNoteBackgroundColorListInteractor
 import com.jksol.keep.notes.core.interactor.ObserveApplicationMainTypeInteractor
 import com.jksol.keep.notes.core.interactor.PermanentlyDeleteOldTrashRecordsInteractor
 import com.jksol.keep.notes.core.model.Checklist
+import com.jksol.keep.notes.core.model.NoteColor
 import com.jksol.keep.notes.core.model.TextNote
 import com.jksol.keep.notes.data.ChecklistRepository
 import com.jksol.keep.notes.data.TextNotesRepository
@@ -19,6 +23,7 @@ import com.jksol.keep.notes.ui.navigation.NavigationEventsHost
 import com.jksol.keep.notes.ui.screens.Route
 import com.jksol.keep.notes.ui.screens.main.actionbar.MainActionBarIntent
 import com.jksol.keep.notes.ui.screens.main.mapper.toMainScreenItem
+import com.jksol.keep.notes.ui.screens.main.model.BackgroundSelectionData
 import com.jksol.keep.notes.ui.screens.main.model.MainScreenItem
 import com.jksol.keep.notes.ui.screens.main.model.MainScreenState
 import com.jksol.keep.notes.ui.screens.main.model.MainSnackbarActionKey
@@ -46,6 +51,7 @@ import kotlinx.coroutines.withContext
 import java.time.Duration
 import java.time.OffsetDateTime
 import javax.inject.Inject
+import javax.inject.Provider
 
 @HiltViewModel
 class MainViewModel @Inject constructor(
@@ -56,6 +62,8 @@ class MainViewModel @Inject constructor(
     private val navigationEventsHost: NavigationEventsHost,
     private val observeApplicationMainType: ObserveApplicationMainTypeInteractor,
     private val permanentlyDeleteOldTrashRecords: PermanentlyDeleteOldTrashRecordsInteractor,
+    private val buildNoteBackgroundColor: BuildNoteBackgroundColorInteractor,
+    private val buildNoteBackgroundColorList: Provider<BuildNoteBackgroundColorListInteractor>,
     private val textNotesRepository: TextNotesRepository,
     private val checklistRepository: ChecklistRepository,
     private val textNotesFacade: TextNoteEditorFacade,
@@ -87,7 +95,11 @@ class MainViewModel @Inject constructor(
                             (old is MainScreenItem.TextNote && item is TextNote && old.id == item.id) ||
                                     (old is MainScreenItem.Checklist && item is Checklist && old.id == item.id)
                         }
-                        item.toMainScreenItem(isSelected = oldItem?.isSelected == true)
+                        val backgroundColor = buildNoteBackgroundColor(item)
+                        item.toMainScreenItem(
+                            isSelected = oldItem?.isSelected == true,
+                            customBackground = backgroundColor?.let(::Color),
+                        )
                     }
                 }
                 .map { items -> mainScreenStateFromItems(items, searchPrompt) }
@@ -299,6 +311,46 @@ class MainViewModel @Inject constructor(
             MainActionBarIntent.OpenSearch -> onToggleSearchVisibility()
             MainActionBarIntent.OpenSideMenu -> openSideMenu()
             is MainActionBarIntent.Search -> onNewSearchPrompt(searchPrompt = event.prompt)
+            MainActionBarIntent.SelectBackground -> onPicBackgroundForSelected()
+        }
+    }
+
+    fun onHideBackgroundSelection() {
+        _uiState.update { it.copy(backgroundSelectionData = null) }
+    }
+
+    fun applyBackgroundToSelected(color: Color?) {
+        onHideBackgroundSelection()
+        applicationScope.launch(Dispatchers.Default) {
+            val coreColor = NoteColor.entries.firstOrNull { colorEntry ->
+                Color(colorEntry.day) == color || Color(colorEntry.night) == color
+            }
+            val itemsToUpdate = _uiState.value.screenItems.filter { it.isSelected }
+            onExitSelectionMode()
+            supervisorScope {
+                itemsToUpdate.forEach { item ->
+                    when (item) {
+                        is MainScreenItem.Checklist ->
+                            launch { checklistFacade.saveBackgroundColor(itemId = item.id, color = coreColor) }
+
+                        is MainScreenItem.TextNote ->
+                            launch { textNotesFacade.saveBackgroundColor(itemId = item.id, color = coreColor) }
+                    }
+                }
+            }
+        }
+    }
+
+    private fun onPicBackgroundForSelected() {
+        viewModelScope.launch(Dispatchers.Default) {
+            val colors: List<Color?> = buildList {
+                add(null)
+                buildNoteBackgroundColorList.get().invoke().forEach { add(Color(it)) }
+            }
+
+            _uiState.update {
+                it.copy(backgroundSelectionData = BackgroundSelectionData(colors = colors, selectedColor = null))
+            }
         }
     }
 

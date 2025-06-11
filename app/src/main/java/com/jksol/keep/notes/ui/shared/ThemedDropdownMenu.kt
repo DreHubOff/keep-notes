@@ -19,6 +19,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -29,6 +30,7 @@ import androidx.compose.ui.unit.dp
 import com.jksol.keep.notes.R
 import com.jksol.keep.notes.ui.theme.ApplicationTheme
 import com.jksol.keep.notes.ui.theme.themedDropdownMenuItemColors
+import com.jksol.keep.notes.util.lighten
 
 object ThemedDropdownMenu {
 
@@ -49,12 +51,16 @@ fun ThemedDropdownMenu(
         Icon(Icons.Sharp.MoreVert, contentDescription = stringResource(R.string.menu_desc))
     }
 
+    val backgroundColor = key(MaterialTheme.colorScheme.background) {
+        MaterialTheme.colorScheme.background.lighten(0.3f)
+    }
+
     DropdownMenu(
         modifier = modifier.padding(horizontal = 8.dp),
         shape = MaterialTheme.shapes.large,
         expanded = dropDownMenuExpanded,
         onDismissRequest = { dropDownMenuExpanded = false },
-        containerColor = MaterialTheme.colorScheme.background,
+        containerColor = backgroundColor,
     ) {
         actions.forEach { (actionText, onClick) ->
             DropdownMenuItem(

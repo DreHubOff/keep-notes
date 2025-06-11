@@ -6,6 +6,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
+import com.jksol.keep.notes.core.model.NoteColor
 import com.jksol.keep.notes.data.database.table.CHECKLIST_TABLE_NAME
 import com.jksol.keep.notes.data.database.table.ChecklistEntity
 import com.jksol.keep.notes.data.database.table.ChecklistWithItems
@@ -82,4 +83,7 @@ interface ChecklistDao {
 
     @Query("UPDATE $CHECKLIST_TABLE_NAME SET reminder_posted = :isShown WHERE id = :id")
     suspend fun updateChecklistReminderShownState(id: Long, isShown: Boolean)
+
+    @Query("UPDATE $CHECKLIST_TABLE_NAME SET background_color = :color WHERE id = :id")
+    suspend fun updateBackgroundColorById(id: Long, color: NoteColor?)
 }

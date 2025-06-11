@@ -29,6 +29,7 @@ fun MainTextNote(
             title = item.title,
             content = item.content,
             isSelected = item.isSelected,
+            customBackground = item.customBackground,
         )
     }
     TextNoteCard(

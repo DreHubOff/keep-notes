@@ -22,6 +22,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
@@ -31,7 +32,9 @@ import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.jksol.keep.notes.LocalThemeMode
 import com.jksol.keep.notes.R
+import com.jksol.keep.notes.ThemeMode
 import com.jksol.keep.notes.demo_data.EditChecklistDemoData
 import com.jksol.keep.notes.ui.screens.edit.EditActionBar
 import com.jksol.keep.notes.ui.screens.edit.ModificationDateOverlay
@@ -70,10 +73,12 @@ fun EditChecklistScreen() {
 
     val state by viewModel.state.collectAsStateWithLifecycle(EditChecklistScreenState.EMPTY)
 
-    val overriddenColorTheme = key(state.background?.value) {
-        MaterialTheme.colorScheme.copy(
-            background = state.background ?: MaterialTheme.colorScheme.background
-        )
+    val background = key(state.background, LocalThemeMode.current) {
+        val isDarkTheme = LocalThemeMode.current == ThemeMode.DARK
+        (if (isDarkTheme) state.background?.night else state.background?.day)?.let(::Color)
+    }
+    val overriddenColorTheme = key(state.background) {
+        MaterialTheme.colorScheme.copy(background = background ?: MaterialTheme.colorScheme.background)
     }
     MaterialTheme(
         colorScheme = overriddenColorTheme,
@@ -235,6 +240,7 @@ private fun Editor(
             uncheckedItems = state.uncheckedItems,
             onTitleChanged = onTitleChanged,
             showCheckedItems = state.showCheckedItems,
+            backgroundColor = state.background,
             onAddChecklistItemClick = onAddChecklistItemClick,
             toggleCheckedItemsVisibility = toggleCheckedItemsVisibility,
             onItemUnchecked = onItemUnchecked,

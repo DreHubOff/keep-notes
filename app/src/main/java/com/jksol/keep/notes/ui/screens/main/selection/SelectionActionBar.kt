@@ -175,6 +175,7 @@ private fun ActionBarContent(
             disabledTrailingIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
             disabledTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
             disabledIndicatorColor = Color.Transparent,
+            cursorColor = MaterialTheme.colorScheme.onSurface,
         )
     )
 }

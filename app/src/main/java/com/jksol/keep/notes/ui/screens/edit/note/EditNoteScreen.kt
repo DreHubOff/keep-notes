@@ -33,7 +33,9 @@ import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.jksol.keep.notes.LocalThemeMode
 import com.jksol.keep.notes.R
+import com.jksol.keep.notes.ThemeMode
 import com.jksol.keep.notes.demo_data.MainScreenDemoData
 import com.jksol.keep.notes.ui.screens.edit.EditActionBar
 import com.jksol.keep.notes.ui.screens.edit.ModificationDateOverlay
@@ -73,10 +75,12 @@ fun EditNoteScreen() {
 
     val state by viewModel.state.collectAsStateWithLifecycle(EditNoteScreenState.EMPTY)
 
-    val overriddenColorTheme = key(state.background?.value) {
-        MaterialTheme.colorScheme.copy(
-            background = state.background ?: MaterialTheme.colorScheme.background
-        )
+    val background = key(state.background, LocalThemeMode.current) {
+        val isDarkTheme = LocalThemeMode.current == ThemeMode.DARK
+        (if (isDarkTheme) state.background?.night else state.background?.day)?.let(::Color)
+    }
+    val overriddenColorTheme = key(state.background) {
+        MaterialTheme.colorScheme.copy(background = background ?: MaterialTheme.colorScheme.background)
     }
     MaterialTheme(
         colorScheme = overriddenColorTheme,
@@ -320,7 +324,7 @@ private class EditNoteScreenStateProvider : PreviewParameterProvider<EditNoteScr
                     sourceDate = OffsetDateTime.now(),
                     dateString = AnnotatedString(text = "21 May, 10:12 AM"),
                     outdated = false,
-                    reminderColor = Color(0x14017FFA),
+                    reminderColorDay = Color(0x14017FFA),
                 )
             ),
         )

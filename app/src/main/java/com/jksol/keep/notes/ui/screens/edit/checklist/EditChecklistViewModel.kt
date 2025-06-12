@@ -7,7 +7,6 @@ import androidx.navigation.toRoute
 import com.jksol.keep.notes.R
 import com.jksol.keep.notes.core.ChecklistEditorFacade
 import com.jksol.keep.notes.core.interactor.BuildModificationDateTextInteractor
-import com.jksol.keep.notes.core.interactor.BuildNoteBackgroundColorListInteractor
 import com.jksol.keep.notes.core.interactor.BuildPdfFromChecklistInteractor
 import com.jksol.keep.notes.core.interactor.BuildTextFromChecklistInteractor
 import com.jksol.keep.notes.core.model.Checklist
@@ -50,7 +49,6 @@ class EditChecklistViewModel @Inject constructor(
     buildModificationDateText: Lazy<BuildModificationDateTextInteractor>,
     shareTextIntentBuilder: Provider<ShareTextIntentBuilder>,
     shareFileIntentBuilder: Provider<ShareFileIntentBuilder>,
-    buildNoteBackgroundColorList: Lazy<BuildNoteBackgroundColorListInteractor>,
     editorFacade: ChecklistEditorFacade,
     permissionsRepository: Provider<PermissionsRepository>,
     private val navigationStateHandle: SavedStateHandle,
@@ -71,7 +69,6 @@ class EditChecklistViewModel @Inject constructor(
     shareTextIntentBuilder = shareTextIntentBuilder,
     shareFileIntentBuilder = shareFileIntentBuilder,
     permissionsRepository = permissionsRepository,
-    buildNoteBackgroundColorList = buildNoteBackgroundColorList,
 ) {
 
     override val itemRestoredMessageRes: Int = R.string.checklist_restored

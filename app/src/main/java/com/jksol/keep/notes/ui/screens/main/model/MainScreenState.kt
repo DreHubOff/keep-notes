@@ -14,6 +14,7 @@ data class MainScreenState(
     val openSideMenuEvent: ElementFocusRequest?,
     val selectedItemsArePinned: Boolean,
     val backgroundSelectionData: BackgroundSelectionData?,
+    val themeSelectorData: ThemeSelectorData?,
 ) {
 
     val selectedItemsCount: Int by lazy { screenItems.count { it.isSelected } }
@@ -30,6 +31,7 @@ data class MainScreenState(
             openSideMenuEvent = null,
             selectedItemsArePinned = false,
             backgroundSelectionData = null,
+            themeSelectorData = null,
         )
     }
 }

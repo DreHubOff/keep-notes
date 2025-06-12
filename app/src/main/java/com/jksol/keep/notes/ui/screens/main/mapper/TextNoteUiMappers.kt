@@ -3,13 +3,14 @@ package com.jksol.keep.notes.ui.screens.main.mapper
 import androidx.compose.ui.graphics.Color
 import com.jksol.keep.notes.core.model.ApplicationMainDataType
 import com.jksol.keep.notes.core.model.Checklist
+import com.jksol.keep.notes.core.model.NoteColor
 import com.jksol.keep.notes.core.model.TextNote
 import com.jksol.keep.notes.ui.screens.main.model.MainScreenItem
 import java.time.OffsetDateTime
 
 fun TextNote.toMainScreenItem(
     isSelected: Boolean,
-    customBackground: Color?,
+    customBackground: NoteColor?,
 ): MainScreenItem.TextNote {
     return MainScreenItem.TextNote(
         id = this.id,
@@ -26,7 +27,7 @@ fun TextNote.toMainScreenItem(
 
 fun Checklist.toMainScreenItem(
     isSelected: Boolean,
-    customBackground: Color?,
+    customBackground: NoteColor?,
     checklistItemsMaxCount: Int = 10,
 ): MainScreenItem.Checklist {
     val tickedItems = items.filter { it.isChecked }
@@ -50,7 +51,7 @@ fun Checklist.toMainScreenItem(
 
 fun ApplicationMainDataType.toMainScreenItem(
     isSelected: Boolean,
-    customBackground: Color?,
+    customBackground: NoteColor?,
     checklistItemsMaxCount: Int = 10,
 ): MainScreenItem {
     return when (this) {

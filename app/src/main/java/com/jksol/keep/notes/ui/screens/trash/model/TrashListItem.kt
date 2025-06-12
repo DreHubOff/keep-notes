@@ -1,14 +1,14 @@
 package com.jksol.keep.notes.ui.screens.trash.model
 
 import androidx.compose.runtime.Stable
-import androidx.compose.ui.graphics.Color
+import com.jksol.keep.notes.core.model.NoteColor
 
 sealed class TrashListItem {
 
     abstract val id: Long
     abstract val title: String
     abstract val daysLeftMessage: String
-    abstract val customBackground: Color?
+    abstract val customBackground: NoteColor?
 
     val compositeKey: String by lazy { this::class.simpleName + id }
 
@@ -18,7 +18,7 @@ sealed class TrashListItem {
         override val title: String,
         val content: String,
         override val daysLeftMessage: String,
-        override val customBackground: Color?,
+        override val customBackground: NoteColor?,
     ) : TrashListItem()
 
     @Stable
@@ -29,6 +29,6 @@ sealed class TrashListItem {
         val tickedItems: Int = 0,
         val hasTickedItems: Boolean = tickedItems > 0,
         override val daysLeftMessage: String,
-        override val customBackground: Color?,
+        override val customBackground: NoteColor?,
     ) : TrashListItem()
 }

@@ -24,7 +24,6 @@ import androidx.compose.runtime.key
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
@@ -33,7 +32,9 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.jksol.keep.notes.LocalThemeMode
 import com.jksol.keep.notes.R
+import com.jksol.keep.notes.core.model.NoteColor
 import com.jksol.keep.notes.ui.shared.sharedBoundsTransition
 import com.jksol.keep.notes.ui.theme.ApplicationTheme
 import com.jksol.keep.notes.ui.theme.themedCardBorder
@@ -44,7 +45,7 @@ fun MainItemContainer(
     modifier: Modifier = Modifier,
     cardTransitionKey: Any,
     title: String,
-    customBackground: Color? = null,
+    customBackground: NoteColor? = null,
     isSelected: Boolean = false,
     maxTitleLines: Int = 5,
     onClick: (() -> Unit)? = null,
@@ -53,9 +54,11 @@ fun MainItemContainer(
     content: @Composable (Modifier) -> Unit,
 ) {
     val haptic = LocalHapticFeedback.current
-    val cardColors = key(isSelected, customBackground) {
-        val base = themedCardColors(isSelected = isSelected)
-        if (isSelected || customBackground == null) base else base.copy(containerColor = customBackground)
+    val cardColors = key(isSelected, customBackground, LocalThemeMode.current) {
+        themedCardColors(isSelected = isSelected, customBackground = customBackground)
+    }
+    val borderColors = key(isSelected, customBackground, LocalThemeMode.current) {
+        themedCardBorder(isSelected = isSelected)
     }
     OutlinedCard(
         modifier = modifier
@@ -63,7 +66,7 @@ fun MainItemContainer(
             .wrapContentHeight()
             .sharedBoundsTransition(transitionKey = cardTransitionKey),
         colors = cardColors,
-        border = themedCardBorder(isSelected = isSelected),
+        border = borderColors,
     ) {
         Box(modifier = Modifier.fillMaxWidth()) {
             if (title.isNotEmpty()) {
@@ -233,7 +236,7 @@ private fun WithIconStatusCustomBackgroundPreview() {
             title = "Trashed Reminder",
             maxTitleLines = 1,
             isSelected = false,
-            customBackground = Color.Magenta,
+            customBackground = NoteColor.Mint,
             onClick = {},
             itemStatus = {
                 Icon(

@@ -27,7 +27,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.jksol.keep.notes.LocalThemeMode
 import com.jksol.keep.notes.R
+import com.jksol.keep.notes.ThemeMode
 import com.jksol.keep.notes.ui.theme.ApplicationTheme
 import com.jksol.keep.notes.ui.theme.themedDropdownMenuItemColors
 import com.jksol.keep.notes.util.lighten
@@ -52,7 +54,9 @@ fun ThemedDropdownMenu(
     }
 
     val backgroundColor = key(MaterialTheme.colorScheme.background) {
-        MaterialTheme.colorScheme.background.lighten(0.3f)
+        MaterialTheme.colorScheme.background.lighten(
+            if (LocalThemeMode.current == ThemeMode.DARK) 0.15f else 0.3f
+        )
     }
 
     DropdownMenu(

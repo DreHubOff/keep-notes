@@ -16,6 +16,8 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.jksol.keep.notes.LocalThemeMode
+import com.jksol.keep.notes.ThemeMode
 
 private val reminderTranslationX = (-4).dp
 
@@ -25,6 +27,11 @@ fun ReminderButton(
     reminderData: ReminderStateData,
     onClick: () -> Unit,
 ) {
+    val reminderColor = if (LocalThemeMode.current == ThemeMode.DARK) {
+        reminderData.reminderColorNight
+    } else {
+        reminderData.reminderColorDay
+    }
     Button(
         modifier = modifier.graphicsLayer {
             translationX = reminderTranslationX.toPx()
@@ -33,7 +40,7 @@ fun ReminderButton(
         shape = MaterialTheme.shapes.medium,
         contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp),
         colors = ButtonDefaults.buttonColors().copy(
-            containerColor = reminderData.reminderColor,
+            containerColor = reminderColor,
             contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
         )
     ) {

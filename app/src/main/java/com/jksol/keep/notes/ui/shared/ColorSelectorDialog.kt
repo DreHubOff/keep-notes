@@ -32,16 +32,18 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.jksol.keep.notes.LocalThemeMode
+import com.jksol.keep.notes.ThemeMode
 import com.jksol.keep.notes.core.model.NoteColor
 import com.jksol.keep.notes.ui.theme.ApplicationTheme
 
 @Composable
 fun ColorSelectorDialog(
     title: String,
-    colors: List<Color?>,
-    selectedColor: Color?,
+    colors: List<NoteColor?>,
+    selectedColor: NoteColor?,
     onDismiss: () -> Unit,
-    onColorSelected: (Color?) -> Unit,
+    onColorSelected: (NoteColor?) -> Unit,
     selectedColorUndefined: Boolean = false,
 ) {
     BasicAlertDialog(
@@ -83,7 +85,11 @@ fun ColorSelectorDialog(
                     overscrollEffect = null,
                 ) {
                     items(colors) { color ->
-                        val cellColor = color ?: Color.Transparent
+                        val cellColor = if (LocalThemeMode.current == ThemeMode.DARK) {
+                            color?.night
+                        } else {
+                            color?.day
+                        }?.let(::Color) ?: Color.Transparent
                         Box(
                             modifier = Modifier
                                 .size(40.dp)
@@ -100,14 +106,14 @@ fun ColorSelectorDialog(
                                 Icon(
                                     imageVector = Icons.Outlined.FormatColorReset,
                                     contentDescription = "No Color",
-                                    tint = Color.Gray,
+                                    tint = MaterialTheme.colorScheme.onSurface,
                                     modifier = Modifier.size(20.dp)
                                 )
                             } else if (!selectedColorUndefined && selectedColor == color) {
                                 Icon(
                                     imageVector = Icons.Sharp.Check,
                                     contentDescription = "Selected",
-                                    tint = Color.Black,
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
                                     modifier = Modifier.size(20.dp)
                                 )
                             }
@@ -125,7 +131,7 @@ private fun PreviewSelectedNull() {
     ApplicationTheme {
         ColorSelectorDialog(
             title = "Note Color",
-            colors = mutableListOf(null) + NoteColor.entries.map { Color(it.day) },
+            colors = mutableListOf(null) + NoteColor.entries,
             selectedColor = null,
             onDismiss = {},
             onColorSelected = {},
@@ -139,8 +145,8 @@ private fun PreviewSelectedNonNull() {
     ApplicationTheme {
         ColorSelectorDialog(
             title = "Note Color",
-            colors = mutableListOf(null) + NoteColor.entries.map { Color(it.day) },
-            selectedColor = Color(NoteColor.Mint.day),
+            colors = mutableListOf(null) + NoteColor.entries,
+            selectedColor = NoteColor.Lilac,
             onDismiss = {},
             onColorSelected = {},
         )
@@ -153,8 +159,8 @@ private fun PreviewSelectedUndefined() {
     ApplicationTheme {
         ColorSelectorDialog(
             title = "Note Color",
-            colors = mutableListOf(null) + NoteColor.entries.map { Color(it.day) },
-            selectedColor = Color(NoteColor.Mint.day),
+            colors = mutableListOf(null) + NoteColor.entries,
+            selectedColor = NoteColor.Lime,
             selectedColorUndefined = true,
             onDismiss = {},
             onColorSelected = {},

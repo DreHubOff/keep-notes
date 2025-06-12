@@ -2,6 +2,7 @@
 
 package com.jksol.keep.notes.ui.screens.edit.reminder
 
+import android.content.res.Configuration
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
@@ -145,6 +146,23 @@ fun AdvancedTimePickerDialog(
 @Preview
 @Composable
 private fun Preview() {
+    ApplicationTheme {
+        RemainderTimePickerDialog(
+            data = ReminderEditorData(
+                isNewReminder = true,
+                dateString = "14 May, 2025",
+                timeString = "3:00 pm",
+                dateMillis = null,
+                minuteOfHour = 20,
+                hourOfDay = 8,
+            ),
+        )
+    }
+}
+
+@Preview(uiMode = Configuration.UI_MODE_NIGHT_YES or Configuration.UI_MODE_TYPE_NORMAL)
+@Composable
+private fun PreviewDark() {
     ApplicationTheme {
         RemainderTimePickerDialog(
             data = ReminderEditorData(

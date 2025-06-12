@@ -1,19 +1,17 @@
 package com.jksol.keep.notes.ui.screens.main
 
 import android.content.Context
-import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.jksol.keep.notes.R
 import com.jksol.keep.notes.core.ChecklistEditorFacade
 import com.jksol.keep.notes.core.TextNoteEditorFacade
-import com.jksol.keep.notes.core.interactor.BuildNoteBackgroundColorInteractor
-import com.jksol.keep.notes.core.interactor.BuildNoteBackgroundColorListInteractor
 import com.jksol.keep.notes.core.interactor.ObserveApplicationMainTypeInteractor
 import com.jksol.keep.notes.core.interactor.PermanentlyDeleteOldTrashRecordsInteractor
 import com.jksol.keep.notes.core.model.Checklist
 import com.jksol.keep.notes.core.model.NoteColor
 import com.jksol.keep.notes.core.model.TextNote
+import com.jksol.keep.notes.core.model.ThemeType
 import com.jksol.keep.notes.data.ChecklistRepository
 import com.jksol.keep.notes.data.TextNotesRepository
 import com.jksol.keep.notes.data.preferences.UserPreferences
@@ -27,6 +25,8 @@ import com.jksol.keep.notes.ui.screens.main.model.BackgroundSelectionData
 import com.jksol.keep.notes.ui.screens.main.model.MainScreenItem
 import com.jksol.keep.notes.ui.screens.main.model.MainScreenState
 import com.jksol.keep.notes.ui.screens.main.model.MainSnackbarActionKey
+import com.jksol.keep.notes.ui.screens.main.model.ThemeOption
+import com.jksol.keep.notes.ui.screens.main.model.ThemeSelectorData
 import com.jksol.keep.notes.ui.shared.SnackbarEvent
 import com.jksol.keep.notes.ui.shared.defaultTransitionAnimationDuration
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -51,7 +51,6 @@ import kotlinx.coroutines.withContext
 import java.time.Duration
 import java.time.OffsetDateTime
 import javax.inject.Inject
-import javax.inject.Provider
 
 @HiltViewModel
 class MainViewModel @Inject constructor(
@@ -62,8 +61,6 @@ class MainViewModel @Inject constructor(
     private val navigationEventsHost: NavigationEventsHost,
     private val observeApplicationMainType: ObserveApplicationMainTypeInteractor,
     private val permanentlyDeleteOldTrashRecords: PermanentlyDeleteOldTrashRecordsInteractor,
-    private val buildNoteBackgroundColor: BuildNoteBackgroundColorInteractor,
-    private val buildNoteBackgroundColorList: Provider<BuildNoteBackgroundColorListInteractor>,
     private val textNotesRepository: TextNotesRepository,
     private val checklistRepository: ChecklistRepository,
     private val textNotesFacade: TextNoteEditorFacade,
@@ -95,11 +92,7 @@ class MainViewModel @Inject constructor(
                             (old is MainScreenItem.TextNote && item is TextNote && old.id == item.id) ||
                                     (old is MainScreenItem.Checklist && item is Checklist && old.id == item.id)
                         }
-                        val backgroundColor = buildNoteBackgroundColor(item)
-                        item.toMainScreenItem(
-                            isSelected = oldItem?.isSelected == true,
-                            customBackground = backgroundColor?.let(::Color),
-                        )
+                        item.toMainScreenItem(isSelected = oldItem?.isSelected == true, customBackground = item.backgroundColor)
                     }
                 }
                 .map { items -> mainScreenStateFromItems(items, searchPrompt) }
@@ -319,33 +312,56 @@ class MainViewModel @Inject constructor(
         _uiState.update { it.copy(backgroundSelectionData = null) }
     }
 
-    fun applyBackgroundToSelected(color: Color?) {
+    fun applyBackgroundToSelected(color: NoteColor?) {
         onHideBackgroundSelection()
         applicationScope.launch(Dispatchers.Default) {
-            val coreColor = NoteColor.entries.firstOrNull { colorEntry ->
-                Color(colorEntry.day) == color || Color(colorEntry.night) == color
-            }
             val itemsToUpdate = _uiState.value.screenItems.filter { it.isSelected }
             onExitSelectionMode()
             supervisorScope {
                 itemsToUpdate.forEach { item ->
                     when (item) {
                         is MainScreenItem.Checklist ->
-                            launch { checklistFacade.saveBackgroundColor(itemId = item.id, color = coreColor) }
+                            launch { checklistFacade.saveBackgroundColor(itemId = item.id, color = color) }
 
                         is MainScreenItem.TextNote ->
-                            launch { textNotesFacade.saveBackgroundColor(itemId = item.id, color = coreColor) }
+                            launch { textNotesFacade.saveBackgroundColor(itemId = item.id, color = color) }
                     }
                 }
             }
         }
     }
 
+    fun openThemeSelection() {
+        viewModelScope.launch(Dispatchers.Default) {
+            val selectedThemeType = userPreferences.getTheme()
+            val selectorOptions = ThemeType.entries.map { type ->
+                val selected = selectedThemeType == type
+                when (type) {
+                    ThemeType.LIGHT -> ThemeOption(nameRes = R.string.light, type = type, isSelected = selected)
+                    ThemeType.DARK -> ThemeOption(nameRes = R.string.dark, type = type, isSelected = selected)
+                    ThemeType.SYSTEM_DEFAULT -> ThemeOption(nameRes = R.string.system_default, type = type, isSelected = selected)
+                }
+            }
+            _uiState.update { it.copy(themeSelectorData = ThemeSelectorData(selectorOptions)) }
+        }
+    }
+
+    fun onHideThemeSelection() {
+        _uiState.update { it.copy(themeSelectorData = null) }
+    }
+
+    fun applyTheme(themeType: ThemeType) {
+        onHideThemeSelection()
+        applicationScope.launch {
+            userPreferences.updateTheme(themeType)
+        }
+    }
+
     private fun onPicBackgroundForSelected() {
         viewModelScope.launch(Dispatchers.Default) {
-            val colors: List<Color?> = buildList {
+            val colors: List<NoteColor?> = buildList {
                 add(null)
-                buildNoteBackgroundColorList.get().invoke().forEach { add(Color(it)) }
+                addAll(NoteColor.entries)
             }
 
             _uiState.update {

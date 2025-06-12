@@ -11,7 +11,6 @@ import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement.Absolute.spacedBy
 import androidx.compose.foundation.layout.Box
@@ -36,6 +35,7 @@ import androidx.compose.material3.FabPosition
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Snackbar
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.rememberDrawerState
@@ -48,7 +48,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -113,6 +112,7 @@ fun MainScreen(
             MainDrawer(
                 drawerState = drawerState,
                 onTrashClick = viewModel::openTrashClick,
+                onThemeClick = viewModel::openThemeSelection,
             )
         }
     ) {
@@ -383,7 +383,7 @@ private fun NavigationOverlay(
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color.Black.copy(alpha = animatedAlpha))
+                .background(MaterialTheme.colorScheme.onSurface.copy(alpha = animatedAlpha))
         )
     }
 }
@@ -408,6 +408,15 @@ private fun HandleDialogs(state: MainScreenState, viewModel: MainViewModel) {
             onDismiss = viewModel::onHideBackgroundSelection,
             onColorSelected = viewModel::applyBackgroundToSelected,
             selectedColorUndefined = true,
+        )
+    }
+
+    if (state.themeSelectorData != null) {
+        ThemeSelectorDialog(
+            title = stringResource(R.string.theme),
+            themeOptions = state.themeSelectorData.options,
+            onDismiss = viewModel::onHideThemeSelection,
+            onThemeSelected = viewModel::applyTheme,
         )
     }
 }

@@ -7,7 +7,6 @@ import androidx.navigation.toRoute
 import com.jksol.keep.notes.R
 import com.jksol.keep.notes.core.TextNoteEditorFacade
 import com.jksol.keep.notes.core.interactor.BuildModificationDateTextInteractor
-import com.jksol.keep.notes.core.interactor.BuildNoteBackgroundColorListInteractor
 import com.jksol.keep.notes.core.interactor.BuildPdfFromTextNoteInteractor
 import com.jksol.keep.notes.core.model.MainTypeTextRepresentation
 import com.jksol.keep.notes.core.model.TextNote
@@ -41,7 +40,6 @@ class EditNoteViewModel @Inject constructor(
     shareFileIntentBuilder: Provider<ShareFileIntentBuilder>,
     shareTextIntentBuilder: Provider<ShareTextIntentBuilder>,
     buildModificationDateText: Lazy<BuildModificationDateTextInteractor>,
-    buildNoteBackgroundColorList: Lazy<BuildNoteBackgroundColorListInteractor>,
     editorFacade: TextNoteEditorFacade,
     permissionsRepository: Provider<PermissionsRepository>,
     private val savedStateHandle: SavedStateHandle,
@@ -61,7 +59,6 @@ class EditNoteViewModel @Inject constructor(
     shareTextIntentBuilder = shareTextIntentBuilder,
     shareFileIntentBuilder = shareFileIntentBuilder,
     permissionsRepository = permissionsRepository,
-    buildNoteBackgroundColorList = buildNoteBackgroundColorList,
 ) {
 
     override val itemRestoredMessageRes: Int = R.string.note_restored

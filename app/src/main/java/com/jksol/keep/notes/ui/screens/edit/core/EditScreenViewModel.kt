@@ -18,7 +18,6 @@ import com.jksol.keep.notes.R
 import com.jksol.keep.notes.RescheduleRemindersCommandReceiver
 import com.jksol.keep.notes.core.MainTypeEditorFacade
 import com.jksol.keep.notes.core.interactor.BuildModificationDateTextInteractor
-import com.jksol.keep.notes.core.interactor.BuildNoteBackgroundColorListInteractor
 import com.jksol.keep.notes.core.model.ApplicationMainDataType
 import com.jksol.keep.notes.core.model.MainTypeTextRepresentation
 import com.jksol.keep.notes.core.model.NoteColor
@@ -30,6 +29,7 @@ import com.jksol.keep.notes.ui.navigation.NavigationEventsHost
 import com.jksol.keep.notes.ui.screens.edit.ShareContentType
 import com.jksol.keep.notes.ui.shared.SnackbarEvent
 import com.jksol.keep.notes.ui.shared.defaultTransitionAnimationDuration
+import com.jksol.keep.notes.ui.theme.DarkOcean
 import com.jksol.keep.notes.ui.theme.LightOceanMist
 import com.jksol.keep.notes.util.asStrikethroughText
 import com.jksol.keep.notes.util.lighten
@@ -65,7 +65,6 @@ abstract class EditScreenViewModel<State : EditScreenState<State>, Item : Applic
     @ApplicationGlobalScope private val applicationCoroutineScope: CoroutineScope,
     @ApplicationContext private val context: Context,
     private val buildModificationDateText: Lazy<BuildModificationDateTextInteractor>,
-    private val buildNoteBackgroundColorList: Lazy<BuildNoteBackgroundColorListInteractor>,
     private val shareTextIntentBuilder: Provider<ShareTextIntentBuilder>,
     private val shareFileIntentBuilder: Provider<ShareFileIntentBuilder>,
     private val permissionsRepository: Provider<PermissionsRepository>,
@@ -379,17 +378,10 @@ abstract class EditScreenViewModel<State : EditScreenState<State>, Item : Applic
         _state.update { it.copy(showBackgroundSelector = false) }
     }
 
-    fun saveBackgroundColor(color: Color?) {
+    fun saveBackgroundColor(color: NoteColor?) {
         hideBackgroundSelection()
         applicationCoroutineScope.launch {
-            if (color == null) {
-                editorFacade.saveBackgroundColor(itemId = _state.value.itemId, color = null)
-            } else {
-                val coreColor = NoteColor.entries.firstOrNull { colorEntry ->
-                    Color(colorEntry.day) == color || Color(colorEntry.night) == color
-                }
-                editorFacade.saveBackgroundColor(itemId = _state.value.itemId, color = coreColor)
-            }
+            editorFacade.saveBackgroundColor(itemId = _state.value.itemId, color = color)
         }
     }
 
@@ -425,36 +417,28 @@ abstract class EditScreenViewModel<State : EditScreenState<State>, Item : Applic
 
     private fun refreshScreenState(updatedItem: Item) {
         _state.update { oldState: State ->
-            val screenBackground = calculateScreenBackground(updatedItem)
             val newState = oldState.copy(
                 itemId = updatedItem.id,
                 title = updatedItem.title,
                 isPinned = updatedItem.isPinned,
-                reminderData = buildReminderData(updatedItem.reminderDate, screenBackground = screenBackground),
+                reminderData = buildReminderData(updatedItem.reminderDate, screenBackground = updatedItem.backgroundColor),
                 isTrashed = updatedItem.isTrashed,
                 modificationStatusMessage = buildModificationDateText.get().invoke(updatedItem.modificationDate),
-                background = screenBackground,
+                background = updatedItem.backgroundColor,
                 backgroundColorList = buildBackgroundColorList(),
             )
             fillWithScreenSpecificData(oldState, newState, updatedItem)
         }
     }
 
-    private fun buildBackgroundColorList(): List<Color?> {
+    private fun buildBackgroundColorList(): List<NoteColor?> {
         return buildList {
             add(null)
-            buildNoteBackgroundColorList.get().invoke().forEach { add(Color(it)) }
+            addAll(NoteColor.entries)
         }
     }
 
-    private fun calculateScreenBackground(updatedItem: Item): Color? {
-        val colorEntity = updatedItem.backgroundColor ?: return null
-
-        // TODO: Check current theme here
-        return Color(colorEntity.day)
-    }
-
-    private fun buildReminderData(reminderDate: OffsetDateTime?, screenBackground: Color?): ReminderStateData? {
+    private fun buildReminderData(reminderDate: OffsetDateTime?, screenBackground: NoteColor?): ReminderStateData? {
         if (reminderDate == null) return null
         val dateText = reminderDateTimeFormat.format(reminderDate)
         val outdated = reminderDate.isBefore(OffsetDateTime.now())
@@ -462,13 +446,9 @@ abstract class EditScreenViewModel<State : EditScreenState<State>, Item : Applic
             sourceDate = reminderDate,
             dateString = if (outdated) dateText.asStrikethroughText() else AnnotatedString(dateText),
             outdated = outdated,
-            reminderColor = calculateReminderBackground(screenBackground),
+            reminderColorDay = screenBackground?.day?.let { Color(it).lighten(fraction = 0.4f) } ?: LightOceanMist,
+            reminderColorNight = screenBackground?.night?.let { Color(it).lighten(fraction = 0.2f) } ?: DarkOcean,
         )
-    }
-
-    private fun calculateReminderBackground(screenBackground: Color?): Color {
-        if (screenBackground == null) return LightOceanMist
-        return screenBackground.lighten(fraction = 0.4f)
     }
 
     private fun buildReminderEditorDataForState(state: State): ReminderEditorData {

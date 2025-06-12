@@ -79,4 +79,8 @@
     <string name="allow_exact_alarms_title">Allow Exact Alarms</string>
     <string name="exact_alarms_permission_prompt">This app needs permission to schedule exact alarms to deliver reminders at the right time.</string>
     <string name="help_feedback_menu"><![CDATA[Help & Feedback]]></string>
+    <string name="choose_theme">Choose Theme</string>
+    <string name="light">Light</string>
+    <string name="dark">Dark</string>
+    <string name="system_default">System Default</string>
 </resources>

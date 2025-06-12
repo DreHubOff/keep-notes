@@ -2,6 +2,7 @@ package com.jksol.keep.notes.ui.screens.main.model
 
 import androidx.compose.runtime.Stable
 import androidx.compose.ui.graphics.Color
+import com.jksol.keep.notes.core.model.NoteColor
 
 sealed class MainScreenItem {
 
@@ -12,7 +13,7 @@ sealed class MainScreenItem {
     abstract val title: String
     abstract val interactive: Boolean
     abstract val isSelected: Boolean
-    abstract val customBackground: Color?
+    abstract val customBackground: NoteColor?
 
     val compositeKey: String by lazy { this::class.simpleName + id }
 
@@ -28,7 +29,7 @@ sealed class MainScreenItem {
         override val interactive: Boolean = true,
         override val isSelected: Boolean = false,
         override val reminderCompleted: Boolean = false,
-        override val customBackground: Color? = null,
+        override val customBackground: NoteColor? = null,
     ) : MainScreenItem() {
 
         override fun withSelection(isSelected: Boolean): MainScreenItem = copy(isSelected = isSelected)
@@ -46,7 +47,7 @@ sealed class MainScreenItem {
         override val interactive: Boolean = true,
         override val isSelected: Boolean = false,
         override val reminderCompleted: Boolean = false,
-        override val customBackground: Color? = null,
+        override val customBackground: NoteColor? = null,
     ) : MainScreenItem() {
 
         override fun withSelection(isSelected: Boolean): MainScreenItem = copy(isSelected = isSelected)

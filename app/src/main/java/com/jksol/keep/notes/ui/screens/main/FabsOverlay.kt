@@ -7,6 +7,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -16,7 +17,7 @@ import androidx.compose.ui.graphics.Color
 @Composable
 fun FabsOverlay(enabled: Boolean, onClick: () -> Unit) {
     val overlayColor by animateColorAsState(
-        targetValue = if (enabled) Color.Black.copy(alpha = 0.4f) else Color.Transparent,
+        targetValue = if (enabled) MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f) else Color.Transparent,
         animationSpec = tween(durationMillis = 300),
         label = "OverlayFade"
     )

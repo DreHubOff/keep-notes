@@ -36,6 +36,7 @@ fun ReorderableCollectionItemScope.DraggableChecklistItem(
     modifier: Modifier = Modifier,
     title: String,
     checked: Boolean = true,
+    background: Color = MaterialTheme.colorScheme.surface,
     focusRequest: ElementFocusRequest? = null,
     onCheckedChange: (Boolean) -> Unit = {},
     onTextChanged: (String) -> Unit = {},
@@ -51,7 +52,7 @@ fun ReorderableCollectionItemScope.DraggableChecklistItem(
     )
     Surface(
         shadowElevation = itemElevation,
-        color = if (itemElevation.value != 0f) MaterialTheme.colorScheme.surface else Color.Transparent,
+        color = if (itemElevation.value != 0f) background else Color.Transparent,
     ) {
         Row(
             modifier = modifier.padding(horizontal = 16.dp),

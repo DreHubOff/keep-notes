@@ -32,6 +32,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextRange
@@ -123,6 +124,7 @@ private fun Title(
             titleCache = newTextFieldValue
             onTitleChanged(newTextFieldValue.text)
         },
+        cursorBrush = SolidColor(MaterialTheme.colorScheme.onSurface),
         modifier = modifier
             .fillMaxWidth()
             .wrapContentHeight(),
@@ -174,6 +176,7 @@ private fun Content(
 
     BasicTextField(
         value = textFieldValue,
+        cursorBrush = SolidColor(MaterialTheme.colorScheme.onSurface),
         onValueChange = { newContent ->
             textFieldValue = newContent
             onContentChanged(newContent.text)
@@ -228,7 +231,7 @@ private fun Preview() {
                 sourceDate = OffsetDateTime.now(),
                 dateString = AnnotatedString("21 May, 10:12 AM"),
                 outdated = false,
-                reminderColor = Color(0x14017FFA)
+                reminderColorDay = Color(0x14017FFA)
             ),
         )
     }
@@ -246,7 +249,7 @@ private fun PreviewOutdatedReminder() {
                 sourceDate = OffsetDateTime.now(),
                 dateString = "21 May, 10:12 AM".asStrikethroughText(),
                 outdated = true,
-                reminderColor = Color(0x14017FFA)
+                reminderColorDay = Color(0x14017FFA)
             ),
         )
     }

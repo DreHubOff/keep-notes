@@ -9,6 +9,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.sp
+import com.jksol.keep.notes.core.model.NoteColor
 import com.jksol.keep.notes.ui.screens.trash.model.TrashListItem
 import com.jksol.keep.notes.ui.shared.listitem.ChecklistCard
 import com.jksol.keep.notes.ui.shared.listitem.ChecklistCardData
@@ -64,7 +65,7 @@ private fun Preview() {
                 ),
                 daysLeftMessage = "2 day left",
                 tickedItems = 2,
-                customBackground = Color.Yellow.copy(alpha = 0.4f),
+                customBackground = NoteColor.Lime,
             ),
             onClick = {},
         )

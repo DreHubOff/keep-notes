@@ -1,6 +1,6 @@
 package com.jksol.keep.notes.ui.screens.edit.note.model
 
-import androidx.compose.ui.graphics.Color
+import com.jksol.keep.notes.core.model.NoteColor
 import com.jksol.keep.notes.ui.focus.ElementFocusRequest
 import com.jksol.keep.notes.ui.screens.edit.core.EditScreenState
 import com.jksol.keep.notes.ui.screens.edit.core.ReminderEditorData
@@ -23,9 +23,9 @@ data class EditNoteScreenState(
     override val showReminderTimePicker: Boolean,
     override val showPostNotificationsPermissionPrompt: Boolean,
     override val showSetAlarmsPermissionPrompt: Boolean,
-    override val background: Color?,
+    override val background: NoteColor?,
     override val showBackgroundSelector: Boolean,
-    override val backgroundColorList: List<Color?>,
+    override val backgroundColorList: List<NoteColor?>,
     val content: String,
     val contentFocusRequest: ElementFocusRequest?,
 ) : EditScreenState<EditNoteScreenState> {
@@ -46,9 +46,9 @@ data class EditNoteScreenState(
         showReminderTimePicker: Boolean,
         showPostNotificationsPermissionPrompt: Boolean,
         showSetAlarmsPermissionPrompt: Boolean,
-        background: Color?,
+        background: NoteColor?,
         showBackgroundSelector: Boolean,
-        backgroundColorList: List<Color?>,
+        backgroundColorList: List<NoteColor?>,
     ): EditNoteScreenState = copy(
         itemId = itemId,
         title = title,

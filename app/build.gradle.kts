@@ -20,8 +20,8 @@ android {
         applicationId = "com.jksol.keep.notes"
         minSdk = 26
         targetSdk = 35
-        versionCode = 2
-        versionName = "0.1.2"
+        versionCode = 1_0_0
+        versionName = "1.0.0"
         val fileProviderAuthority = "${applicationId}.fileprovider"
         buildConfigField("String", "FILE_PROVIDER_AUTHORITY", "\"${fileProviderAuthority}\"")
         manifestPlaceholders["fileProviderAuthority"] = fileProviderAuthority
@@ -75,4 +75,7 @@ dependencies {
     implementation(libs.list.reorderable)
 
     implementation(libs.simplypdf)
+
+    implementation(libs.androidx.core.splashscreen)
+    implementation(libs.androidx.appcompat)
 }

@@ -2,7 +2,7 @@
 <resources>
 
     <style name="Theme.MainApplicationTheme.Splash" parent="Theme.SplashScreen">
-        <item name="windowSplashScreenBackground">#FFFFFF</item>
+        <item name="windowSplashScreenBackground">#000000</item>
         <item name="postSplashScreenTheme">@style/Theme.MainApplicationTheme</item>
     </style>
 

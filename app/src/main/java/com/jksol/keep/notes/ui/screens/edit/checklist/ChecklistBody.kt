@@ -39,6 +39,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -50,7 +52,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.jksol.keep.notes.LocalThemeMode
 import com.jksol.keep.notes.R
+import com.jksol.keep.notes.ThemeMode
+import com.jksol.keep.notes.core.model.NoteColor
 import com.jksol.keep.notes.demo_data.EditChecklistDemoData
 import com.jksol.keep.notes.ui.screens.edit.checklist.model.CheckedListItemUi
 import com.jksol.keep.notes.ui.screens.edit.checklist.model.UncheckedListItemUi
@@ -72,6 +77,7 @@ fun ChecklistBody(
     showCheckedItems: Boolean = false,
     reminderStateData: ReminderStateData? = null,
     titleTransitionKey: Any = Unit,
+    backgroundColor: NoteColor? = null,
     onTitleChanged: (String) -> Unit = {},
     onTitleNextClick: () -> Unit = {},
     onAddChecklistItemClick: () -> Unit = {},
@@ -129,6 +135,13 @@ fun ChecklistBody(
         onMoveItems(fromIndex, toIndex)
     }
 
+    val backgroundColorLocal = key(backgroundColor, LocalThemeMode.current) {
+        when (LocalThemeMode.current) {
+            ThemeMode.DARK -> backgroundColor?.night
+            ThemeMode.LIGHT -> backgroundColor?.day
+        }?.let(::Color) ?: MaterialTheme.colorScheme.surface
+    }
+
     LazyColumn(
         modifier = modifier
             .imePadding(),
@@ -150,6 +163,7 @@ fun ChecklistBody(
                             .animateItem(),
                         title = item.text,
                         checked = false,
+                        background = backgroundColorLocal,
                         focusRequest = item.focusRequest,
                         onCheckedChange = { onItemChecked(item) },
                         onTextChanged = { onItemTextChanged(it, item) },
@@ -306,6 +320,7 @@ private fun Title(
 ) {
     BasicTextField(
         value = title,
+        cursorBrush = SolidColor(MaterialTheme.colorScheme.onSurface),
         onValueChange = onTitleChanged,
         modifier = modifier
             .fillMaxWidth()
@@ -372,7 +387,7 @@ private fun PreviewListWithReminder() {
                 sourceDate = OffsetDateTime.now(),
                 dateString = AnnotatedString("21 May, 10:12 AM"),
                 outdated = false,
-            )
+            ),
         )
     }
 }

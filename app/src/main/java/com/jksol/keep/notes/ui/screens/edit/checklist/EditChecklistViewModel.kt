@@ -1,6 +1,7 @@
 package com.jksol.keep.notes.ui.screens.edit.checklist
 
 import android.content.Context
+import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute

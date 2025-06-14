@@ -23,12 +23,14 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.jksol.keep.notes.R
 import com.jksol.keep.notes.ui.theme.ApplicationTheme
+import com.jksol.keep.notes.ui.theme.plusJakartaSans
 import com.jksol.keep.notes.util.getAppVersionName
 import kotlinx.coroutines.launch
 
@@ -62,15 +64,22 @@ fun MainDrawer(
         Spacer(modifier = Modifier.height(40.dp))
         Text(
             text = stringResource(id = R.string.my_notes_title),
-            fontSize = 24.sp,
+            fontSize = 25.sp,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(horizontal = 32.dp),
-            fontWeight = FontWeight.Normal
+            fontWeight = FontWeight.SemiBold,
+            fontFamily = FontFamily.SansSerif,
+            letterSpacing = 0.sp
         )
         Text(
             text = versionName,
             color = MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier.padding(horizontal = 32.dp),
+            modifier = Modifier
+                .padding(horizontal = 32.dp)
+                .padding(top = 8.dp),
+            fontFamily = FontFamily.SansSerif,
+            fontWeight = FontWeight.Normal,
+            fontSize = 16.sp
         )
         Spacer(modifier = Modifier.height(26.dp))
 
@@ -184,7 +193,9 @@ private fun DrawerItem(
         label = {
             Text(
                 text = stringResource(textRes),
-                fontWeight = FontWeight.Medium,
+                fontWeight = FontWeight.SemiBold,
+                fontFamily = plusJakartaSans,
+                fontSize = 16.sp
             )
         },
         icon = icon,

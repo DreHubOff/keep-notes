@@ -17,6 +17,7 @@ import androidx.compose.material.icons.automirrored.sharp.ArrowBack
 import androidx.compose.material.icons.sharp.Close
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -33,15 +34,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.jksol.keep.notes.R
 import com.jksol.keep.notes.ui.theme.ApplicationTheme
+import com.jksol.keep.notes.ui.theme.plusJakartaSans
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -158,7 +161,13 @@ private fun SearchBarContent(
         value = value,
         onValueChange = onValueChange,
         placeholder = {
-            Text(stringResource(R.string.search_notes), color = MaterialTheme.colorScheme.onSurface)
+            Text(
+                stringResource(R.string.search_notes),
+                color = MaterialTheme.colorScheme.onSurface,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Medium,
+                fontFamily = plusJakartaSans,
+            )
         },
         leadingIcon = {
             IconButton(onClick = onCancelClick) {
@@ -182,6 +191,11 @@ private fun SearchBarContent(
             .fillMaxWidth()
             .background(Color.Transparent),
         singleLine = true,
+        textStyle = LocalTextStyle.current.copy(
+            fontSize = 18.sp,
+            fontWeight = FontWeight.SemiBold,
+            fontFamily = plusJakartaSans,
+        ),
         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
         keyboardActions = KeyboardActions(onDone = { onDoneClick() }),
         colors = TextFieldDefaults.colors(

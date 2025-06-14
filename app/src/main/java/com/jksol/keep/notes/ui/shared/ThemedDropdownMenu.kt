@@ -3,6 +3,7 @@
 package com.jksol.keep.notes.ui.shared
 
 import android.annotation.SuppressLint
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -25,12 +26,16 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.jksol.keep.notes.LocalThemeMode
 import com.jksol.keep.notes.R
 import com.jksol.keep.notes.ThemeMode
 import com.jksol.keep.notes.ui.theme.ApplicationTheme
+import com.jksol.keep.notes.ui.theme.plusJakartaSans
 import com.jksol.keep.notes.ui.theme.themedDropdownMenuItemColors
 import com.jksol.keep.notes.util.lighten
 
@@ -60,7 +65,10 @@ fun ThemedDropdownMenu(
     }
 
     DropdownMenu(
-        modifier = modifier.padding(horizontal = 8.dp),
+        modifier = modifier
+            .padding(horizontal = 10.dp)
+            .defaultMinSize(minWidth = 170.dp),
+        offset = DpOffset(x = (-12).dp, y = (-8).dp),
         shape = MaterialTheme.shapes.large,
         expanded = dropDownMenuExpanded,
         onDismissRequest = { dropDownMenuExpanded = false },
@@ -69,7 +77,14 @@ fun ThemedDropdownMenu(
         actions.forEach { (actionText, onClick) ->
             DropdownMenuItem(
                 colors = themedDropdownMenuItemColors(),
-                text = { Text(actionText) },
+                text = {
+                    Text(
+                        text = actionText,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        fontFamily = plusJakartaSans,
+                    )
+                },
                 onClick = {
                     dropDownMenuExpanded = false
                     onClick()

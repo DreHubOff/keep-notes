@@ -178,9 +178,6 @@ class AlarmSchedulerEventReceiver : BroadcastReceiver() {
         }
     }
 
-    private fun buildNotificationIdForItem(item: ApplicationMainDataType): Int =
-        "${item.id}${item::class.simpleName}".hashCode()
-
     companion object {
 
         private const val KEY_ITEM_ID = "item_id"
@@ -198,6 +195,9 @@ class AlarmSchedulerEventReceiver : BroadcastReceiver() {
                 .putExtra(KEY_ITEM_ID, target.id)
                 .putExtra(KEY_ITEM_TYPE, target::class.java)
         }
+
+        fun removeNotificationRequest(context: Context, target: ApplicationMainDataType): PendingIntent =
+            getHideNotificationPendingIntent(context, buildNotificationIdForItem(target))
 
         private fun getHideNotificationPendingIntent(context: Context, notificationId: Int): PendingIntent {
             val intent = Intent(context, AlarmSchedulerEventReceiver::class.java)
@@ -219,5 +219,8 @@ class AlarmSchedulerEventReceiver : BroadcastReceiver() {
                 PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
             )
         }
+
+        private fun buildNotificationIdForItem(item: ApplicationMainDataType): Int =
+            "${item.id}${item::class.simpleName}".hashCode()
     }
 }

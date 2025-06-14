@@ -1,10 +1,7 @@
 package com.jksol.keep.notes.ui.screens.edit.reminder
 
-import androidx.compose.foundation.layout.Arrangement.Absolute.spacedBy
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.sharp.AccessTime
@@ -17,7 +14,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -32,6 +28,7 @@ import com.jksol.keep.notes.R
 import com.jksol.keep.notes.ui.screens.edit.core.ReminderEditorData
 import com.jksol.keep.notes.ui.shared.AppAlertDialog
 import com.jksol.keep.notes.ui.theme.ApplicationTheme
+import com.jksol.keep.notes.ui.theme.plusJakartaSans
 
 @Composable
 fun RemainderEditorOverviewDialog(
@@ -50,30 +47,30 @@ fun RemainderEditorOverviewDialog(
     AppAlertDialog(
         dismissAction = onDismiss,
         title = {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = spacedBy(8.dp)
-            ) {
-                Text(
-                    modifier = Modifier.weight(1f),
-                    text = dialogTitle,
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Medium
-                )
-                if (!data.isNewReminder) {
-                    IconButton(onClick = onDelete) {
-                        Icon(
-                            painter = painterResource(R.drawable.ic_delete),
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.error,
-                        )
-                    }
+            Text(
+                modifier = Modifier,
+                text = dialogTitle,
+                fontSize = 20.sp,
+                fontWeight = FontWeight.SemiBold,
+                fontFamily = plusJakartaSans,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        },
+        icon = if (!data.isNewReminder) {
+            {
+                IconButton(onClick = onDelete) {
+                    Icon(
+                        painter = painterResource(R.drawable.ic_delete),
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.error,
+                    )
                 }
             }
+        } else {
+            null
         },
         text = {
-            Column {
+            Column(modifier = Modifier.padding(vertical = 10.dp)) {
                 DateTimeSelectionButton(text = data.dateString, icon = Icons.Sharp.Event, onClick = onEditDate)
                 DateTimeSelectionButton(text = data.timeString, icon = Icons.Sharp.AccessTime, onClick = onEditTime)
             }
@@ -102,8 +99,10 @@ private fun DateTimeSelectionButton(
                 .weight(1f),
             text = text,
             style = TextStyle(
-                fontWeight = FontWeight.Medium,
                 letterSpacing = 0.5.sp,
+                fontSize = 16.sp,
+                fontWeight = FontWeight.SemiBold,
+                fontFamily = plusJakartaSans,
             )
         )
         Icon(
@@ -134,6 +133,23 @@ private fun Preview() {
         RemainderEditorOverviewDialog(
             data = ReminderEditorData(
                 isNewReminder = true,
+                dateMillis = System.currentTimeMillis(),
+                dateString = "14 May, 2025",
+                timeString = "3:00 pm",
+                minuteOfHour = 30,
+                hourOfDay = 7,
+            ),
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun PreviewWithIcon() {
+    ApplicationTheme {
+        RemainderEditorOverviewDialog(
+            data = ReminderEditorData(
+                isNewReminder = false,
                 dateMillis = System.currentTimeMillis(),
                 dateString = "14 May, 2025",
                 timeString = "3:00 pm",

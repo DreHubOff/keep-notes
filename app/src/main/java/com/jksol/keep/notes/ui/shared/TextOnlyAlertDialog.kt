@@ -1,12 +1,17 @@
 package com.jksol.keep.notes.ui.shared
 
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.jksol.keep.notes.ui.theme.ApplicationTheme
+import com.jksol.keep.notes.ui.theme.plusJakartaSans
 
 @Composable
 fun TextOnlyAlertDialog(
@@ -20,14 +25,28 @@ fun TextOnlyAlertDialog(
     AppAlertDialog(
         title = if (title != null) {
             {
-                Text(text = title, fontSize = 18.sp, fontWeight = FontWeight.Medium)
+                Text(
+                    modifier = Modifier.padding(bottom = 14.dp),
+                    text = title,
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    fontFamily = plusJakartaSans,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
             }
         } else {
             null
         },
         text = if (text != null) {
             {
-                Text(text = text)
+                Text(
+                    modifier = Modifier.padding(bottom = 8.dp),
+                    text = text,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Normal,
+                    fontFamily = plusJakartaSans,
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
             }
         } else {
             null

@@ -13,6 +13,7 @@ import com.jksol.keep.notes.ui.shared.listitem.TextNoteCard
 import com.jksol.keep.notes.ui.shared.listitem.TextNoteCardData
 import com.jksol.keep.notes.ui.shared.rememberTextNoteToEditorTransitionKey
 import com.jksol.keep.notes.ui.theme.ApplicationTheme
+import com.jksol.keep.notes.ui.theme.plusJakartaSans
 
 @Composable
 fun TrashTextNote(
@@ -40,6 +41,7 @@ fun TrashTextNote(
                 color = MaterialTheme.colorScheme.error,
                 fontSize = 12.sp,
                 fontWeight = FontWeight.Medium,
+                fontFamily = plusJakartaSans,
             )
         }
     )

@@ -160,10 +160,12 @@ private fun TitleText(modifier: Modifier, title: String, mixLines: Int) {
         modifier = modifier,
         text = title,
         fontSize = 18.sp,
-        fontWeight = FontWeight.W600,
+        fontWeight = FontWeight.SemiBold,
         color = MaterialTheme.colorScheme.onSurfaceVariant,
         maxLines = mixLines,
-        overflow = TextOverflow.Ellipsis
+        overflow = TextOverflow.Ellipsis,
+        lineHeight = 19.sp,
+        letterSpacing = 0.1.sp
     )
 }
 

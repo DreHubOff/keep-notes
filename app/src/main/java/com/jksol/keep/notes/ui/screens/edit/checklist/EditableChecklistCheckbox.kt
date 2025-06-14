@@ -9,6 +9,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.relocation.BringIntoViewRequester
+import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -26,6 +28,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -50,8 +53,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.jksol.keep.notes.ui.focus.ElementFocusRequest
 import com.jksol.keep.notes.ui.theme.ApplicationTheme
+import com.jksol.keep.notes.ui.theme.plusJakartaSans
 import com.jksol.keep.notes.ui.theme.themedCheckboxColors
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 private val textFieldTranslationX = (-10).dp
 
@@ -68,6 +73,10 @@ fun EditableChecklistCheckbox(
     onDeleteClick: () -> Unit = {},
     onItemFocused: () -> Unit = {},
 ) {
+
+    val bringIntoViewRequester = remember { BringIntoViewRequester() }
+    val coroutineScope = rememberCoroutineScope()
+
     Row(
         modifier = modifier
             .clickable(enabled = checked) { onCheckedChange(!checked) }
@@ -84,6 +93,7 @@ fun EditableChecklistCheckbox(
                 focusRequest?.confirmProcessing()
             }
             if (!isDragging && focusRequest?.isHandled() == false) {
+                bringIntoViewRequester.bringIntoView()
                 focusRequester.requestFocus()
                 focusRequest.confirmProcessing()
                 textFieldValue = textFieldValue.copy(selection = TextRange(textFieldValue.text.length))
@@ -103,10 +113,11 @@ fun EditableChecklistCheckbox(
         val textColor = MaterialTheme.colorScheme.run { if (checked) onSurface else onSurfaceVariant }
         val textStyle = TextStyle(
             color = textColor,
-            fontSize = 14.sp,
+            fontSize = 15.5.sp,
             lineHeight = 18.sp,
             letterSpacing = 0.sp,
             fontWeight = FontWeight.Normal,
+            fontFamily = plusJakartaSans,
             textDecoration = if (checked) TextDecoration.LineThrough else null,
         )
 
@@ -120,12 +131,16 @@ fun EditableChecklistCheckbox(
                     lastNonEmptyText = textFieldValue.text
                     textFieldValue = newValue
                     onTextChanged(newValue.text)
+                    coroutineScope.launch {
+                        bringIntoViewRequester.bringIntoView()
+                    }
                 },
                 modifier = Modifier
                     .weight(1f)
                     .wrapContentHeight()
                     .graphicsLayer { this.translationX = textFieldTranslationX.toPx() }
                     .focusRequester(focusRequester)
+                    .bringIntoViewRequester(bringIntoViewRequester)
                     .onFocusChanged { focusState ->
                         isTextFieldFocused = focusState.isFocused
                         if (isTextFieldFocused) onItemFocused()

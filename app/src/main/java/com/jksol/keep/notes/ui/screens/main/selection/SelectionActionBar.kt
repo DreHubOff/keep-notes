@@ -41,6 +41,7 @@ import com.jksol.keep.notes.R
 import com.jksol.keep.notes.ui.screens.main.search.SearchBarDefaults
 import com.jksol.keep.notes.ui.shared.PinCheckbox
 import com.jksol.keep.notes.ui.theme.ApplicationTheme
+import com.jksol.keep.notes.ui.theme.plusJakartaSans
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -166,8 +167,9 @@ private fun ActionBarContent(
         modifier = modifier.fillMaxWidth(),
         singleLine = true,
         textStyle = LocalTextStyle.current + TextStyle(
-            fontWeight = FontWeight.Medium,
-            fontSize = 16.sp,
+            fontSize = 18.sp,
+            fontWeight = FontWeight.SemiBold,
+            fontFamily = plusJakartaSans,
         ),
         colors = TextFieldDefaults.colors(
             disabledContainerColor = Color.Transparent,

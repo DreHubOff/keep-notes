@@ -16,6 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -25,6 +26,7 @@ import com.jksol.keep.notes.core.model.ThemeType
 import com.jksol.keep.notes.ui.screens.main.model.ThemeOption
 import com.jksol.keep.notes.ui.shared.AppAlertDialog
 import com.jksol.keep.notes.ui.theme.ApplicationTheme
+import com.jksol.keep.notes.ui.theme.plusJakartaSans
 
 @Composable
 fun ThemeSelectorDialog(
@@ -38,10 +40,18 @@ fun ThemeSelectorDialog(
         confirmAction = onDismiss,
         confirmButtonText = stringResource(R.string.cancel),
         title = {
-            Text(text = title, fontSize = 18.sp, fontWeight = FontWeight.Medium)
+            Text(
+                text = title,
+                fontSize = 20.sp,
+                fontWeight = FontWeight.SemiBold,
+                fontFamily = plusJakartaSans,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
         },
         text = {
-            Column {
+            Column(
+                modifier = Modifier.padding(top = 12.dp)
+            ) {
                 themeOptions.forEach { option ->
                     key(option) {
                         Row(
@@ -59,7 +69,12 @@ fun ThemeSelectorDialog(
                             RadioButton(selected = option.isSelected, onClick = null)
                             Text(
                                 text = stringResource(option.nameRes),
-                                style = MaterialTheme.typography.bodyLarge,
+                                style = TextStyle(
+                                    fontWeight = FontWeight.Medium,
+                                    letterSpacing = 0.5.sp,
+                                    fontFamily = plusJakartaSans,
+                                    fontSize = 16.sp,
+                                ),
                                 modifier = Modifier.padding(start = 16.dp),
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                             )

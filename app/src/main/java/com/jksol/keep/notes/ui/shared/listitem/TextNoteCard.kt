@@ -6,11 +6,13 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.jksol.keep.notes.demo_data.MainScreenDemoData
 import com.jksol.keep.notes.demo_data.MainScreenDemoData.TextNotes.asCardData
 import com.jksol.keep.notes.ui.theme.ApplicationTheme
@@ -50,6 +52,10 @@ private fun ContentText(modifier: Modifier, text: String) {
         color = MaterialTheme.colorScheme.onSurface,
         maxLines = MAX_LINES_CONTENT,
         overflow = TextOverflow.Ellipsis,
+        fontWeight = FontWeight.Medium,
+        fontSize = 16.sp,
+        lineHeight = 17.sp,
+        letterSpacing = 0.1.sp
     )
 }
 

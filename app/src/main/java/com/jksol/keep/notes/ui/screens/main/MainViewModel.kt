@@ -166,7 +166,7 @@ class MainViewModel @Inject constructor(
         searchJob?.cancel()
         searchJob = viewModelScope.launch(Dispatchers.Default) {
             _uiState.update { state -> state.copy(searchPrompt = searchPrompt, searchEnabled = true) }
-            delay(500)
+            delay(300)
             observeDatabase(searchPrompt = searchPrompt)
         }
     }
@@ -466,15 +466,19 @@ class MainViewModel @Inject constructor(
         if (!savedAnyNote && items.isNotEmpty()) {
             userPreferences.updateSavedAnyNoteState(isSaved = true)
         }
-        val isWelcomeBanner: Boolean
         val screenItems = if (items.isEmpty() && !savedAnyNote && searchPrompt.isEmpty()) {
-            isWelcomeBanner = true
-            listOf(buildWelcomeBanner())
+            val welcomeBanner = buildWelcomeBanner()
+            userPreferences.updateSavedAnyNoteState(isSaved = true)
+            textNotesRepository.saveTextNote(
+                TextNote
+                    .generateEmpty()
+                    .copy(title = welcomeBanner.title, content = welcomeBanner.content)
+            )
+            emptyList()
         } else {
-            isWelcomeBanner = false
             items
         }
-        return currentState.copy(screenItems = screenItems, searchPrompt = searchPrompt, isWelcomeBanner = isWelcomeBanner)
+        return currentState.copy(screenItems = screenItems, searchPrompt = searchPrompt)
     }
 
     private fun requestNavigationOverlay() {
@@ -486,7 +490,6 @@ class MainViewModel @Inject constructor(
             id = 0,
             title = context.getString(R.string.welcome_banner_title),
             content = context.getString(R.string.welcome_banner_content),
-            interactive = false,
         )
     }
 

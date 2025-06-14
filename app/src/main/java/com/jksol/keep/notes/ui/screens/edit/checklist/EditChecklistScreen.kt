@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -227,7 +228,7 @@ private fun Editor(
     onItemFocused: (UncheckedListItemUi) -> Unit,
     onEditReminderClick: () -> Unit,
 ) {
-    Box {
+    Box(Modifier.fillMaxWidth()) {
         val paddingBottom = remember(innerPadding) { innerPadding.calculateBottomPadding() + 40.dp }
         ChecklistBody(
             modifier = Modifier
@@ -241,6 +242,7 @@ private fun Editor(
             onTitleChanged = onTitleChanged,
             showCheckedItems = state.showCheckedItems,
             backgroundColor = state.background,
+            focusRequests = state.focusRequests,
             onAddChecklistItemClick = onAddChecklistItemClick,
             toggleCheckedItemsVisibility = toggleCheckedItemsVisibility,
             onItemUnchecked = onItemUnchecked,

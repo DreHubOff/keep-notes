@@ -17,9 +17,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.jksol.keep.notes.R
 import com.jksol.keep.notes.ui.shared.ThemedDropdownMenu
 import com.jksol.keep.notes.ui.theme.ApplicationTheme
+import com.jksol.keep.notes.ui.theme.plusJakartaSans
 import com.jksol.keep.notes.ui.theme.themedTopAppBarColors
 
 @Composable
@@ -36,7 +38,9 @@ fun TrashActionBar(
         title = {
             Text(
                 text = stringResource(R.string.trash),
-                fontWeight = FontWeight.Medium,
+                fontWeight = FontWeight.SemiBold,
+                fontFamily = plusJakartaSans,
+                fontSize = 20.sp,
             )
         },
         navigationIcon = {

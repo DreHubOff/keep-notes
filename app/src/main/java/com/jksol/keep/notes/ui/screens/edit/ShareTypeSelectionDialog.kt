@@ -4,6 +4,7 @@ import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Button
@@ -24,6 +25,7 @@ import androidx.compose.ui.unit.sp
 import com.jksol.keep.notes.R
 import com.jksol.keep.notes.ui.shared.AppAlertDialog
 import com.jksol.keep.notes.ui.theme.ApplicationTheme
+import com.jksol.keep.notes.ui.theme.plusJakartaSans
 
 enum class ShareContentType(
     @DrawableRes
@@ -58,10 +60,21 @@ fun ShareTypeSelectionDialog(
     AppAlertDialog(
         dismissAction = onDismiss,
         title = {
-            Text(text = title, fontSize = 18.sp, fontWeight = FontWeight.Medium)
+            Text(
+                modifier = Modifier.padding(bottom = 18.dp),
+                text = title,
+                fontSize = 20.sp,
+                fontWeight = FontWeight.SemiBold,
+                fontFamily = plusJakartaSans,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
         },
         text = {
-            Column {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 6.dp),
+            ) {
                 shareTypes.forEach { shareType ->
                     Button(
                         onClick = { onTypeSelected(shareType) },
@@ -77,8 +90,10 @@ fun ShareTypeSelectionDialog(
                             modifier = Modifier.padding(horizontal = 14.dp),
                             text = stringResource(shareType.messageRes),
                             style = TextStyle(
-                                fontWeight = FontWeight.Medium,
+                                fontWeight = FontWeight.SemiBold,
                                 letterSpacing = 0.5.sp,
+                                fontFamily = plusJakartaSans,
+                                fontSize = 18.sp,
                             )
                         )
                     }

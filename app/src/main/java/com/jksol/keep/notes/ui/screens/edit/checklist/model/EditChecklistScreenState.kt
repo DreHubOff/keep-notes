@@ -33,6 +33,8 @@ data class EditChecklistScreenState(
     val showCheckedItems: Boolean,
 ) : EditScreenState<EditChecklistScreenState> {
 
+    val focusRequests = uncheckedItems.mapNotNull { it.focusRequest }
+
     override fun copy(
         itemId: Long,
         title: String,

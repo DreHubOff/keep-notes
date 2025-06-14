@@ -8,6 +8,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -36,6 +37,7 @@ import com.jksol.keep.notes.LocalThemeMode
 import com.jksol.keep.notes.ThemeMode
 import com.jksol.keep.notes.core.model.NoteColor
 import com.jksol.keep.notes.ui.theme.ApplicationTheme
+import com.jksol.keep.notes.ui.theme.plusJakartaSans
 
 @Composable
 fun ColorSelectorDialog(
@@ -47,7 +49,7 @@ fun ColorSelectorDialog(
     selectedColorUndefined: Boolean = false,
 ) {
     BasicAlertDialog(
-        modifier = Modifier,
+        modifier = Modifier.defaultMinSize(minWidth = 328.dp),
         onDismissRequest = onDismiss,
     ) {
         Surface(
@@ -63,7 +65,7 @@ fun ColorSelectorDialog(
             Column(
                 modifier = Modifier
                     .padding(24.dp)
-                    .padding(vertical = 16.dp),
+                    .padding(bottom = 14.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
@@ -72,8 +74,9 @@ fun ColorSelectorDialog(
                         .padding(bottom = 20.dp),
                     text = title,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    fontWeight = FontWeight.Medium,
-                    fontSize = 18.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 20.sp,
+                    fontFamily = plusJakartaSans,
                 )
                 LazyVerticalGrid(
                     columns = GridCells.FixedSize(40.dp),

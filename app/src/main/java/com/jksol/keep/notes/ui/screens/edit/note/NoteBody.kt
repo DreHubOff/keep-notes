@@ -50,6 +50,7 @@ import com.jksol.keep.notes.ui.screens.edit.core.ReminderButton
 import com.jksol.keep.notes.ui.screens.edit.core.ReminderStateData
 import com.jksol.keep.notes.ui.shared.sharedElementTransition
 import com.jksol.keep.notes.ui.theme.ApplicationTheme
+import com.jksol.keep.notes.ui.theme.plusJakartaSans
 import com.jksol.keep.notes.util.asStrikethroughText
 import kotlinx.coroutines.launch
 import java.time.OffsetDateTime
@@ -117,7 +118,7 @@ private fun Title(
     onNextClick: () -> Unit = {},
 ) {
     var titleCache by remember { mutableStateOf(TextFieldValue(title)) }
-
+    val textSize = 22.sp
     BasicTextField(
         value = titleCache,
         onValueChange = { newTextFieldValue ->
@@ -131,7 +132,8 @@ private fun Title(
         textStyle = TextStyle(
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             fontWeight = FontWeight.W600,
-            fontSize = 18.sp,
+            fontSize = textSize,
+            fontFamily = plusJakartaSans,
         ),
         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
         keyboardActions = KeyboardActions(onNext = { onNextClick() }),
@@ -142,7 +144,8 @@ private fun Title(
                         text = stringResource(R.string.title),
                         color = MaterialTheme.colorScheme.onSurface,
                         fontWeight = FontWeight.W600,
-                        fontSize = 18.sp
+                        fontSize = textSize,
+                        fontFamily = plusJakartaSans,
                     )
                 }
                 innerTextField()
@@ -159,6 +162,8 @@ private fun Content(
     contentFocusRequest: ElementFocusRequest?,
     bringIntoViewRequester: BringIntoViewRequester,
 ) {
+
+    val textSize = 17.sp
 
     val focusRequester = remember { FocusRequester() }
     var isTextFieldFocused by remember { mutableStateOf(false) }
@@ -203,7 +208,8 @@ private fun Content(
         },
         textStyle = TextStyle(
             color = MaterialTheme.colorScheme.onSurfaceVariant,
-            fontSize = 16.sp,
+            fontSize = textSize,
+            fontFamily = plusJakartaSans,
         ),
         decorationBox = { innerTextField ->
             Box(Modifier.fillMaxWidth()) {
@@ -211,6 +217,8 @@ private fun Content(
                     Text(
                         text = stringResource(R.string.note),
                         color = MaterialTheme.colorScheme.onSurface,
+                        fontSize = textSize,
+                        fontFamily = plusJakartaSans,
                     )
                 }
                 innerTextField()
@@ -245,6 +253,24 @@ private fun PreviewOutdatedReminder() {
             modifier = Modifier.fillMaxWidth(),
             title = MainScreenDemoData.TextNotes.welcomeBanner.title,
             content = MainScreenDemoData.TextNotes.welcomeBanner.content,
+            reminderData = ReminderStateData(
+                sourceDate = OffsetDateTime.now(),
+                dateString = "21 May, 10:12 AM".asStrikethroughText(),
+                outdated = true,
+                reminderColorDay = Color(0x14017FFA)
+            ),
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun PreviewEmpty() {
+    ApplicationTheme {
+        NoteBody(
+            modifier = Modifier.fillMaxWidth(),
+            title = "",
+            content = "",
             reminderData = ReminderStateData(
                 sourceDate = OffsetDateTime.now(),
                 dateString = "21 May, 10:12 AM".asStrikethroughText(),

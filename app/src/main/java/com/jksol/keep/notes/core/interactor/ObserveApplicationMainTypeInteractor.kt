@@ -19,21 +19,39 @@ class ObserveApplicationMainTypeInteractor @Inject constructor(
         return textNotesRepository
             .observeNotTrashedNotes()
             .combine(checklistRepository.observeNotTrashedChecklists()) { textNotes, checklists ->
-                val sequence = sequenceOf(textNotes, checklists)
+                sequenceOf(textNotes, checklists)
                     .flatten()
-                    .sortedByPinnedAndModificationDate()
-                if (searchPrompt.trim().isEmpty()) {
-                    sequence
-                } else {
-                    sequence.filter { item ->
-                        item.title.contains(searchPrompt, ignoreCase = true) || when (item) {
-                            is TextNote -> item.content.contains(searchPrompt, ignoreCase = true)
-                            is Checklist -> item.items.any { it.title.contains(searchPrompt, ignoreCase = true) }
-                            else -> false
+                    .let { sequence ->
+                        if (searchPrompt.trim().isEmpty()) {
+                            sequence
+                        } else {
+                            sequence.filter { item ->
+                                searchInTitle(prompt = searchPrompt, title = item.title) || searchInContent(searchPrompt, item)
+                            }
                         }
                     }
-                }.toList()
+                    .sortedByPinnedAndModificationDate()
+                    .toList()
             }
+    }
+
+    private fun searchInContent(prompt: String, type: ApplicationMainDataType): Boolean {
+        return when (type) {
+            is Checklist -> type.items.any { item -> searchInTitle(prompt = prompt, title = item.title) }
+            is TextNote -> searchInTitle(prompt = prompt, title = type.content)
+        }
+    }
+
+    private fun searchInTitle(prompt: String, title: String): Boolean {
+        val titleWords = title.split(" ").filter { it.isNotEmpty() }
+        val promptWords = prompt.split(" ").filter { it.isNotEmpty() }
+        if (titleWords.isEmpty() || promptWords.size > titleWords.size) return false
+        for (word in promptWords) {
+            if (!titleWords.any { it.contains(word, ignoreCase = true) }) {
+                return false
+            }
+        }
+        return true
     }
 
     private fun <T : SortableListItem> Sequence<T>.sortedByPinnedAndModificationDate(): Sequence<T> {

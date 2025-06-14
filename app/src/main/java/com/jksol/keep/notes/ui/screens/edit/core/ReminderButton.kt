@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.sharp.Alarm
+import androidx.compose.material.icons.sharp.Timer
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
@@ -18,6 +19,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.jksol.keep.notes.LocalThemeMode
 import com.jksol.keep.notes.ThemeMode
+import com.jksol.keep.notes.ui.theme.plusJakartaSans
 
 private val reminderTranslationX = (-4).dp
 
@@ -44,12 +46,13 @@ fun ReminderButton(
             contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
         )
     ) {
-        Icon(imageVector = Icons.Sharp.Alarm, contentDescription = null)
+        Icon(imageVector = Icons.Sharp.Timer, contentDescription = null)
         Spacer(modifier = Modifier.size(6.dp))
         Text(
             text = reminderData.dateString,
             fontWeight = FontWeight.Normal,
             fontSize = 15.sp,
+            fontFamily = plusJakartaSans,
             color = MaterialTheme.colorScheme.onSurfaceVariant.let {
                 if (reminderData.outdated) it.copy(alpha = 0.6f) else it
             }

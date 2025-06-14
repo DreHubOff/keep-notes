@@ -7,6 +7,7 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Build
 import android.provider.Settings
+import android.util.Log
 import androidx.annotation.StringRes
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.TimePickerState
@@ -89,7 +90,7 @@ abstract class EditScreenViewModel<State : EditScreenState<State>, Item : Applic
                 observeEditedItemChanges(firstItemCache?.id ?: -1)
             }
             .distinctUntilChanged()
-            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(stopTimeoutMillis = 3000), getEmptyState())
+            .stateIn(viewModelScope, SharingStarted.Lazily, getEmptyState())
     }
 
     private var pinChangesJob: Job? = null

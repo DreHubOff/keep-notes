@@ -10,12 +10,14 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.jksol.keep.notes.ui.theme.ApplicationTheme
+import com.jksol.keep.notes.ui.theme.plusJakartaSans
 
 @Composable
 fun ModificationDateOverlay(
@@ -34,7 +36,9 @@ fun ModificationDateOverlay(
                 .padding(top = 4.dp, bottom = navigationBarPadding, start = 8.dp, end = 8.dp),
             textAlign = TextAlign.Center,
             color = MaterialTheme.colorScheme.onSurface,
-            fontSize = 12.sp
+            fontSize = 14.sp,
+            fontWeight = FontWeight.Medium,
+            fontFamily = plusJakartaSans,
         )
     }
 }

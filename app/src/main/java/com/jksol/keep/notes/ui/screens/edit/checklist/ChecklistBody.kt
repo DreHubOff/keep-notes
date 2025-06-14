@@ -5,12 +5,15 @@ package com.jksol.keep.notes.ui.screens.edit.checklist
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.foundation.gestures.animateScrollBy
+import androidx.compose.foundation.gestures.scrollBy
 import androidx.compose.foundation.layout.Arrangement.Absolute.spacedBy
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
@@ -32,6 +35,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
@@ -57,12 +61,14 @@ import com.jksol.keep.notes.R
 import com.jksol.keep.notes.ThemeMode
 import com.jksol.keep.notes.core.model.NoteColor
 import com.jksol.keep.notes.demo_data.EditChecklistDemoData
+import com.jksol.keep.notes.ui.focus.ElementFocusRequest
 import com.jksol.keep.notes.ui.screens.edit.checklist.model.CheckedListItemUi
 import com.jksol.keep.notes.ui.screens.edit.checklist.model.UncheckedListItemUi
 import com.jksol.keep.notes.ui.screens.edit.core.ReminderButton
 import com.jksol.keep.notes.ui.screens.edit.core.ReminderStateData
 import com.jksol.keep.notes.ui.shared.sharedElementTransition
 import com.jksol.keep.notes.ui.theme.ApplicationTheme
+import com.jksol.keep.notes.ui.theme.plusJakartaSans
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyListState
 import java.time.OffsetDateTime
@@ -74,6 +80,7 @@ fun ChecklistBody(
     contentPaddingBottom: Dp = 0.dp,
     checkedItems: List<CheckedListItemUi> = emptyList(),
     uncheckedItems: List<UncheckedListItemUi> = emptyList(),
+    focusRequests: List<ElementFocusRequest> = emptyList(),
     showCheckedItems: Boolean = false,
     reminderStateData: ReminderStateData? = null,
     titleTransitionKey: Any = Unit,
@@ -142,61 +149,93 @@ fun ChecklistBody(
         }?.let(::Color) ?: MaterialTheme.colorScheme.surface
     }
 
-    LazyColumn(
-        modifier = modifier
-            .imePadding(),
-        state = lazyListState,
-        contentPadding = PaddingValues(bottom = contentPaddingBottom, top = 16.dp),
-        verticalArrangement = spacedBy(4.dp),
-    ) {
-        itemsBeforeReorderable.forEach { it.invoke(this) }
-
-        if (uncheckedItems.isNotEmpty()) {
-            items(uncheckedItems, key = { item -> item.id }) { item ->
-                ReorderableItem(
-                    state = reorderableLazyListState,
-                    key = item.id,
-                ) {
-                    DraggableChecklistItem(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .animateItem(),
-                        title = item.text,
-                        checked = false,
-                        background = backgroundColorLocal,
-                        focusRequest = item.focusRequest,
-                        onCheckedChange = { onItemChecked(item) },
-                        onTextChanged = { onItemTextChanged(it, item) },
-                        onDoneClicked = { onDoneClicked(item) },
-                        onDeleteClick = { onDeleteClick(item) },
-                        onDragCompleted = { onMoveCompleted() },
-                        onItemFocused = { onItemFocused(item) }
-                    )
-                }
+    LaunchedEffect(focusRequests) {
+        var indexOfItem = -1
+        uncheckedItems.forEachIndexed { index, item ->
+            if (item.focusRequest?.isHandled() == false) {
+                indexOfItem = index
             }
         }
+        if (indexOfItem == -1) return@LaunchedEffect
+        val itemIndexInColumn = itemsBeforeReorderable.size + indexOfItem
 
-        item(key = "AddItemButton") {
-            AddItemButton(
-                modifier = Modifier.animateItem(),
-                onAddClick = onAddChecklistItemClick,
-            )
+
+        if (lazyListState.layoutInfo.visibleItemsInfo.any { it.index == itemIndexInColumn }) {
+            return@LaunchedEffect
         }
+        val lastVisible = lazyListState.layoutInfo.visibleItemsInfo.lastOrNull() ?: return@LaunchedEffect
+        if (lastVisible.index > itemIndexInColumn) {
+            lazyListState.animateScrollToItem(itemIndexInColumn, (lazyListState.layoutInfo.viewportSize.height * -0.8f).toInt())
+            return@LaunchedEffect
+        }
+        val itemsDifference = (itemIndexInColumn - lastVisible.index).coerceAtLeast(0)
+        if (itemsDifference > 2) {
+            lazyListState.animateScrollToItem(itemIndexInColumn)
+        } else {
+            lazyListState.scrollBy((lastVisible.size * itemsDifference.toFloat()) + 1f)
+        }
+    }
 
-        item(key = "CheckedItems") {
-            if (checkedItems.isNotEmpty()) {
-                HideCheckedItemsButton(
+    Box(
+        Modifier
+            .fillMaxSize()
+            .imePadding()
+    ) {
+        LazyColumn(
+            modifier = modifier,
+            state = lazyListState,
+            contentPadding = PaddingValues(bottom = contentPaddingBottom, top = 16.dp),
+            verticalArrangement = spacedBy(4.dp),
+        ) {
+            itemsBeforeReorderable.forEach { it.invoke(this) }
+
+            if (uncheckedItems.isNotEmpty()) {
+                items(uncheckedItems, key = { item -> item.id }) { item ->
+                    ReorderableItem(
+                        state = reorderableLazyListState,
+                        key = item.id,
+                    ) {
+                        DraggableChecklistItem(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .animateItem(),
+                            title = item.text,
+                            checked = false,
+                            background = backgroundColorLocal,
+                            focusRequest = item.focusRequest,
+                            onCheckedChange = { onItemChecked(item) },
+                            onTextChanged = { onItemTextChanged(it, item) },
+                            onDoneClicked = { onDoneClicked(item) },
+                            onDeleteClick = { onDeleteClick(item) },
+                            onDragCompleted = { onMoveCompleted() },
+                            onItemFocused = { onItemFocused(item) }
+                        )
+                    }
+                }
+            }
+
+            item(key = "AddItemButton") {
+                AddItemButton(
                     modifier = Modifier.animateItem(),
-                    checked = showCheckedItems.not(),
-                    hiddenItemCount = checkedItems.size,
-                    toggleCheckedItemsVisibility = toggleCheckedItemsVisibility,
+                    onAddClick = onAddChecklistItemClick,
                 )
-                if (showCheckedItems) {
-                    CheckedItems(
+            }
+
+            item(key = "CheckedItems") {
+                if (checkedItems.isNotEmpty()) {
+                    HideCheckedItemsButton(
                         modifier = Modifier.animateItem(),
-                        checkedItems = checkedItems,
-                        onItemUnchecked = onItemUnchecked,
+                        checked = showCheckedItems.not(),
+                        hiddenItemCount = checkedItems.size,
+                        toggleCheckedItemsVisibility = toggleCheckedItemsVisibility,
                     )
+                    if (showCheckedItems) {
+                        CheckedItems(
+                            modifier = Modifier.animateItem(),
+                            checkedItems = checkedItems,
+                            onItemUnchecked = onItemUnchecked,
+                        )
+                    }
                 }
             }
         }
@@ -275,7 +314,9 @@ private fun HideCheckedItemsButton(
             Text(
                 text = text,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-                fontWeight = FontWeight.Normal
+                fontWeight = FontWeight.Normal,
+                fontSize = 15.5.sp,
+                fontFamily = plusJakartaSans,
             )
         }
     }
@@ -305,7 +346,9 @@ private fun AddItemButton(
             Text(
                 text = stringResource(R.string.add_item),
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-                fontWeight = FontWeight.Normal
+                fontWeight = FontWeight.Normal,
+                fontFamily = plusJakartaSans,
+                fontSize = 15.5.sp
             )
         }
     }
@@ -328,7 +371,8 @@ private fun Title(
         textStyle = TextStyle(
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             fontWeight = FontWeight.W600,
-            fontSize = 18.sp,
+            fontSize = 22.sp,
+            fontFamily = plusJakartaSans,
         ),
         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
         keyboardActions = KeyboardActions(onNext = {
@@ -341,7 +385,8 @@ private fun Title(
                         text = stringResource(R.string.title),
                         color = MaterialTheme.colorScheme.onSurface,
                         fontWeight = FontWeight.W600,
-                        fontSize = 18.sp
+                        fontSize = 22.sp,
+                        fontFamily = plusJakartaSans,
                     )
                 }
                 innerTextField()

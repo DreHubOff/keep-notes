@@ -28,10 +28,8 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalView
 import androidx.core.content.IntentCompat
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
-import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.lifecycle.Lifecycle
@@ -58,6 +56,7 @@ import com.jksol.keep.notes.ui.screens.edit.note.EditNoteScreen
 import com.jksol.keep.notes.ui.screens.main.MainScreen
 import com.jksol.keep.notes.ui.screens.trash.TrashScreen
 import com.jksol.keep.notes.ui.shared.LocalSharedTransitionSettings
+import com.jksol.keep.notes.ui.shared.SetupSystemNavigationBars
 import com.jksol.keep.notes.ui.shared.SharedTransitionSettings
 import com.jksol.keep.notes.ui.theme.ApplicationTheme
 import com.jksol.keep.notes.util.getAndRemove
@@ -87,6 +86,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         lifecycleScope.launch { initialThemeType = userPreferences.getTheme() }
         enableEdgeToEdge()
+        WindowCompat.setDecorFitsSystemWindows(window, false)
         setContent {
             val themeType: ThemeType by userPreferences
                 .observeTheme()
@@ -262,6 +262,7 @@ class MainActivity : ComponentActivity() {
         sharedTransitionScope: SharedTransitionScope,
         content: @Composable AnimatedContentScope.() -> Unit,
     ) {
+        SetupSystemNavigationBars()
         CompositionLocalProvider(
             value = LocalSharedTransitionSettings provides SharedTransitionSettings(
                 transitionScope = sharedTransitionScope, animationScope = this@NavigationRoute

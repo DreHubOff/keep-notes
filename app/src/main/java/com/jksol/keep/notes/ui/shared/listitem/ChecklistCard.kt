@@ -10,6 +10,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.jksol.keep.notes.R
@@ -59,7 +60,8 @@ private fun ChecklistContent(
                 modifier = Modifier.padding(horizontal = 6.dp),
                 text = stringResource(R.string.ticked_items_counter).format(tickedItemsCount),
                 color = MaterialTheme.colorScheme.onSurface,
-                fontSize = 12.sp
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Normal,
             )
         }
     }

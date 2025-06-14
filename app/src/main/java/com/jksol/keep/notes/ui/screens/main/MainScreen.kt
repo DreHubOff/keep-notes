@@ -183,7 +183,11 @@ private fun ScreenContent(
         },
         floatingActionButtonPosition = FabPosition.End,
         contentWindowInsets = WindowInsets.systemBars,
-        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
+        snackbarHost = {
+            SnackbarHost(hostState = snackbarHostState) {
+            Snackbar(it)
+            }
+        },
     ) { innerPadding ->
         Box {
             DisplayState(
@@ -447,7 +451,7 @@ private class PreviewBinder : PreviewParameterProvider<MainScreenState> {
         get() = sequenceOf(
             MainScreenState.EMPTY,
             MainScreenState.EMPTY.copy(screenItems = notesList()),
-            MainScreenState.EMPTY.copy(screenItems = welcomeBanner(), isWelcomeBanner = true),
+            MainScreenState.EMPTY.copy(screenItems = welcomeBanner()),
             MainScreenState.EMPTY.copy(searchEnabled = true, searchPrompt = "Search..."),
             MainScreenState.EMPTY.copy(screenItems = notesList(), searchEnabled = true, searchPrompt = "Search..."),
             MainScreenState.EMPTY.copy(screenItems = notesList(), addItemsMode = true),

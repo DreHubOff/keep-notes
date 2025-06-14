@@ -54,6 +54,6 @@ class TextNoteEditorFacade @Inject constructor(
         val item = textNotesRepository.getNoteById(itemId) ?: return
         textNotesRepository.updateChecklistReminderShownState(itemId, isShown = false)
         textNotesRepository.deleteReminder(item.id)
-        reminderSchedulerRepository.cancelReminder(item)
+        reminderSchedulerRepository.cancelReminder(item, removeNotification = true)
     }
 }

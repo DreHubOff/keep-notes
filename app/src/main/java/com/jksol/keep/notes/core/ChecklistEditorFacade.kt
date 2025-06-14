@@ -54,6 +54,6 @@ class ChecklistEditorFacade @Inject constructor(
         val item = checklistRepository.getChecklistById(itemId) ?: return
         checklistRepository.updateChecklistReminderShownState(itemId, isShown = false)
         checklistRepository.deleteReminder(item.id)
-        reminderSchedulerRepository.cancelReminder(item)
+        reminderSchedulerRepository.cancelReminder(item, removeNotification = true)
     }
 }

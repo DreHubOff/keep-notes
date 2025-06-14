@@ -23,9 +23,14 @@ class ReminderSchedulerRepository @Inject constructor(
         alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerTimeMillis, operation)
     }
 
-    fun cancelReminder(target: ApplicationMainDataType) {
+    fun cancelReminder(target: ApplicationMainDataType, removeNotification: Boolean = false) {
         val operation = buildPendingIntent(target)
         Log.d(TAG, "Cancelling reminder for $target")
+        if (removeNotification) {
+            AlarmSchedulerEventReceiver
+                .removeNotificationRequest(context, target)
+                .send()
+        }
         alarmManager.cancel(operation)
     }
 

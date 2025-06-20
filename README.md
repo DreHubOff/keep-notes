@@ -1,1 +1,1 @@
-[▶️ Watch demo](./demo.mp4)
+[![Demo video](demo/front_page.png)](demo/demo.mp4)
